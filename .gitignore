@@ -10,6 +10,8 @@
 # Precompiled Headers
 *.gch
 *.pch
+#intellisense generated precompiled headers
+*.ipch
 
 # Compiled Dynamic libraries
 *.so
