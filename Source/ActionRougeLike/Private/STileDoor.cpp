@@ -6,7 +6,7 @@
 // Sets default values
 ASTileDoor::ASTileDoor()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 }
@@ -15,7 +15,7 @@ ASTileDoor::ASTileDoor()
 void ASTileDoor::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 }
 
 // Called every frame
@@ -24,4 +24,5 @@ void ASTileDoor::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 }
+
 

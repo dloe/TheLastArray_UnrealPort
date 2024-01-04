@@ -15,6 +15,9 @@ public:
 	// Sets default values for this actor's properties
 	ASTileDoor();
 
+	UPROPERTY(EditAnywhere, Category = "Door Info")
+	bool DoorActive = false;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

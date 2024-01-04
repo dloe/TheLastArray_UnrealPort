@@ -4,24 +4,30 @@
 #include "SLocalLevel.h"
 
 // Sets default values
-ASLocalLevel::ASLocalLevel()
+ALocalLevel::ALocalLevel()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 }
 
 // Called when the game starts or when spawned
-void ASLocalLevel::BeginPlay()
+void ALocalLevel::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 }
 
 // Called every frame
-void ASLocalLevel::Tick(float DeltaTime)
+void ALocalLevel::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
 }
+
+TSubclassOf<ASTile> ALocalLevel::GetPresetStartingTile()
+{
+	return PresetStartingTile;
+}
+
 
