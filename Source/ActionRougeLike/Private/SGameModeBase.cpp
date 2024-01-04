@@ -7,15 +7,15 @@
 #include "EnvironmentQuery/EnvQueryInstanceBlueprintWrapper.h"
 #include "Kismet/GameplayStatics.h"
 #include <ActionRougeLike/Public/AI/SAICharacter.h>
-#include <ActionRougeLike/Public/SAttributeComponent.h>
+#include <ActionRougeLike/Public/Attributes/SAttributeComponent.h>
 #include "EngineUtils.h"
 #include "SSaveGame.h"
 #include "GameFramework/GameState.h"
 #include "GameFramework/PlayerState.h"
-#include <ActionRougeLike/Public/SCharacter.h>
+#include <ActionRougeLike/Public/Player/SCharacter.h>
 #include <ActionRougeLike/Public/SGameplayInterface.h>
 #include <Serialization/ObjectAndNameAsStringProxyArchive.h>
-#include "SMonsterData.h"
+#include "ScriptableObjects/SMonsterData.h"
 #include <ActionRougeLike/ActionRougeLike.h>
 #include <Runtime/Engine/Classes/Engine/AssetManager.h>
 //dont think the eenvqueryrunmode enum is needed to include header

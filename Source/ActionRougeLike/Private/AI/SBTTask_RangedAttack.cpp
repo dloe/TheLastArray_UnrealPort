@@ -5,7 +5,7 @@
 #include "AIController.h"
 #include "GameFramework/Character.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include <ActionRougeLike/Public/SAttributeComponent.h>
+#include <ActionRougeLike/Public/Attributes/SAttributeComponent.h>
 
 
 
