@@ -3,7 +3,7 @@
 #include "AI/USBTService_CheckHealth.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "AIController.h"
-#include <ActionRougeLike/Public/SAttributeComponent.h>
+#include <ActionRougeLike/Public/Attributes/SAttributeComponent.h>
 
 
 

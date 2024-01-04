@@ -1,0 +1,25 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "Pickup/SPickupBase.h"
+#include "Actions/SActionEffect.h"
+#include "SActionsPickup.generated.h"
+
+/**
+ * 
+ */
+UCLASS()
+class ACTIONROUGELIKE_API ASActionsPickup : public ASPickupBase
+{
+	GENERATED_BODY()
+
+	ASActionsPickup();
+protected:
+
+	UPROPERTY(EditDefaultsOnly, Category = "Action")
+	TSubclassOf<USAction> ActionClass;
+
+	virtual void Interact_Implementation(APawn* InstigatorPawn) override;
+};

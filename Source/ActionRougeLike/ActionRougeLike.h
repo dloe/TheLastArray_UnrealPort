@@ -8,7 +8,7 @@
 DECLARE_STATS_GROUP(TEXT("STANFORD_Game"), STATGROUP_STANFORD, STATCAT_Advanced)
 
 //static function
-//for printing and diferentiating between client and server
+//for printing and differentiating between client and server
 //
 static void LogOnScreen(UObject* WorldContext, FString Msg, FColor Color = FColor::White, float Duration = 5.0f)
 {
