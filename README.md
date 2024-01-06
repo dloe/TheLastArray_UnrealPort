@@ -4,7 +4,7 @@ The Last Array, originally built in unity (2019.4.18f1). Porting to Unreal 5.
 
 
 
-For Original Finished Unity implementation: https://github.com/dloe/TheLastArray
+For original finished Unity implementation: https://github.com/dloe/TheLastArray
 
 For Random Tile Map Genration System proof of Concept: https://github.com/dloe/TheLastArray_Unreal_TileGeneration
 
