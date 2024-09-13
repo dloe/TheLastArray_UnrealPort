@@ -476,9 +476,13 @@ void ASTileManager::CheckTile(ASTile* CurrentTile, TArray<ASTile*> CurrentPath)
 {
 	bool CheckingTileDebug = false;
 
+	
 	// For Debug Check, for now will be off since this check is no longer critical
-	if (CheckingTileDebug && CurrentTile) {
-		UE_LOG(LogTemp, Log, TEXT("Currently on Tile: %d,%d"), CurrentTile->XIndex, CurrentTile->ZIndex);
+	if (CurrentTile) {
+		if (CheckingTileDebug)
+		{
+			UE_LOG(LogTemp, Log, TEXT("Currently on Tile: %d,%d"), CurrentTile->XIndex, CurrentTile->ZIndex);
+		}
 	}
 	else {
 		UE_LOG(LogTemp, Log, TEXT("NULL TILE DETECTED. PLEASE INVESTIGATE"));
@@ -628,9 +632,9 @@ void ASTileManager::AddRandomRooms()
 	//pick a valid neighbor that isn't part of path or outside grid, thats not a boss tile
 	//this tile is now the start of a branch
 
-	//TO DO: how long will branch be?
+	//TODO: how long will branches be?
 	int BranchCount = GameStream.RandRange(1, (LevelWidth - LevelPath.Num() / LevelWidth) + 1);
-	UE_LOG(LogTemp, Log, TEXT("Branch Length: %d"), BranchCount);
+	UE_LOG(LogTemp, Log, TEXT("Total amount of branches to create: %d"), BranchCount);
 
 	for (int Branch = 0; Branch < BranchCount; Branch++)
 	{
@@ -722,7 +726,7 @@ void ASTileManager::AddSingleRooms()
 	//default to half the rooms left over
 	FillerRooms = GameStream.RandRange(1, (LevelWidth - AvailableTiles.Num() - 1) - ((LevelHeight - AvailableTiles.Num() - 1) / 4));
 	if (DebugPrints)
-		UE_LOG(LogTemp, Log, TEXT("Total Random Room: %d"), FillerRooms);
+		UE_LOG(LogTemp, Log, TEXT("Total Random Rooms: %d"), FillerRooms);
 
 	for (int STileCount = 0; STileCount < FillerRooms; STileCount++)
 	{
@@ -854,47 +858,47 @@ void ASTileManager::CreateSecretRoom()
 			//if up neighbor is a null ref
 			if (!currentTile->UpNeighbor)
 			{
-				currentInfo.n.Add(1);
+				currentInfo.neighborArray.Add(1);
 			}
 			else if (currentTile->UpNeighbor && currentTile->UpNeighbor->TileStatus == ETileStatus::ETile_NULLROOM &&
 				currentTile->UpNeighbor->TileStatus != ETileStatus::ETile_BOSSROOM && currentTile->UpNeighbor->TileStatus != ETileStatus::ETile_STARTINGROOM)
 			{
-				currentInfo.n.Add(1);
+				currentInfo.neighborArray.Add(1);
 			}
 
 			//check left neighbor
 			if (!currentTile->LeftNeighbor)
 			{
-				currentInfo.n.Add(3);
+				currentInfo.neighborArray.Add(3);
 			}
 			else if (currentTile->LeftNeighbor && currentTile->LeftNeighbor->TileStatus == ETileStatus::ETile_NULLROOM &&
 				currentTile->LeftNeighbor->TileStatus != ETileStatus::ETile_BOSSROOM && currentTile->LeftNeighbor->TileStatus != ETileStatus::ETile_STARTINGROOM)
 			{
-				currentInfo.n.Add(3);
+				currentInfo.neighborArray.Add(3);
 			}
 
 			if (!currentTile->RightNeighbor)
 			{
-				currentInfo.n.Add(4);
+				currentInfo.neighborArray.Add(4);
 			}
 			else if (currentTile->RightNeighbor && currentTile->RightNeighbor->TileStatus == ETileStatus::ETile_NULLROOM &&
 				currentTile->RightNeighbor->TileStatus != ETileStatus::ETile_BOSSROOM && currentTile->RightNeighbor->TileStatus != ETileStatus::ETile_STARTINGROOM)
 			{
-				currentInfo.n.Add(4);
+				currentInfo.neighborArray.Add(4);
 			}
 
 			if (!currentTile->DownNeighbor)
 			{
-				currentInfo.n.Add(2);
+				currentInfo.neighborArray.Add(2);
 			}
 			else if (currentTile->DownNeighbor && currentTile->DownNeighbor->TileStatus == ETileStatus::ETile_NULLROOM &&
 				currentTile->DownNeighbor->TileStatus != ETileStatus::ETile_BOSSROOM && currentTile->DownNeighbor->TileStatus != ETileStatus::ETile_STARTINGROOM)
 			{
-				currentInfo.n.Add(2);
+				currentInfo.neighborArray.Add(2);
 			}
 
 			//add our info struct to list
-			if (currentInfo.n.Num() != 0 && !outskirtsCheck.Contains(currentInfo.tile)) //OutskirtTiles.Contains(currentInfo))
+			if (currentInfo.neighborArray.Num() != 0 && !outskirtsCheck.Contains(currentInfo.tile)) //OutskirtTiles.Contains(currentInfo))
 			{
 				OutskirtTiles.Add(currentInfo);
 				outskirtsCheck.Add(currentInfo.tile);
@@ -910,20 +914,24 @@ void ASTileManager::CreateSecretRoom()
 	choosen = outskirtsCheck[tileNum];
 
 	//reshuffle our n value
-	selected.n = Reshuffle2(selected.n);
+	selected.neighborArray = Reshuffle2(selected.neighborArray);
 
-	int loc = GameStream.RandRange(0, selected.n.Num() - 1);
+	//int index for selection from available tiles
+	int loc = GameStream.RandRange(0, selected.neighborArray.Num() - 1);
 
 	//we now have our room we selected and the neighbor in which we are using for our secret room
 	FVector SpawnPos;
 	FRotator SpawnRot;
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	//UE_LOG(LogTemp, Log, TEXT("Picked - %d - side of [%d,%d]"), selected.n[loc], selected.tile->XIndex, selected.tile->ZIndex);
-	//UE_LOG(LogTemp, Log, TEXT("Selected:  x= %d, y = %d], z = %d"), test->GetActorLocation().X, test->GetActorLocation().Y, test->GetActorLocation().Z);
+	UE_LOG(LogTemp, Log, TEXT("Picked - %d - side of [%d,%d]"), selected.neighborArray[loc], selected.tile->XIndex, selected.tile->ZIndex);
+	UE_LOG(LogTemp, Log, TEXT("Selected:  x= %d, y = %d], z = %d"), test->GetActorLocation().X, test->GetActorLocation().Y, test->GetActorLocation().Z);
 
-	//TO DO: weird but with center of tile being at the top, causing a 240 offset. Will need to investigate later
-	switch (selected.n[loc])
+	FString name = test->GetActorLabel();
+	UE_LOG(LogTemp, Log, TEXT("Tile: %s"), *name);
+
+	//TODO: weird but with center of tile being at the top, causing a 240 offset. Will need to investigate later
+	switch (selected.neighborArray[loc])
 	{
 	case 1:
 		//up
@@ -964,6 +972,7 @@ void ASTileManager::CreateSecretRoom()
 		break;
 	}
 	// TO DO: this will need to be updated to a specific Secrete Room BP set in LocalLevel
+	
 
 	SecretRoom->SetActorLabel("SecretRoom");
 	//SecretRoom->SetOwner(this);

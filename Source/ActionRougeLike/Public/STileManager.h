@@ -39,7 +39,7 @@ public:
 	UPROPERTY()
 	ASTile* tile;
 	UPROPERTY()
-	TArray<int> n;
+	TArray<int> neighborArray;
 
 
 };
@@ -55,7 +55,7 @@ class ACTIONROUGELIKE_API ASTileManager : public AActor
 	/// - Main Manager for Map creation and Tiles
 	/// - Holds all linked tiles in 2d array
 	/// - Runs the initial random tile generation implementation
-	/// - Receives info for map size and criteria from scriptable objects
+	/// - Receives info for map size and criteria from Scriptable objects
 	/// 
 	/// 
 	/// 2D arrays are difficult but we can try the struct approach
