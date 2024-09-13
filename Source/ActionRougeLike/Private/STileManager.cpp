@@ -88,7 +88,8 @@ void ASTileManager::Create2DTileArray()
 		//const FTransform SpawnTM = FTransform(this->GetActorRotation(), this->GetActorLocation());
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
+		
+		int tileLength = TileBase->GetDefaultObject<ASTile>()->TileLength;
 		//Populate TileColumn array with Tiles for Height size
 		for (int32 ZIndex = 0; ZIndex < LevelHeight; ZIndex++)
 		{
@@ -99,7 +100,7 @@ void ASTileManager::Create2DTileArray()
 				//UE_LOG(LogTemp, Log, TEXT("--Tile: %s"), *TileName);
 			//UE_LOG(LogTemp, Log, TEXT("--Tile: %f, %f"), XIndex, ZIndex);
 			//FVector NewLocal = FVector((this->GetActorLocation().X + (T->TileLength* 100 * XIndex)), (this->GetActorLocation().Z + (T->TileLength * 100 * ZIndex)), this->GetActorLocation().Y);
-			ASTile* T = GetWorld()->SpawnActor<ASTile>(TileBase, FVector((this->GetActorLocation().X + (500 * XIndex)), (this->GetActorLocation().Y + (5 * 100 * ZIndex)), this->GetActorLocation().Z), this->GetActorRotation(), SpawnParams);
+			ASTile* T = GetWorld()->SpawnActor<ASTile>(TileBase, FVector((this->GetActorLocation().X + (tileLength * XIndex)), (this->GetActorLocation().Y + (tileLength * ZIndex)), this->GetActorLocation().Z), this->GetActorRotation(), SpawnParams);
 			T->SetActorLabel(TileName);
 			T->SetOwner(this);
 #if WITH_EDITOR

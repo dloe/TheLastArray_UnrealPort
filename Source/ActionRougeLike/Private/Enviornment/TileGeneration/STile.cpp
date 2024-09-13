@@ -1,6 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "STile.h"
+#include "Enviornment/TileGeneration/STile.h"
 
 // Sets default values
 ASTile::ASTile()
