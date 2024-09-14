@@ -70,6 +70,12 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Tile Stats")
 	ETileStatus TileStatus;
 
+	UFUNCTION(Category = "Tile Stats")
+	bool IsBossTile() const;
+
+	UFUNCTION(Category = "Tile Stats")
+	bool IsStartingTile() const;
+
 #pragma endregion
 
 #pragma region Tile Doors
@@ -168,6 +174,18 @@ public:
 	FTransform LeftDoorSpawnPoint;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Components - Neighbors")
 	FTransform RightDoorSpawnPoint;
+
+	UFUNCTION(Category = "Tile Components - Neighbors")
+	bool HasValidRightNeighbor();
+
+	UFUNCTION(Category = "Tile Components - Neighbors")
+	bool HasValidLeftNeighbor();
+
+	UFUNCTION(Category = "Tile Components - Neighbors")
+	bool HasValidDownNeighbor();
+
+	UFUNCTION(Category = "Tile Components - Neighbors")
+	bool HasValidUpNeighbor();
 
 #pragma endregion
 

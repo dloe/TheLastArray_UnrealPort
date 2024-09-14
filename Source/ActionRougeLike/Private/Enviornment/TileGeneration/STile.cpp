@@ -39,7 +39,20 @@ void ASTile::ActivateWalls()
 
 }
 
+bool ASTile::IsBossTile() const
+{
+	return TileStatus == ETileStatus::ETile_BOSSROOM;
+}
+
+bool ASTile::IsStartingTile() const
+{
+	return TileStatus == ETileStatus::ETile_STARTINGROOM;
+}
+
 #pragma region Door Setup
+
+
+
 void ASTile::ActivateDoorToPath()
 {
 
@@ -111,6 +124,46 @@ void ASTile::ShadeEndRoom()
 {
 	DrawDebugSphere(GetWorld(), this->GetActorLocation(), 200.0f, 20, FColor::Black, false, 100);
 	TileStatus = ETileStatus::ETile_BOSSROOM;
+}
+
+bool ASTile::HasValidRightNeighbor()
+{
+	bool result = false;
+	if (RightNeighbor && RightNeighbor->TileStatus == ETileStatus::ETile_NULLROOM)
+	{
+		result = true;
+	}
+	return result;
+}
+
+bool ASTile::HasValidLeftNeighbor()
+{
+	bool result = false;
+	if (LeftNeighbor && LeftNeighbor->TileStatus == ETileStatus::ETile_NULLROOM)
+	{
+		result = true;
+	}
+	return result;
+}
+
+bool ASTile::HasValidDownNeighbor()
+{
+	bool result = false;
+	if (DownNeighbor && DownNeighbor->TileStatus == ETileStatus::ETile_NULLROOM)
+	{
+		result = true;
+	}
+	return result;
+}
+
+bool ASTile::HasValidUpNeighbor()
+{
+	bool result = false;
+	if (UpNeighbor && UpNeighbor->TileStatus == ETileStatus::ETile_NULLROOM)
+	{
+		result = true;
+	}
+	return result;
 }
 
 #pragma endregion

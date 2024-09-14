@@ -175,6 +175,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	TArray<FTileInfoStruct> OutskirtTiles;
 
+	UPROPERTY(EditAnywhere, Category = "Tile Generation")
+	int FailsafeCount = 0;
+
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
 	void TileGeneration();
 

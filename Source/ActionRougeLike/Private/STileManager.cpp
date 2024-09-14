@@ -34,7 +34,7 @@ void ASTileManager::SeedSetup()
 /// Dylan Loe
 /// 
 /// - on begin play, 2d array is populated and established. For now we will use hard coded sizes. 
-/// TO DO: Switch to scriptable objects to determine difficulty and sizing
+/// TO DO: Switch to Scriptable objects to determine difficulty and sizing
 /// </summary>
 void ASTileManager::BeginPlay()
 {
@@ -85,7 +85,7 @@ void ASTileManager::Create2DTileArray()
 		//const FTransform SpawnTM = FTransform(this->GetActorRotation(), this->GetActorLocation());
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		
+
 		int tileLength = TileBase->GetDefaultObject<ASTile>()->TileLength;
 		//Populate TileColumn array with Tiles for Height size
 		for (int32 ZIndex = 0; ZIndex < LevelHeight; ZIndex++)
@@ -143,8 +143,7 @@ void ASTileManager::ChooseStartEndRooms()
 
 
 
-	switch (StartRoomSide)
-	{
+	switch (StartRoomSide) {
 	case 0:
 		//starting
 		startY = 0;
@@ -152,12 +151,11 @@ void ASTileManager::ChooseStartEndRooms()
 		//UE_LOG(LogTemp, Log, TEXT("num Picked: %d"), startX);
 		//DOWN;
 
-	//ending possible 
-	//opposite of startX (0) would be LevelWidth - 1
-	//for choosing the end tile, we will pick the opposite 2 rows/columns
-	//must be a distance of height/2 and/or column/2 to be added to a list to be randomly picked as end room
-	//cant pick tiles that are on the same row or column (no straight shots)
-
+		//ending possible 
+		//opposite of startX (0) would be LevelWidth - 1
+		//for choosing the end tile, we will pick the opposite 2 rows/columns
+		//must be a distance of height/2 and/or column/2 to be added to a list to be randomly picked as end room
+		//cant pick tiles that are on the same row or column (no straight shots)
 		for (int index2 = 0; index2 < (LevelWidth - 1) / 2; index2++) {
 			//take every tile less than startY
 			for (int index = 0; index < startX; index++)
@@ -462,7 +460,7 @@ bool ASTileManager::AddTileToPath(ASTile* TileToAdd)
 	LevelPath.AddUnique(TileToAdd);
 	TileToAdd->CheckForPath = true;
 	TileToAdd->PathNumber = PathNumber;
-	if (TileToAdd->TileStatus != ETileStatus::ETile_BOSSROOM && TileToAdd->TileStatus != ETileStatus::ETile_STARTINGROOM)
+	if (!TileToAdd->IsBossTile() && !TileToAdd->IsStartingTile())
 		TileToAdd->ShadePath();
 
 	return true;
@@ -472,7 +470,7 @@ void ASTileManager::CheckTile(ASTile* CurrentTile, TArray<ASTile*> CurrentPath)
 {
 	bool CheckingTileDebug = false;
 
-	
+
 	// For Debug Check, for now will be off since this check is no longer critical
 	if (CurrentTile) {
 		if (CheckingTileDebug)
@@ -482,6 +480,14 @@ void ASTileManager::CheckTile(ASTile* CurrentTile, TArray<ASTile*> CurrentPath)
 	}
 	else {
 		UE_LOG(LogTemp, Log, TEXT("NULL TILE DETECTED. PLEASE INVESTIGATE"));
+	}
+
+	if (FailsafeCount == LevelHeight * LevelWidth * 2)
+	{
+		UE_LOG(LogTemp, Log, TEXT("NHitting dead ends. PLEASE INVESTIGATE"));
+	}
+	else {
+		FailsafeCount++;
 	}
 
 	//first check if all neighbors are unavailable
@@ -499,7 +505,7 @@ void ASTileManager::CheckTile(ASTile* CurrentTile, TArray<ASTile*> CurrentPath)
 		CurrentPath.Remove(CurrentTile);
 		CheckTile(CurrentTile->PreviousTile, CurrentPath);
 	} // boss room checks
-	else if ((CurrentTile->UpNeighbor != NULL && CurrentTile->UpNeighbor->TileStatus == ETileStatus::ETile_BOSSROOM))
+	else if ((CurrentTile->UpNeighbor && CurrentTile->UpNeighbor->IsBossTile()))
 	{
 		//UE_LOG(LogTemp, Log, TEXT("Found Boss Room! at %d,%d"), CurrentTile->UpNeighbor->XIndex, CurrentTile->UpNeighbor->ZIndex);
 		CurrentTile->CheckForPath = true;
@@ -507,21 +513,21 @@ void ASTileManager::CheckTile(ASTile* CurrentTile, TArray<ASTile*> CurrentPath)
 		AddTileToPath(CurrentTile->UpNeighbor);
 
 	}
-	else if ((CurrentTile->DownNeighbor != NULL && CurrentTile->DownNeighbor->TileStatus == ETileStatus::ETile_BOSSROOM))
+	else if ((CurrentTile->DownNeighbor && CurrentTile->DownNeighbor->IsBossTile()))
 	{
 		//UE_LOG(LogTemp, Log, TEXT("Found Boss Room! at %d,%d"), CurrentTile->DownNeighbor->XIndex, CurrentTile->DownNeighbor->ZIndex);
 		CurrentTile->CheckForPath = true;
 		AddTileToPath(CurrentTile);
 		AddTileToPath(CurrentTile->DownNeighbor);
 	}
-	else if ((CurrentTile->RightNeighbor != NULL && CurrentTile->RightNeighbor->TileStatus == ETileStatus::ETile_BOSSROOM))
+	else if ((CurrentTile->RightNeighbor && CurrentTile->RightNeighbor->IsBossTile()))
 	{
 		//UE_LOG(LogTemp, Log, TEXT("Found Boss Room! at %d,%d"), CurrentTile->RightNeighbor->XIndex, CurrentTile->RightNeighbor->ZIndex);
 		CurrentTile->CheckForPath = true;
 		AddTileToPath(CurrentTile);
 		AddTileToPath(CurrentTile->RightNeighbor);
 	}
-	else if ((CurrentTile->LeftNeighbor != NULL && CurrentTile->LeftNeighbor->TileStatus == ETileStatus::ETile_BOSSROOM))
+	else if ((CurrentTile->LeftNeighbor && CurrentTile->LeftNeighbor->IsBossTile()))
 	{
 		//UE_LOG(LogTemp, Log, TEXT("Found Boss Room! at %d,%d"), CurrentTile->LeftNeighbor->XIndex, CurrentTile->LeftNeighbor->ZIndex);
 		CurrentTile->CheckForPath = true;
@@ -544,8 +550,7 @@ void ASTileManager::CheckTile(ASTile* CurrentTile, TArray<ASTile*> CurrentPath)
 			{
 			case 1:
 				//UP
-				if (CurrentTile->UpNeighbor && !CurrentTile->UpNeighbor->CheckForPath && CurrentTile->UpNeighbor->TileStatus != ETileStatus::ETile_STARTINGROOM &&
-					CurrentTile->UpNeighbor->TileStatus == ETileStatus::ETile_NULLROOM)
+				if (CurrentTile->HasValidUpNeighbor() && !CurrentTile->UpNeighbor->CheckForPath && !CurrentTile->UpNeighbor->IsStartingTile())
 				{
 					//add this tile to path, go to up neighbor
 					//UE_LOG(LogTemp, Log, TEXT("Up Neighbor Valid: %d,%d - going there"), CurrentTile->UpNeighbor->XIndex, CurrentTile->UpNeighbor->ZIndex);
@@ -558,8 +563,7 @@ void ASTileManager::CheckTile(ASTile* CurrentTile, TArray<ASTile*> CurrentPath)
 				break;
 			case 2:
 				//DOWN
-				if (CurrentTile->DownNeighbor && !CurrentTile->DownNeighbor->CheckForPath && CurrentTile->DownNeighbor->TileStatus != ETileStatus::ETile_STARTINGROOM &&
-					CurrentTile->DownNeighbor->TileStatus == ETileStatus::ETile_NULLROOM)
+				if (CurrentTile->HasValidDownNeighbor() && !CurrentTile->DownNeighbor->CheckForPath && !CurrentTile->DownNeighbor->IsStartingTile())
 				{
 					//UE_LOG(LogTemp, Log, TEXT("Down Neighbor Valid: %d,%d - going there"), CurrentTile->DownNeighbor->XIndex, CurrentTile->DownNeighbor->ZIndex);
 					CurrentTile->DownNeighbor->PreviousTile = CurrentTile;
@@ -570,8 +574,7 @@ void ASTileManager::CheckTile(ASTile* CurrentTile, TArray<ASTile*> CurrentPath)
 				break;
 			case 3:
 				//LEFT
-				if (CurrentTile->LeftNeighbor && !CurrentTile->LeftNeighbor->CheckForPath && CurrentTile->LeftNeighbor->TileStatus != ETileStatus::ETile_STARTINGROOM &&
-					CurrentTile->LeftNeighbor->TileStatus == ETileStatus::ETile_NULLROOM)
+				if (CurrentTile->HasValidLeftNeighbor() && !CurrentTile->LeftNeighbor->CheckForPath && !CurrentTile->LeftNeighbor->IsStartingTile())
 				{
 					//UE_LOG(LogTemp, Log, TEXT("Left Neighbor Valid: %d,%d - going there"), CurrentTile->LeftNeighbor->XIndex, CurrentTile->LeftNeighbor->ZIndex);
 					CurrentTile->LeftNeighbor->PreviousTile = CurrentTile;
@@ -582,8 +585,7 @@ void ASTileManager::CheckTile(ASTile* CurrentTile, TArray<ASTile*> CurrentPath)
 				break;
 			case 4:
 				//RIGHT
-				if (CurrentTile->RightNeighbor && !CurrentTile->RightNeighbor->CheckForPath && CurrentTile->RightNeighbor->TileStatus != ETileStatus::ETile_STARTINGROOM &&
-					CurrentTile->RightNeighbor->TileStatus == ETileStatus::ETile_NULLROOM)
+				if (CurrentTile->HasValidRightNeighbor() && !CurrentTile->RightNeighbor->CheckForPath && !CurrentTile->RightNeighbor->IsStartingTile())
 				{
 					//UE_LOG(LogTemp, Log, TEXT("Right Neighbor Valid: %d,%d - going there"), CurrentTile->RightNeighbor->XIndex, CurrentTile->RightNeighbor->ZIndex);
 					CurrentTile->RightNeighbor->PreviousTile = CurrentTile;
@@ -850,15 +852,15 @@ void ASTileManager::CreateSecretRoom()
 		FTileInfoStruct currentInfo;
 		currentInfo.tile = currentTile;
 
-		if (currentTile->TileStatus != ETileStatus::ETile_BOSSROOM && currentTile->TileStatus != ETileStatus::ETile_STARTINGROOM)
+		if (!currentTile->IsBossTile() && !currentTile->IsStartingTile())
 		{
 			//if up neighbor is a null ref
 			if (!currentTile->UpNeighbor)
 			{
 				currentInfo.neighborArray.Add(1);
 			}
-			else if (currentTile->UpNeighbor && currentTile->UpNeighbor->TileStatus == ETileStatus::ETile_NULLROOM &&
-				currentTile->UpNeighbor->TileStatus != ETileStatus::ETile_BOSSROOM && currentTile->UpNeighbor->TileStatus != ETileStatus::ETile_STARTINGROOM)
+			else if (currentTile->HasValidUpNeighbor() &&
+				!currentTile->UpNeighbor->IsBossTile() && !currentTile->UpNeighbor->IsStartingTile())
 			{
 				currentInfo.neighborArray.Add(1);
 			}
@@ -868,8 +870,8 @@ void ASTileManager::CreateSecretRoom()
 			{
 				currentInfo.neighborArray.Add(3);
 			}
-			else if (currentTile->LeftNeighbor && currentTile->LeftNeighbor->TileStatus == ETileStatus::ETile_NULLROOM &&
-				currentTile->LeftNeighbor->TileStatus != ETileStatus::ETile_BOSSROOM && currentTile->LeftNeighbor->TileStatus != ETileStatus::ETile_STARTINGROOM)
+			else if (currentTile->HasValidLeftNeighbor() &&
+				!currentTile->LeftNeighbor->IsBossTile() && !currentTile->LeftNeighbor->IsStartingTile())
 			{
 				currentInfo.neighborArray.Add(3);
 			}
@@ -878,8 +880,8 @@ void ASTileManager::CreateSecretRoom()
 			{
 				currentInfo.neighborArray.Add(4);
 			}
-			else if (currentTile->RightNeighbor && currentTile->RightNeighbor->TileStatus == ETileStatus::ETile_NULLROOM &&
-				currentTile->RightNeighbor->TileStatus != ETileStatus::ETile_BOSSROOM && currentTile->RightNeighbor->TileStatus != ETileStatus::ETile_STARTINGROOM)
+			else if (currentTile->HasValidRightNeighbor() &&
+				!currentTile->RightNeighbor->IsBossTile() && !currentTile->RightNeighbor->IsStartingTile())
 			{
 				currentInfo.neighborArray.Add(4);
 			}
@@ -888,8 +890,8 @@ void ASTileManager::CreateSecretRoom()
 			{
 				currentInfo.neighborArray.Add(2);
 			}
-			else if (currentTile->DownNeighbor && currentTile->DownNeighbor->TileStatus == ETileStatus::ETile_NULLROOM &&
-				currentTile->DownNeighbor->TileStatus != ETileStatus::ETile_BOSSROOM && currentTile->DownNeighbor->TileStatus != ETileStatus::ETile_STARTINGROOM)
+			else if (currentTile->HasValidDownNeighbor() &&
+				!currentTile->DownNeighbor->IsBossTile() && !currentTile->DownNeighbor->IsStartingTile())
 			{
 				currentInfo.neighborArray.Add(2);
 			}
@@ -1006,8 +1008,8 @@ void ASTileManager::CheckBranchTile(ASTile* TileToAdd, TArray<ASTile*>& CurrentP
 		TileToAdd->ShadeActiveRoom();
 		TileToAdd->TileDescription = "";
 
-		if ((!TileToAdd->RightNeighbor || TileToAdd->RightNeighbor->TileStatus != ETileStatus::ETile_NULLROOM) && (!TileToAdd->LeftNeighbor || TileToAdd->LeftNeighbor->TileStatus != ETileStatus::ETile_NULLROOM)
-			&& (!TileToAdd->UpNeighbor || TileToAdd->UpNeighbor->TileStatus != ETileStatus::ETile_NULLROOM) && (!TileToAdd->DownNeighbor || TileToAdd->DownNeighbor->TileStatus != ETileStatus::ETile_NULLROOM))
+		if ((!TileToAdd->HasValidRightNeighbor()) && (!TileToAdd->HasValidLeftNeighbor())
+			&& (!TileToAdd->HasValidUpNeighbor()) && (!TileToAdd->HasValidDownNeighbor()))
 		{
 			//theres no where to go, lets just end the branch here to save time
 			Length = 0;
@@ -1020,15 +1022,11 @@ void ASTileManager::CheckBranchTile(ASTile* TileToAdd, TArray<ASTile*>& CurrentP
 		DirectionsToCheck = Reshuffle2(DirectionsToCheck);
 
 		//pick direction and begin CheckTile
-		for (int DirectionCount = 0; DirectionCount < DirectionsToCheck.Num(); DirectionCount++)
-		{
-			switch (DirectionsToCheck[DirectionCount])
-			{
+		for (int DirectionCount = 0; DirectionCount < DirectionsToCheck.Num(); DirectionCount++) {
+			switch (DirectionsToCheck[DirectionCount]) {
 			case 1:
 				//UP
-				if (TileToAdd->UpNeighbor && !TileToAdd->UpNeighbor->CheckForPath && TileToAdd->UpNeighbor->TileStatus != ETileStatus::ETile_STARTINGROOM &&
-					TileToAdd->UpNeighbor->TileStatus == ETileStatus::ETile_NULLROOM) {
-
+				if (TileToAdd->HasValidUpNeighbor() && !TileToAdd->UpNeighbor->CheckForPath && !TileToAdd->UpNeighbor->IsStartingTile()) {
 					TileToAdd->UpNeighbor->PreviousTile = TileToAdd;
 					Length--;
 					CheckBranchTile(TileToAdd->UpNeighbor, CurrentPath, Length);
@@ -1037,8 +1035,7 @@ void ASTileManager::CheckBranchTile(ASTile* TileToAdd, TArray<ASTile*>& CurrentP
 				break;
 			case 2:
 				//DOWN
-				if (TileToAdd->DownNeighbor && !TileToAdd->DownNeighbor->CheckForPath && TileToAdd->DownNeighbor->TileStatus != ETileStatus::ETile_STARTINGROOM &&
-					TileToAdd->DownNeighbor->TileStatus == ETileStatus::ETile_NULLROOM) {
+				if (TileToAdd->HasValidDownNeighbor() && !TileToAdd->DownNeighbor->CheckForPath && !TileToAdd->DownNeighbor->IsStartingTile()) {
 
 					TileToAdd->DownNeighbor->PreviousTile = TileToAdd;
 					Length--;
@@ -1048,8 +1045,7 @@ void ASTileManager::CheckBranchTile(ASTile* TileToAdd, TArray<ASTile*>& CurrentP
 				break;
 			case 3:
 				//LEFT
-				if (TileToAdd->LeftNeighbor && !TileToAdd->LeftNeighbor->CheckForPath && TileToAdd->LeftNeighbor->TileStatus != ETileStatus::ETile_STARTINGROOM &&
-					TileToAdd->LeftNeighbor->TileStatus == ETileStatus::ETile_NULLROOM) {
+				if (TileToAdd->HasValidLeftNeighbor() && !TileToAdd->LeftNeighbor->CheckForPath && !TileToAdd->LeftNeighbor->IsStartingTile()) {
 
 					TileToAdd->LeftNeighbor->PreviousTile = TileToAdd;
 					Length--;
@@ -1059,8 +1055,7 @@ void ASTileManager::CheckBranchTile(ASTile* TileToAdd, TArray<ASTile*>& CurrentP
 				break;
 			case 4:
 				//RIGHT
-				if (TileToAdd->RightNeighbor && !TileToAdd->RightNeighbor->CheckForPath && TileToAdd->RightNeighbor->TileStatus != ETileStatus::ETile_STARTINGROOM &&
-					TileToAdd->RightNeighbor->TileStatus == ETileStatus::ETile_NULLROOM) {
+				if (TileToAdd->HasValidRightNeighbor() && !TileToAdd->RightNeighbor->CheckForPath && !TileToAdd->RightNeighbor->IsStartingTile()) {
 
 					TileToAdd->RightNeighbor->PreviousTile = TileToAdd;
 					Length--;
@@ -1086,21 +1081,21 @@ void ASTileManager::MakeAvailableTiles()
 		ASTile* CurrentTile = AllActiveTiles[TileC];
 
 		//check each neighbor
-		if (CurrentTile->TileStatus != ETileStatus::ETile_BOSSROOM)
+		if (!CurrentTile->IsBossTile())
 		{
-			if (CurrentTile->UpNeighbor && CurrentTile->UpNeighbor->TileStatus == ETileStatus::ETile_NULLROOM && !AvailableTiles.Contains(CurrentTile->UpNeighbor))
+			if (CurrentTile->HasValidUpNeighbor() && !AvailableTiles.Contains(CurrentTile->UpNeighbor))
 			{
 				AvailableTiles.Add(CurrentTile->UpNeighbor);
 			}
-			if (CurrentTile->DownNeighbor && CurrentTile->DownNeighbor->TileStatus == ETileStatus::ETile_NULLROOM && !AvailableTiles.Contains(CurrentTile->DownNeighbor))
+			if (CurrentTile->HasValidDownNeighbor() && !AvailableTiles.Contains(CurrentTile->DownNeighbor))
 			{
 				AvailableTiles.Add(CurrentTile->DownNeighbor);
 			}
-			if (CurrentTile->RightNeighbor && CurrentTile->RightNeighbor->TileStatus == ETileStatus::ETile_NULLROOM && !AvailableTiles.Contains(CurrentTile->RightNeighbor))
+			if (CurrentTile->HasValidRightNeighbor() && !AvailableTiles.Contains(CurrentTile->RightNeighbor))
 			{
 				AvailableTiles.Add(CurrentTile->RightNeighbor);
 			}
-			if (CurrentTile->LeftNeighbor && CurrentTile->LeftNeighbor->TileStatus == ETileStatus::ETile_NULLROOM && !AvailableTiles.Contains(CurrentTile->LeftNeighbor))
+			if (CurrentTile->HasValidLeftNeighbor() && !AvailableTiles.Contains(CurrentTile->LeftNeighbor))
 			{
 				AvailableTiles.Add(CurrentTile->LeftNeighbor);
 			}
@@ -1178,13 +1173,11 @@ void ASTileManager::LinkTile(ASTile* ThisTile, FMultiTileStruct Col)
 		ThisTile->UpNeighbor = Col.TileColumn[ThisTile->ZIndex - 1];
 		ASTile* UpNeighbor = ThisTile->UpNeighbor;
 		Col.TileColumn[ThisTile->ZIndex - 1]->DownNeighbor = ThisTile;
-		//UE_LOG(LogTemp, Log, TEXT("Down neighbor: %f : %f"), DownNeighbor->XIndex, DownNeighbor->ZIndex);
 
 		//if doors are active, spawn a door at the tile placeholder
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 		//if our lower neighbor doesn't already have a door connecting up
-		//UE_LOG(LogTemp, Log, TEXT("In script spawning doors"));
 		//TODO: may need work here
 		if (!UpNeighbor->UpDoor)
 		{
@@ -1204,7 +1197,6 @@ void ASTileManager::LinkTile(ASTile* ThisTile, FMultiTileStruct Col)
 	{
 		ASTile* LeftNeighbor = ThisTile->LeftNeighbor = Grid2DArray[ThisTile->XIndex - 1]->TileColumn[ThisTile->ZIndex];
 		Grid2DArray[ThisTile->XIndex - 1]->TileColumn[ThisTile->ZIndex]->RightNeighbor = ThisTile;
-		//UE_LOG(LogTemp, Log, TEXT("Left neighbor: %f : %f"), LeftNeighbor->XIndex, LeftNeighbor->ZIndex);
 
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
@@ -1215,7 +1207,6 @@ void ASTileManager::LinkTile(ASTile* ThisTile, FMultiTileStruct Col)
 
 			//add LeftDoorSpawnPoint location to ThisTiles location to give world location
 			FVector LeftDoorSpawnLocation = ThisTile->LeftDoorSpawnPoint.GetLocation() + ThisTile->GetActorLocation();
-			//FRotator LeftDoorSpawnRotation = ThisTile->LeftDoorSpawnPoint.GetRotation() + ThisTile->GetActorRotation();
 			const FTransform Spawm = FTransform(ThisTile->LeftDoorSpawnPoint.GetRotation(), LeftDoorSpawnLocation);
 			ThisTile->RightDoor = GetWorld()->SpawnActor<ASTileDoor>(TileDoor, Spawm, SpawnParams);
 			ThisTile->RightDoor->SetActorLabel(TileRightDoorName);
