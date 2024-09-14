@@ -934,10 +934,11 @@ void ASTileManager::CreateSecretRoom()
 	switch (selected.neighborArray[loc])
 	{
 	case 1:
-		//up
-		//UE_LOG(LogTemp, Log, TEXT("up neighbor"));
+		//down
+		UE_LOG(LogTemp, Log, TEXT("up neighbor"));
+		//TODO: may need to fix rotation?
 		//FVector(StartingTile->GetActorLocation().X, StartingTile->GetActorLocation().Y + (StartingTile->TileLength), StartingTile->GetActorLocation().Z);
-		SpawnPos = FVector(selected.tile->GetActorLocation().X, selected.tile->GetActorLocation().Y + (StartingTile->TileLength), selected.tile->GetActorLocation().Z + 240);
+		SpawnPos = FVector(selected.tile->GetActorLocation().X, selected.tile->GetActorLocation().Y - (StartingTile->TileLength), selected.tile->GetActorLocation().Z + 240);
 		//SpawnRot = FRotator(PlayerSpawnPresentTile->GetActorRotation().Euler().X, -90.0f, PlayerSpawnPresentTile->GetActorRotation().Euler().Z);
 		SecretRoom = PlayerSpawnPresentTile = GetWorld()->SpawnActor<ASTile>(MyLocalLevel->PresetSecretRoomTile, SpawnPos, SpawnRot, SpawnParams);
 		SecretRoom->DownNeighbor = selected.tile;
@@ -945,16 +946,18 @@ void ASTileManager::CreateSecretRoom()
 		break;
 	case 2:
 		//down
-		//UE_LOG(LogTemp, Log, TEXT("down neighbor"));
-		SpawnPos = FVector(selected.tile->GetActorLocation().X, selected.tile->GetActorLocation().Y - (StartingTile->TileLength), selected.tile->GetActorLocation().Z + 240);
+		UE_LOG(LogTemp, Log, TEXT("down neighbor"));
+		//TODO: may need to fix rotation?
+		SpawnPos = FVector(selected.tile->GetActorLocation().X, selected.tile->GetActorLocation().Y + (StartingTile->TileLength), selected.tile->GetActorLocation().Z + 240);
 		SpawnRot = FRotator(PlayerSpawnPresentTile->GetActorRotation().Euler().X, 180.0f, PlayerSpawnPresentTile->GetActorRotation().Euler().Z);
 		SecretRoom = PlayerSpawnPresentTile = GetWorld()->SpawnActor<ASTile>(MyLocalLevel->PresetSecretRoomTile, SpawnPos, SpawnRot, SpawnParams);
 		SecretRoom->UpNeighbor = selected.tile;
 		selected.tile->DownNeighbor = SecretRoom;
 		break;
 	case 3:
-		//left
-		//UE_LOG(LogTemp, Log, TEXT("left neighbor"));
+		//right
+		UE_LOG(LogTemp, Log, TEXT("left neighbor"));
+		//TODO: may need to fix rotation?
 		SpawnPos = FVector(selected.tile->GetActorLocation().X - (selected.tile->TileLength), selected.tile->GetActorLocation().Y, selected.tile->GetActorLocation().Z + 240);
 		SpawnRot = FRotator(PlayerSpawnPresentTile->GetActorRotation().Euler().X, 90.0f, PlayerSpawnPresentTile->GetActorRotation().Euler().Z);
 		SecretRoom = PlayerSpawnPresentTile = GetWorld()->SpawnActor<ASTile>(MyLocalLevel->PresetSecretRoomTile, SpawnPos, SpawnRot, SpawnParams);
@@ -962,13 +965,14 @@ void ASTileManager::CreateSecretRoom()
 		selected.tile->LeftNeighbor = SecretRoom;
 		break;
 	case 4:
-		//right
-		//UE_LOG(LogTemp, Log, TEXT("right neighbor"));
+		//left
+		UE_LOG(LogTemp, Log, TEXT("right neighbor"));
+		//TODO: may need to fix rotation?
 		SpawnPos = FVector(selected.tile->GetActorLocation().X + (selected.tile->TileLength), selected.tile->GetActorLocation().Y, selected.tile->GetActorLocation().Z + 240);
 		SpawnRot = FRotator(PlayerSpawnPresentTile->GetActorRotation().Euler().X, -90.0f, PlayerSpawnPresentTile->GetActorRotation().Euler().Z);
 		SecretRoom = PlayerSpawnPresentTile = GetWorld()->SpawnActor<ASTile>(MyLocalLevel->PresetSecretRoomTile, SpawnPos, SpawnRot, SpawnParams);
-		SecretRoom->RightNeighbor = selected.tile;
-		selected.tile->LeftNeighbor = SecretRoom;
+		SecretRoom->LeftNeighbor = selected.tile;
+		selected.tile->RightNeighbor = SecretRoom;
 		break;
 	}
 	// TO DO: this will need to be updated to a specific Secrete Room BP set in LocalLevel
@@ -1171,9 +1175,9 @@ void ASTileManager::LinkTile(ASTile* ThisTile, FMultiTileStruct Col)
 
 	if (ThisTile->ZIndex > 0)
 	{
-		ThisTile->DownNeighbor = Col.TileColumn[ThisTile->ZIndex - 1];
-		ASTile* DownNeighbor = ThisTile->DownNeighbor;
-		Col.TileColumn[ThisTile->ZIndex - 1]->UpNeighbor = ThisTile;
+		ThisTile->UpNeighbor = Col.TileColumn[ThisTile->ZIndex - 1];
+		ASTile* UpNeighbor = ThisTile->UpNeighbor;
+		Col.TileColumn[ThisTile->ZIndex - 1]->DownNeighbor = ThisTile;
 		//UE_LOG(LogTemp, Log, TEXT("Down neighbor: %f : %f"), DownNeighbor->XIndex, DownNeighbor->ZIndex);
 
 		//if doors are active, spawn a door at the tile placeholder
@@ -1181,9 +1185,10 @@ void ASTileManager::LinkTile(ASTile* ThisTile, FMultiTileStruct Col)
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 		//if our lower neighbor doesn't already have a door connecting up
 		//UE_LOG(LogTemp, Log, TEXT("In script spawning doors"));
-		if (!DownNeighbor->UpDoor)
+		//TODO: may need work here
+		if (!UpNeighbor->UpDoor)
 		{
-			const FString TileDownDoorName = "TileDoorConnecting_" + FString::FromInt(ThisTile->XIndex) + "_" + FString::FromInt(ThisTile->ZIndex) + "_to_" + FString::FromInt(DownNeighbor->XIndex) + "_" + FString::FromInt(DownNeighbor->ZIndex);
+			const FString TileDownDoorName = "TileDoorConnecting_" + FString::FromInt(ThisTile->XIndex) + "_" + FString::FromInt(ThisTile->ZIndex) + "_to_" + FString::FromInt(UpNeighbor->XIndex) + "_" + FString::FromInt(UpNeighbor->ZIndex);
 			const FVector DownDoorSpawnLocation = ThisTile->DownDoorSpawnPoint.GetLocation() + ThisTile->GetActorLocation();
 			const FTransform Spawm = FTransform(ThisTile->DownDoorSpawnPoint.GetRotation(), DownDoorSpawnLocation);
 			ThisTile->DownDoor = GetWorld()->SpawnActor<ASTileDoor>(TileDoor, Spawm, SpawnParams);
@@ -1192,7 +1197,7 @@ void ASTileManager::LinkTile(ASTile* ThisTile, FMultiTileStruct Col)
 #if WITH_EDITOR
 			ThisTile->DownDoor->SetFolderPath(DoorSubFolderName);
 #endif
-			DownNeighbor->UpDoor = ThisTile->DownDoor;
+			UpNeighbor->UpDoor = ThisTile->DownDoor;
 		}
 	}
 	if (ThisTile->XIndex > 0)
