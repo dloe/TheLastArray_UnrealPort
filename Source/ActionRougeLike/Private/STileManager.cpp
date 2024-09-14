@@ -77,7 +77,7 @@ void ASTileManager::Create2DTileArray()
 {
 
 	if (DebugPrints)
-		UE_LOG(LogTemp, Log, TEXT("===================Creating 2D array!=============================="));
+		UE_LOG(LogTemp, Log, TEXT("=================== Creating 2D array! =============================="));
 
 	for (int32 XIndex = 0; XIndex < LevelWidth; XIndex++)
 	{
@@ -121,7 +121,7 @@ void ASTileManager::Create2DTileArray()
 		Grid2DArray.Add(Col);
 	}
 	if (DebugPrints)
-		UE_LOG(LogTemp, Log, TEXT("===================2D array CREATED!=============================="));
+		UE_LOG(LogTemp, Log, TEXT("=================== 2D array CREATED! =============================="));
 }
 
 /// <summary>
@@ -427,8 +427,7 @@ void ASTileManager::GeneratePath()
 	if (DebugPrints)
 		UE_LOG(LogTemp, Log, TEXT("=================== Finished Path - Adding Random Rooms =============================="));
 
-	AddRandomRooms();
-
+	RandomRoomsAndBranchesAdditions();
 
 	if (DebugPrints)
 		UE_LOG(LogTemp, Log, TEXT("=================== Finished Random Rooms - Adding Spawn Room =============================="));
@@ -619,7 +618,7 @@ void ASTileManager::ClearHistory()
 /// 
 /// - Adding Single random and branches to grid
 /// </summary>
-void ASTileManager::AddRandomRooms()
+void ASTileManager::RandomRoomsAndBranchesAdditions()
 {
 	if (DebugPrints)
 		UE_LOG(LogTemp, Log, TEXT("Adding Branches"));
@@ -636,7 +635,7 @@ void ASTileManager::AddRandomRooms()
 	int BranchCount = GameStream.RandRange(1, (LevelWidth - LevelPath.Num() / LevelWidth) + 1);
 	UE_LOG(LogTemp, Log, TEXT("Total amount of branches to create: %d"), BranchCount);
 
-	for (int Branch = 0; Branch < BranchCount; Branch++)
+	for (int Branch = 0; Branch < BranchCount && AvailableTiles.Num() > 1; Branch++)
 	{
 		//UE_LOG(LogTemp, Log, TEXT("Making Branch: %d"), Branch);
 
@@ -699,6 +698,7 @@ void ASTileManager::AddRandomRooms()
 		//once we make branch, we go back through and remake the available tile spots
 		MakeAvailableTiles();
 
+
 		//Debug draw branch
 		if (DebugPrints) {
 			//draw lines through path
@@ -726,7 +726,7 @@ void ASTileManager::AddSingleRooms()
 	//default to half the rooms left over
 	FillerRooms = GameStream.RandRange(1, (LevelWidth - AvailableTiles.Num() - 1) - ((LevelHeight - AvailableTiles.Num() - 1) / 4));
 	if (DebugPrints)
-		UE_LOG(LogTemp, Log, TEXT("Total Random Rooms: %d"), FillerRooms);
+		UE_LOG(LogTemp, Log, TEXT("Total Random Single Rooms: %d"), FillerRooms);
 
 	for (int STileCount = 0; STileCount < FillerRooms; STileCount++)
 	{
@@ -938,7 +938,7 @@ void ASTileManager::CreateSecretRoom()
 		UE_LOG(LogTemp, Log, TEXT("up neighbor"));
 		//TODO: may need to fix rotation?
 		//FVector(StartingTile->GetActorLocation().X, StartingTile->GetActorLocation().Y + (StartingTile->TileLength), StartingTile->GetActorLocation().Z);
-		SpawnPos = FVector(selected.tile->GetActorLocation().X, selected.tile->GetActorLocation().Y - (StartingTile->TileLength), selected.tile->GetActorLocation().Z + 240);
+		SpawnPos = FVector(selected.tile->GetActorLocation().X, selected.tile->GetActorLocation().Y - (StartingTile->TileLength), selected.tile->GetActorLocation().Z); //+ 240
 		//SpawnRot = FRotator(PlayerSpawnPresentTile->GetActorRotation().Euler().X, -90.0f, PlayerSpawnPresentTile->GetActorRotation().Euler().Z);
 		SecretRoom = PlayerSpawnPresentTile = GetWorld()->SpawnActor<ASTile>(MyLocalLevel->PresetSecretRoomTile, SpawnPos, SpawnRot, SpawnParams);
 		SecretRoom->DownNeighbor = selected.tile;
@@ -948,7 +948,7 @@ void ASTileManager::CreateSecretRoom()
 		//down
 		UE_LOG(LogTemp, Log, TEXT("down neighbor"));
 		//TODO: may need to fix rotation?
-		SpawnPos = FVector(selected.tile->GetActorLocation().X, selected.tile->GetActorLocation().Y + (StartingTile->TileLength), selected.tile->GetActorLocation().Z + 240);
+		SpawnPos = FVector(selected.tile->GetActorLocation().X, selected.tile->GetActorLocation().Y + (StartingTile->TileLength), selected.tile->GetActorLocation().Z);
 		SpawnRot = FRotator(PlayerSpawnPresentTile->GetActorRotation().Euler().X, 180.0f, PlayerSpawnPresentTile->GetActorRotation().Euler().Z);
 		SecretRoom = PlayerSpawnPresentTile = GetWorld()->SpawnActor<ASTile>(MyLocalLevel->PresetSecretRoomTile, SpawnPos, SpawnRot, SpawnParams);
 		SecretRoom->UpNeighbor = selected.tile;
@@ -958,7 +958,7 @@ void ASTileManager::CreateSecretRoom()
 		//right
 		UE_LOG(LogTemp, Log, TEXT("left neighbor"));
 		//TODO: may need to fix rotation?
-		SpawnPos = FVector(selected.tile->GetActorLocation().X - (selected.tile->TileLength), selected.tile->GetActorLocation().Y, selected.tile->GetActorLocation().Z + 240);
+		SpawnPos = FVector(selected.tile->GetActorLocation().X - (selected.tile->TileLength), selected.tile->GetActorLocation().Y, selected.tile->GetActorLocation().Z);
 		SpawnRot = FRotator(PlayerSpawnPresentTile->GetActorRotation().Euler().X, 90.0f, PlayerSpawnPresentTile->GetActorRotation().Euler().Z);
 		SecretRoom = PlayerSpawnPresentTile = GetWorld()->SpawnActor<ASTile>(MyLocalLevel->PresetSecretRoomTile, SpawnPos, SpawnRot, SpawnParams);
 		SecretRoom->RightNeighbor = selected.tile;
@@ -968,7 +968,7 @@ void ASTileManager::CreateSecretRoom()
 		//left
 		UE_LOG(LogTemp, Log, TEXT("right neighbor"));
 		//TODO: may need to fix rotation?
-		SpawnPos = FVector(selected.tile->GetActorLocation().X + (selected.tile->TileLength), selected.tile->GetActorLocation().Y, selected.tile->GetActorLocation().Z + 240);
+		SpawnPos = FVector(selected.tile->GetActorLocation().X + (selected.tile->TileLength), selected.tile->GetActorLocation().Y, selected.tile->GetActorLocation().Z);
 		SpawnRot = FRotator(PlayerSpawnPresentTile->GetActorRotation().Euler().X, -90.0f, PlayerSpawnPresentTile->GetActorRotation().Euler().Z);
 		SecretRoom = PlayerSpawnPresentTile = GetWorld()->SpawnActor<ASTile>(MyLocalLevel->PresetSecretRoomTile, SpawnPos, SpawnRot, SpawnParams);
 		SecretRoom->LeftNeighbor = selected.tile;
@@ -998,7 +998,7 @@ void ASTileManager::CreateSecretRoom()
 /// <param name="TileToAdd"> Current Tile being analyzed </param>
 /// <param name="CurrentPath"> Current branch path we are building </param>
 /// <param name="Length"> given size of path we are aiming for </param>
-void ASTileManager::CheckBranchTile(ASTile* TileToAdd, TArray<ASTile*> CurrentPath, int Length)
+void ASTileManager::CheckBranchTile(ASTile* TileToAdd, TArray<ASTile*>& CurrentPath, int Length)
 {
 	if (Length > 0)
 	{

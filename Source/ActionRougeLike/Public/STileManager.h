@@ -203,7 +203,7 @@ protected:
 	void ClearHistory();
 
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
-	void AddRandomRooms();
+	void RandomRoomsAndBranchesAdditions();
 
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
 	void AddSingleRooms();
@@ -215,7 +215,7 @@ protected:
 	void CreateSecretRoom();
 
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
-	void CheckBranchTile(ASTile* TileToAdd, TArray<ASTile*> CurrentPath, int Length);
+	void CheckBranchTile(ASTile* TileToAdd, TArray<ASTile*>& CurrentPath, int Length);
 
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
 	void MakeAvailableTiles();
