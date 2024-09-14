@@ -1,9 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "STileManager.h"
 #include "SLocalLevel.h"
 #include <Engine/World.h>
@@ -934,11 +931,12 @@ void ASTileManager::CreateSecretRoom()
 	switch (selected.neighborArray[loc])
 	{
 	case 1:
-		//down
+		//up
 		UE_LOG(LogTemp, Log, TEXT("up neighbor"));
 		//TODO: may need to fix rotation?
 		//FVector(StartingTile->GetActorLocation().X, StartingTile->GetActorLocation().Y + (StartingTile->TileLength), StartingTile->GetActorLocation().Z);
 		SpawnPos = FVector(selected.tile->GetActorLocation().X, selected.tile->GetActorLocation().Y - (StartingTile->TileLength), selected.tile->GetActorLocation().Z); //+ 240
+		UE_LOG(LogTemp, Log, TEXT("SpawnPas: %s"), *SpawnPos.ToString());
 		//SpawnRot = FRotator(PlayerSpawnPresentTile->GetActorRotation().Euler().X, -90.0f, PlayerSpawnPresentTile->GetActorRotation().Euler().Z);
 		SecretRoom = PlayerSpawnPresentTile = GetWorld()->SpawnActor<ASTile>(MyLocalLevel->PresetSecretRoomTile, SpawnPos, SpawnRot, SpawnParams);
 		SecretRoom->DownNeighbor = selected.tile;
@@ -948,7 +946,8 @@ void ASTileManager::CreateSecretRoom()
 		//down
 		UE_LOG(LogTemp, Log, TEXT("down neighbor"));
 		//TODO: may need to fix rotation?
-		SpawnPos = FVector(selected.tile->GetActorLocation().X, selected.tile->GetActorLocation().Y + (StartingTile->TileLength), selected.tile->GetActorLocation().Z);
+		SpawnPos = FVector(selected.tile->GetActorLocation().X, selected.tile->GetActorLocation().Y + (StartingTile->TileLength), selected.tile->GetActorLocation().Z + 240);
+		UE_LOG(LogTemp, Log, TEXT("SpawnPas: %s"), *SpawnPos.ToString());
 		SpawnRot = FRotator(PlayerSpawnPresentTile->GetActorRotation().Euler().X, 180.0f, PlayerSpawnPresentTile->GetActorRotation().Euler().Z);
 		SecretRoom = PlayerSpawnPresentTile = GetWorld()->SpawnActor<ASTile>(MyLocalLevel->PresetSecretRoomTile, SpawnPos, SpawnRot, SpawnParams);
 		SecretRoom->UpNeighbor = selected.tile;
@@ -958,7 +957,8 @@ void ASTileManager::CreateSecretRoom()
 		//right
 		UE_LOG(LogTemp, Log, TEXT("left neighbor"));
 		//TODO: may need to fix rotation?
-		SpawnPos = FVector(selected.tile->GetActorLocation().X - (selected.tile->TileLength), selected.tile->GetActorLocation().Y, selected.tile->GetActorLocation().Z);
+		SpawnPos = FVector(selected.tile->GetActorLocation().X - (selected.tile->TileLength), selected.tile->GetActorLocation().Y, selected.tile->GetActorLocation().Z + 240);
+		UE_LOG(LogTemp, Log, TEXT("SpawnPas: %s"), *SpawnPos.ToString());
 		SpawnRot = FRotator(PlayerSpawnPresentTile->GetActorRotation().Euler().X, 90.0f, PlayerSpawnPresentTile->GetActorRotation().Euler().Z);
 		SecretRoom = PlayerSpawnPresentTile = GetWorld()->SpawnActor<ASTile>(MyLocalLevel->PresetSecretRoomTile, SpawnPos, SpawnRot, SpawnParams);
 		SecretRoom->RightNeighbor = selected.tile;
@@ -968,7 +968,8 @@ void ASTileManager::CreateSecretRoom()
 		//left
 		UE_LOG(LogTemp, Log, TEXT("right neighbor"));
 		//TODO: may need to fix rotation?
-		SpawnPos = FVector(selected.tile->GetActorLocation().X + (selected.tile->TileLength), selected.tile->GetActorLocation().Y, selected.tile->GetActorLocation().Z);
+		SpawnPos = FVector(selected.tile->GetActorLocation().X + (selected.tile->TileLength), selected.tile->GetActorLocation().Y, selected.tile->GetActorLocation().Z + 240);
+		UE_LOG(LogTemp, Log, TEXT("SpawnPas: %s"), *SpawnPos.ToString());
 		SpawnRot = FRotator(PlayerSpawnPresentTile->GetActorRotation().Euler().X, -90.0f, PlayerSpawnPresentTile->GetActorRotation().Euler().Z);
 		SecretRoom = PlayerSpawnPresentTile = GetWorld()->SpawnActor<ASTile>(MyLocalLevel->PresetSecretRoomTile, SpawnPos, SpawnRot, SpawnParams);
 		SecretRoom->LeftNeighbor = selected.tile;
@@ -976,12 +977,11 @@ void ASTileManager::CreateSecretRoom()
 		break;
 	}
 	// TO DO: this will need to be updated to a specific Secrete Room BP set in LocalLevel
-	
 
 	SecretRoom->SetActorLabel("SecretRoom");
 	//SecretRoom->SetOwner(this);
 #if WITH_EDITOR
-	SecretRoom->SetFolderPath(TileGenRootFolder);
+	SecretRoom->SetFolderPath(TileSubFolderName);
 	SecretRoom->ShadeSecretRoom();
 #endif
 
