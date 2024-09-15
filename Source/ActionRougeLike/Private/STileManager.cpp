@@ -1180,18 +1180,24 @@ TArray <int> ASTileManager::Reshuffle2(TArray <int> ar)
 /// connect this tile with the tiles to the left and below
 /// must have a HeightIndex less than us and greater than or = to 0
 /// must have a WidthIndex less than us and greater than or = to 0
-/// 
+/// This is setting the top and left for each tile (if everyone does it, everything thing gets linked 
+/// (instead of making each one have 4 and do an extra pass to prune them))
 /// </summary>
 /// <param name="ThisTile"> Current Tile being Linked</param>
 /// <param name="Col"></param>
 void ASTileManager::LinkTile(ASTile* ThisTile, FMultiTileStruct Col)
 {
 	//for now I'm going to make right direction the positive one and left is negative
+	//2,1
+	UE_LOG(LogTemp, Log, TEXT("Currently on Tile: %d,%d"), ThisTile->XIndex, ThisTile->ZIndex);
 
 	if (ThisTile->ZIndex > 0)
 	{
+		UE_LOG(LogTemp, Log, TEXT("Check1: %d"),ThisTile->ZIndex);
+		//assign this tiles up neighbor
 		ThisTile->UpNeighbor = Col.TileColumn[ThisTile->ZIndex - 1];
 		ASTile* UpNeighbor = ThisTile->UpNeighbor;
+		//assign that tiles down neighbor to be this tile
 		Col.TileColumn[ThisTile->ZIndex - 1]->DownNeighbor = ThisTile;
 
 		//if doors are active, spawn a door at the tile placeholder
@@ -1215,7 +1221,10 @@ void ASTileManager::LinkTile(ASTile* ThisTile, FMultiTileStruct Col)
 	}
 	if (ThisTile->XIndex > 0)
 	{
+		UE_LOG(LogTemp, Log, TEXT("Check2: %d"), ThisTile->XIndex);
+		//assign this tiles left neighbor from grid and save it locally
 		ASTile* LeftNeighbor = ThisTile->LeftNeighbor = Grid2DArray[ThisTile->XIndex - 1]->TileColumn[ThisTile->ZIndex];
+		//save that tiles right neighbor to be this tile
 		Grid2DArray[ThisTile->XIndex - 1]->TileColumn[ThisTile->ZIndex]->RightNeighbor = ThisTile;
 
 		FActorSpawnParameters SpawnParams;
@@ -1223,18 +1232,18 @@ void ASTileManager::LinkTile(ASTile* ThisTile, FMultiTileStruct Col)
 		//if our lower neighbor doesn't already have a door connecting up
 		if (!LeftNeighbor->RightDoor)
 		{
-			FString TileRightDoorName = "TileDoorConnecting_" + FString::FromInt(ThisTile->XIndex) + "_" + FString::FromInt(ThisTile->ZIndex) + "_to_" + FString::FromInt(LeftNeighbor->XIndex) + "_" + FString::FromInt(LeftNeighbor->ZIndex);
+			FString TileLeftDoorName = "TileDoorConnecting_" + FString::FromInt(ThisTile->XIndex) + "_" + FString::FromInt(ThisTile->ZIndex) + "_to_" + FString::FromInt(LeftNeighbor->XIndex) + "_" + FString::FromInt(LeftNeighbor->ZIndex);
 
 			//add LeftDoorSpawnPoint location to ThisTiles location to give world location
-			FVector LeftDoorSpawnLocation = ThisTile->LeftDoorSpawnPoint.GetLocation() + ThisTile->GetActorLocation();
+			FVector LeftDoorSpawnLocation = ThisTile->RightDoorSpawnPoint.GetLocation() + ThisTile->GetActorLocation();
 			const FTransform Spawm = FTransform(ThisTile->LeftDoorSpawnPoint.GetRotation(), LeftDoorSpawnLocation);
-			ThisTile->RightDoor = GetWorld()->SpawnActor<ASTileDoor>(TileDoor, Spawm, SpawnParams);
-			ThisTile->RightDoor->SetActorLabel(TileRightDoorName);
-			ThisTile->RightDoor->SetOwner(ThisTile);
+			ThisTile->LeftDoor = GetWorld()->SpawnActor<ASTileDoor>(TileDoor, Spawm, SpawnParams);
+			ThisTile->LeftDoor->SetActorLabel(TileLeftDoorName);
+			ThisTile->LeftDoor->SetOwner(ThisTile);
 #if WITH_EDITOR
-			ThisTile->RightDoor->SetFolderPath(DoorSubFolderName);
+			ThisTile->LeftDoor->SetFolderPath(DoorSubFolderName);
 #endif
-			LeftNeighbor->RightDoor = ThisTile->RightDoor;
+			LeftNeighbor->RightDoor = ThisTile->LeftDoor;
 		}
 	}
 }
