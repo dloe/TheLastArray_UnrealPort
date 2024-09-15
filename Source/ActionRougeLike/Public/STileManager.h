@@ -203,7 +203,7 @@ protected:
 	bool AddTileToPath(ASTile* TileToAdd);
 
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
-	void CheckTile(ASTile* TileToAdd, TArray<ASTile*> CurrentPath);
+	void CheckTile(ASTile* TileToAdd, TArray<ASTile*>& CurrentPath);
 
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
 	void ClearHistory();
