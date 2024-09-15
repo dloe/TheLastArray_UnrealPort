@@ -70,6 +70,9 @@ public:
 #pragma region Tile Generation
 
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
+	uint32 GameSeed = 0; 
+
+	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	bool DebugPrints = false;
 
 	//attempt at managing random numbers and seeds

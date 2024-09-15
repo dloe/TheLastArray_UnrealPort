@@ -21,11 +21,22 @@ ASTileManager::ASTileManager()
 
 void ASTileManager::SeedSetup()
 {
-	if (DebugPrints)
-		UE_LOG(LogTemp, Log, TEXT("Setting Up Seed..."));
+	if (GameSeed == 0)
+	{
+		if (DebugPrints)
+			UE_LOG(LogTemp, Log, TEXT("Setting Up Seed..."));
 
-	GameStream.Initialize("GameSeed");
-	GameStream.GenerateNewSeed();
+		GameStream.Initialize("GameSeed");
+		GameStream.GenerateNewSeed();
+	}
+	else {
+		if (DebugPrints)
+			UE_LOG(LogTemp, Log, TEXT("Using Supplied Seed..."));
+		//GameStream.Initialize("GameSeed");
+		GameStream.Initialize(GameSeed);
+		
+	}
+	
 	if (DebugPrints)
 		UE_LOG(LogTemp, Log, TEXT("Seed: %d"), GameStream.GetCurrentSeed());
 }
@@ -495,14 +506,18 @@ void ASTileManager::CheckTile(ASTile* CurrentTile, TArray<ASTile*> CurrentPath)
 	if ((!CurrentTile->UpNeighbor || CurrentTile->UpNeighbor->CheckForPath) && (!CurrentTile->DownNeighbor || CurrentTile->DownNeighbor->CheckForPath)
 		&& (!CurrentTile->RightNeighbor || CurrentTile->RightNeighbor->CheckForPath) && (!CurrentTile->LeftNeighbor || CurrentTile->LeftNeighbor->CheckForPath))
 	{
-		//UE_LOG(LogTemp, Log, TEXT("Dead end found at %d,%d"), CurrentTile->XIndex, CurrentTile->ZIndex);
+		UE_LOG(LogTemp, Log, TEXT("Dead end found at %d,%d"), CurrentTile->XIndex, CurrentTile->ZIndex);
 		CurrentTile->CheckForPath = true;
 		CurrentTile->ShadeNull();
 
 		//eventually all of these tiles will be unchecked so a different path may go through them (dead ends,etc)
 		BackTrackHistory.Add(CurrentTile);
 
-		CurrentPath.Remove(CurrentTile);
+		//remove from list 
+		
+		int result = CurrentPath.Remove(CurrentTile);
+		UE_LOG(LogTemp, Log, TEXT("Dead end found at %d"), result);
+		//E_LOG(LogTemp, Log, TEXT("Removed Instances: %d"), CurrentPath.Remove(CurrentTile).toString());
 		CheckTile(CurrentTile->PreviousTile, CurrentPath);
 	} // boss room checks
 	else if ((CurrentTile->UpNeighbor && CurrentTile->UpNeighbor->IsBossTile()))
