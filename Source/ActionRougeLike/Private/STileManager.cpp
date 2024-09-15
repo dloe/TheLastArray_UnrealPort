@@ -104,6 +104,7 @@ void ASTileManager::Create2DTileArray()
 			//spawn in a Tile
 			//UE_LOG(LogTemp, Log, TEXT("--Tile: %f, %f"), XIndex, ZIndex);
 			FString TileName = "Tile_Row" + FString::FromInt(XIndex) + "_Col" + FString::FromInt(ZIndex);
+			
 			//if (DebugPrints)
 				//UE_LOG(LogTemp, Log, TEXT("--Tile: %s"), *TileName);
 			//UE_LOG(LogTemp, Log, TEXT("--Tile: %f, %f"), XIndex, ZIndex);
@@ -477,6 +478,11 @@ bool ASTileManager::AddTileToPath(ASTile* TileToAdd)
 	return true;
 }
 
+/// <summary>
+/// Backtracking reclusive algorithm for Main level path construction. Builds out LevelPath array.
+/// </summary>
+/// <param name="CurrentTile"></param>
+/// <param name="CurrentPath"></param>
 void ASTileManager::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& CurrentPath)
 {
 	bool CheckingTileDebug = false;
@@ -512,11 +518,8 @@ void ASTileManager::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& CurrentPath)
 
 		//eventually all of these tiles will be unchecked so a different path may go through them (dead ends,etc)
 		BackTrackHistory.Add(CurrentTile);
+		CurrentPath.Remove(CurrentTile);
 
-		//remove from list 
-		int result = 0;
-		result = CurrentPath.Remove(CurrentTile);
-		UE_LOG(LogTemp, Log, TEXT("Dead end found at %d"), result);
 		//E_LOG(LogTemp, Log, TEXT("Removed Instances: %d"), CurrentPath.Remove(CurrentTile).toString());
 		CheckTile(CurrentTile->PreviousTile, CurrentPath);
 	} // boss room checks
@@ -647,7 +650,8 @@ void ASTileManager::RandomRoomsAndBranchesAdditions()
 
 	//TODO: how long will branches be?
 	int BranchCount = GameStream.RandRange(1, (LevelWidth - LevelPath.Num() / LevelWidth) + 1);
-	UE_LOG(LogTemp, Log, TEXT("Total amount of branches to create: %d"), BranchCount);
+	if (DebugPrints)
+		UE_LOG(LogTemp, Log, TEXT("Total amount of branches to create: %d"), BranchCount);
 
 	for (int Branch = 0; Branch < BranchCount && AvailableTiles.Num() > 1; Branch++)
 	{
@@ -655,7 +659,8 @@ void ASTileManager::RandomRoomsAndBranchesAdditions()
 
 		//for now using length of level, might change this later, not sure how else but not a super important detail
 		int BranchLength = GameStream.RandRange(1, LevelWidth);
-		UE_LOG(LogTemp, Log, TEXT("Making Branch: %d with length %d"), Branch, BranchLength);
+		if (DebugPrints)
+			UE_LOG(LogTemp, Log, TEXT("Making Branch: %d with length %d"), Branch, BranchLength);
 
 		ASTile* StartingBranchTile = AvailableTiles[GameStream.RandRange(0, AvailableTiles.Num() - 1)];
 		TArray<ASTile*>	BranchArray;
@@ -747,7 +752,7 @@ void ASTileManager::AddSingleRooms()
 		if (LevelWidth - AllActiveTiles.Num() >= LevelHeight / (LevelWidth * 2))
 		{
 			ASTile* Current = AvailableTiles[GameStream.RandRange(0, AvailableTiles.Num() - 1)];
-			UE_LOG(LogTemp, Log, TEXT("Room selected: %d:%d"), Current->XIndex, Current->ZIndex);
+			//UE_LOG(LogTemp, Log, TEXT("Room selected: %d:%d"), Current->XIndex, Current->ZIndex);
 			if (Current->TileStatus == ETileStatus::ETile_NULLROOM)
 			{
 				Current->ShadeActiveRoom();
@@ -938,22 +943,22 @@ void ASTileManager::CreateSecretRoom()
 	FRotator SpawnRot;
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	UE_LOG(LogTemp, Log, TEXT("Picked - %d - side of [%d,%d]"), selected.neighborArray[loc], selected.tile->XIndex, selected.tile->ZIndex);
-	UE_LOG(LogTemp, Log, TEXT("Selected:  x= %d, y = %d], z = %d"), test->GetActorLocation().X, test->GetActorLocation().Y, test->GetActorLocation().Z);
+	//UE_LOG(LogTemp, Log, TEXT("Picked - %d - side of [%d,%d]"), selected.neighborArray[loc], selected.tile->XIndex, selected.tile->ZIndex);
+	//UE_LOG(LogTemp, Log, TEXT("Selected:  x= %d, y = %d], z = %d"), test->GetActorLocation().X, test->GetActorLocation().Y, test->GetActorLocation().Z);
 
 	FString name = test->GetActorLabel();
-	UE_LOG(LogTemp, Log, TEXT("Tile: %s"), *name);
+	//UE_LOG(LogTemp, Log, TEXT("Tile: %s"), *name);
 
 	//TODO: weird but with center of tile being at the top, causing a 240 offset. Will need to investigate later
 	switch (selected.neighborArray[loc])
 	{
 	case 1:
 		//up
-		UE_LOG(LogTemp, Log, TEXT("up neighbor"));
+		//UE_LOG(LogTemp, Log, TEXT("up neighbor"));
 		//TODO: may need to fix rotation?
 		//FVector(StartingTile->GetActorLocation().X, StartingTile->GetActorLocation().Y + (StartingTile->TileLength), StartingTile->GetActorLocation().Z);
 		SpawnPos = FVector(selected.tile->GetActorLocation().X, selected.tile->GetActorLocation().Y - (StartingTile->TileLength), selected.tile->GetActorLocation().Z); //+ 240
-		UE_LOG(LogTemp, Log, TEXT("SpawnPas: %s"), *SpawnPos.ToString());
+		//UE_LOG(LogTemp, Log, TEXT("SpawnPas: %s"), *SpawnPos.ToString());
 		//SpawnRot = FRotator(PlayerSpawnPresentTile->GetActorRotation().Euler().X, -90.0f, PlayerSpawnPresentTile->GetActorRotation().Euler().Z);
 		SecretRoom = PlayerSpawnPresentTile = GetWorld()->SpawnActor<ASTile>(MyLocalLevel->PresetSecretRoomTile, SpawnPos, SpawnRot, SpawnParams);
 		SecretRoom->DownNeighbor = selected.tile;
@@ -961,10 +966,10 @@ void ASTileManager::CreateSecretRoom()
 		break;
 	case 2:
 		//down
-		UE_LOG(LogTemp, Log, TEXT("down neighbor"));
+		//UE_LOG(LogTemp, Log, TEXT("down neighbor"));
 		//TODO: may need to fix rotation?
 		SpawnPos = FVector(selected.tile->GetActorLocation().X, selected.tile->GetActorLocation().Y + (StartingTile->TileLength), selected.tile->GetActorLocation().Z + 240);
-		UE_LOG(LogTemp, Log, TEXT("SpawnPas: %s"), *SpawnPos.ToString());
+		//UE_LOG(LogTemp, Log, TEXT("SpawnPas: %s"), *SpawnPos.ToString());
 		SpawnRot = FRotator(PlayerSpawnPresentTile->GetActorRotation().Euler().X, 180.0f, PlayerSpawnPresentTile->GetActorRotation().Euler().Z);
 		SecretRoom = PlayerSpawnPresentTile = GetWorld()->SpawnActor<ASTile>(MyLocalLevel->PresetSecretRoomTile, SpawnPos, SpawnRot, SpawnParams);
 		SecretRoom->UpNeighbor = selected.tile;
@@ -972,10 +977,10 @@ void ASTileManager::CreateSecretRoom()
 		break;
 	case 3:
 		//right
-		UE_LOG(LogTemp, Log, TEXT("left neighbor"));
+		//UE_LOG(LogTemp, Log, TEXT("left neighbor"));
 		//TODO: may need to fix rotation?
 		SpawnPos = FVector(selected.tile->GetActorLocation().X - (selected.tile->TileLength), selected.tile->GetActorLocation().Y, selected.tile->GetActorLocation().Z + 240);
-		UE_LOG(LogTemp, Log, TEXT("SpawnPas: %s"), *SpawnPos.ToString());
+		//UE_LOG(LogTemp, Log, TEXT("SpawnPas: %s"), *SpawnPos.ToString());
 		SpawnRot = FRotator(PlayerSpawnPresentTile->GetActorRotation().Euler().X, 90.0f, PlayerSpawnPresentTile->GetActorRotation().Euler().Z);
 		SecretRoom = PlayerSpawnPresentTile = GetWorld()->SpawnActor<ASTile>(MyLocalLevel->PresetSecretRoomTile, SpawnPos, SpawnRot, SpawnParams);
 		SecretRoom->RightNeighbor = selected.tile;
@@ -983,10 +988,10 @@ void ASTileManager::CreateSecretRoom()
 		break;
 	case 4:
 		//left
-		UE_LOG(LogTemp, Log, TEXT("right neighbor"));
+		//UE_LOG(LogTemp, Log, TEXT("right neighbor"));
 		//TODO: may need to fix rotation?
 		SpawnPos = FVector(selected.tile->GetActorLocation().X + (selected.tile->TileLength), selected.tile->GetActorLocation().Y, selected.tile->GetActorLocation().Z + 240);
-		UE_LOG(LogTemp, Log, TEXT("SpawnPas: %s"), *SpawnPos.ToString());
+		//UE_LOG(LogTemp, Log, TEXT("SpawnPas: %s"), *SpawnPos.ToString());
 		SpawnRot = FRotator(PlayerSpawnPresentTile->GetActorRotation().Euler().X, -90.0f, PlayerSpawnPresentTile->GetActorRotation().Euler().Z);
 		SecretRoom = PlayerSpawnPresentTile = GetWorld()->SpawnActor<ASTile>(MyLocalLevel->PresetSecretRoomTile, SpawnPos, SpawnRot, SpawnParams);
 		SecretRoom->LeftNeighbor = selected.tile;
