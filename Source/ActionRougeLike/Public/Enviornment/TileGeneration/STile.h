@@ -17,6 +17,14 @@ UENUM(BlueprintType)
 		ETile_BOSSROOM UMETA(DisplayName = "BossRoom"),
 	};
 
+	UENUM(BlueprintType)
+	enum class ETileSide : uint8 {
+		ETile_Up UMETA(DisplayName = "Up"),
+		ETile_Down  UMETA(DisplayName = "Down"),
+		ETile_Left     UMETA(DisplayName = "Left"),
+		ETile_Right UMETA(DisplayName = "Right"),
+	};
+
 UCLASS()
 class ACTIONROUGELIKE_API ASTile : public AActor
 {

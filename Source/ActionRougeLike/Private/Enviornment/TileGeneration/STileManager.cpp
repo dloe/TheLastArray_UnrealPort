@@ -3,7 +3,6 @@
 
 #include "Enviornment/TileGeneration/STileManager.h"
 #include "SLocalLevel.h"
-#include <Engine/World.h>
 #include <string>
 #include <Math/UnrealMathUtility.h>
 #include <Kismet/KismetMathLibrary.h>
@@ -1007,18 +1006,7 @@ void ASTileManager::CreateSecretRoom()
 		//only need to set one door
 		if (!selected.tile->HasValidUpNeighbor())
 		{
-			//spawn the door ourselves
-			const FString TileUpDoorName = "TileDoorConnecting_" + FString::FromInt(selected.tile->XIndex) + "_" + FString::FromInt(selected.tile->ZIndex) + "_to_SecretRoom";
-			//UE_LOG(LogTemp, Log, TEXT("Check1: %d"), *ThisTile->DownDoorSpawnPoint.GetLocation());
-			const FVector UpDoorSpawnLocation = selected.tile->UpDoorSpawnPoint.GetLocation() + selected.tile->GetActorLocation();
-			const FTransform Spawm = FTransform(selected.tile->UpDoorSpawnPoint.GetRotation(), UpDoorSpawnLocation);
-			selected.tile->UpDoor = GetWorld()->SpawnActor<ASTileDoor>(TileDoor, Spawm, SpawnParams);
-			DoorArray.Add(selected.tile->UpDoor);
-			selected.tile->UpDoor->SetActorLabel(TileUpDoorName);
-			selected.tile->UpDoor->SetOwner(selected.tile);
-#if WITH_EDITOR
-			selected.tile->UpDoor->SetFolderPath(DoorSubFolderName);
-#endif
+			SpawnDoor(selected.tile, ETileSide::ETile_Up, "SecretRoom");
 		}
 		SecretRoom->DownDoor = selected.tile->UpDoor;
 
@@ -1041,18 +1029,7 @@ void ASTileManager::CreateSecretRoom()
 		//only need to set one door
 		if (!selected.tile->HasValidDownNeighbor())
 		{
-			//spawn the door ourselves
-			const FString TileDownDoorName = "TileDoorConnecting_" + FString::FromInt(selected.tile->XIndex) + "_" + FString::FromInt(selected.tile->ZIndex) + "_to_SecretRoom";
-			//UE_LOG(LogTemp, Log, TEXT("Check1: %d"), *ThisTile->DownDoorSpawnPoint.GetLocation());
-			const FVector DownDoorSpawnLocation = selected.tile->DownDoorSpawnPoint.GetLocation() + selected.tile->GetActorLocation();
-			const FTransform Spawm = FTransform(selected.tile->DownDoorSpawnPoint.GetRotation(), DownDoorSpawnLocation);
-			selected.tile->DownDoor = GetWorld()->SpawnActor<ASTileDoor>(TileDoor, Spawm, SpawnParams);
-			DoorArray.Add(selected.tile->DownDoor);
-			selected.tile->DownDoor->SetActorLabel(TileDownDoorName);
-			selected.tile->DownDoor->SetOwner(selected.tile);
-#if WITH_EDITOR
-			selected.tile->DownDoor->SetFolderPath(DoorSubFolderName);
-#endif
+			SpawnDoor(selected.tile, ETileSide::ETile_Down, "SecretRoom");
 		}
 
 		SecretRoom->UpDoor = selected.tile->DownDoor;
@@ -1075,18 +1052,7 @@ void ASTileManager::CreateSecretRoom()
 		//only need to set one door
 		if (!selected.tile->HasValidLeftNeighbor())
 		{
-			//spawn the door ourselves
-			const FString TileLeftDoorName = "TileDoorConnecting_" + FString::FromInt(selected.tile->XIndex) + "_" + FString::FromInt(selected.tile->ZIndex) + "_to_SecretRoom";
-			//UE_LOG(LogTemp, Log, TEXT("Check1: %d"), *ThisTile->DownDoorSpawnPoint.GetLocation());
-			const FVector LeftDoorSpawnLocation = selected.tile->LeftDoorSpawnPoint.GetLocation() + selected.tile->GetActorLocation();
-			const FTransform Spawm = FTransform(selected.tile->LeftDoorSpawnPoint.GetRotation(), LeftDoorSpawnLocation);
-			selected.tile->LeftDoor = GetWorld()->SpawnActor<ASTileDoor>(TileDoor, Spawm, SpawnParams);
-			DoorArray.Add(selected.tile->LeftDoor);
-			selected.tile->LeftDoor->SetActorLabel(TileLeftDoorName);
-			selected.tile->LeftDoor->SetOwner(selected.tile);
-#if WITH_EDITOR
-			selected.tile->LeftDoor->SetFolderPath(DoorSubFolderName);
-#endif
+			SpawnDoor(selected.tile, ETileSide::ETile_Left, "SecretRoom");
 		}
 
 		SecretRoom->RightDoor = selected.tile->LeftDoor;
@@ -1108,18 +1074,7 @@ void ASTileManager::CreateSecretRoom()
 		//only need to set one door
 		if (!selected.tile->HasValidRightNeighbor())
 		{
-			//spawn the door ourselves
-			const FString TileRightDoorName = "TileDoorConnecting_" + FString::FromInt(selected.tile->XIndex) + "_" + FString::FromInt(selected.tile->ZIndex) + "_to_SecretRoom";
-			//UE_LOG(LogTemp, Log, TEXT("Check1: %d"), *ThisTile->DownDoorSpawnPoint.GetLocation());
-			const FVector RightDoorSpawnLocation = selected.tile->RightDoorSpawnPoint.GetLocation() + selected.tile->GetActorLocation();
-			const FTransform Spawm = FTransform(selected.tile->RightDoorSpawnPoint.GetRotation(), RightDoorSpawnLocation);
-			selected.tile->RightDoor = GetWorld()->SpawnActor<ASTileDoor>(TileDoor, Spawm, SpawnParams);
-			DoorArray.Add(selected.tile->RightDoor);
-			selected.tile->RightDoor->SetActorLabel(TileRightDoorName);
-			selected.tile->RightDoor->SetOwner(selected.tile);
-#if WITH_EDITOR
-			selected.tile->RightDoor->SetFolderPath(DoorSubFolderName);
-#endif
+			SpawnDoor(selected.tile, ETileSide::ETile_Right, "SecretRoom");
 		}
 		SecretRoom->LeftDoor = selected.tile->RightDoor;
 		
@@ -1395,6 +1350,65 @@ void ASTileManager::LinkTile(ASTile* ThisTile, FMultiTileStruct Col)
 void ASTileManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+}
+
+//For Spawning doors to attach to tiles
+void ASTileManager::SpawnDoor(ASTile* tile, ETileSide SideToSpawnDoor, FString NameOfTileToConnect)
+{
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	const FString TileDoorName = "TileDoorConnecting_" + FString::FromInt(tile->XIndex) + "_" + FString::FromInt(tile->ZIndex) + "_to_SecretRoom";
+	//UE_LOG(LogTemp, Log, TEXT("Check1: %d"), *ThisTile->DownDoorSpawnPoint.GetLocation());
+
+	FTransform doorSpawnPoint;
+	switch (SideToSpawnDoor)
+	{
+	case ETileSide::ETile_Up:
+		doorSpawnPoint = tile->UpDoorSpawnPoint;
+		break;
+	case ETileSide::ETile_Down:
+		doorSpawnPoint = tile->DownDoorSpawnPoint;
+		break;
+	case ETileSide::ETile_Left:
+		doorSpawnPoint = tile->LeftDoorSpawnPoint;
+		break;
+	case ETileSide::ETile_Right:
+		doorSpawnPoint = tile->RightDoorSpawnPoint;
+		break;
+	default:
+		break;
+	}
+	const FVector doorSpawnLocation = doorSpawnPoint.GetLocation() + this->GetActorLocation();
+	const FTransform Spawm = FTransform(doorSpawnPoint.GetRotation(), doorSpawnLocation);
+
+
+	ASTileDoor* door = GetWorld()->SpawnActor<ASTileDoor>(TileDoor, Spawm, SpawnParams);
+	door->DoorActive = true;
+	DoorArray.Add(door);
+	door->SetActorLabel(TileDoorName);
+	door->SetOwner(this);
+#if WITH_EDITOR
+	door->SetFolderPath(DoorSubFolderName);
+#endif
+
+	switch (SideToSpawnDoor)
+	{
+	case ETileSide::ETile_Up:
+		tile->UpDoor = door;
+		break;
+	case ETileSide::ETile_Down:
+		tile->DownDoor = door;
+		break;
+	case ETileSide::ETile_Left:
+		tile->LeftDoor = door;
+		break;
+	case ETileSide::ETile_Right:
+		tile->RightDoor = door;
+		break;
+	default:
+		break;
+	}
 
 }
 

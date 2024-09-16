@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "Enviornment/TileGeneration/STile.h"
 #include "SLocalLevel.h"
+#include "Engine/World.h"
 #include "STileManager.generated.h"
 
 
@@ -235,6 +236,9 @@ protected:
 
 	UFUNCTION(BlueprintCallable, Category = "Door Setup")
 	void DeactiveInactiveRooms();
+
+	UFUNCTION(Category = "Door Setup")
+	void SpawnDoor(ASTile* tile, ETileSide SideToSpawnDoor, FString NameOfTileToConnect);
 
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
 	TArray <int> Reshuffle2(TArray <int> ar);
