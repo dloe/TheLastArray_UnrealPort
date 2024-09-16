@@ -480,6 +480,7 @@ bool ASTileManager::AddTileToPath(ASTile* TileToAdd)
 
 /// <summary>
 /// Backtracking reclusive algorithm for Main level path construction. Builds out LevelPath array.
+/// TODO: As we go, doors connecting tiles will be marked, after everything is done, unmarked doors get destroyed at the end (no need to have second pass checking)
 /// </summary>
 /// <param name="CurrentTile"></param>
 /// <param name="CurrentPath"></param>
@@ -669,7 +670,7 @@ void ASTileManager::RandomRoomsAndBranchesAdditions()
 
 		CheckBranchTile(StartingBranchTile, BranchArray, BranchLength);
 
-		//TO DO: door logic goes here
+		//TO DO: door logic goes here - may not need
 		if (DoorsActive)
 		{
 			BranchArray[0]->ActivateDoorsBranch();
@@ -698,7 +699,7 @@ void ASTileManager::RandomRoomsAndBranchesAdditions()
 			}
 		}
 
-		// MORE DOOR LOGIC HERE
+		// MORE DOOR LOGIC HERE - May not need
 		//ActiveDoorBranch stuff
 		if (DoorsActive)
 		{
@@ -1235,8 +1236,9 @@ void ASTileManager::LinkTile(ASTile* ThisTile, FMultiTileStruct Col)
 		{
 			//UE_LOG(LogTemp, Log, TEXT("Check1: %d"), ThisTile->ZIndex);
 			const FString TileUpDoorName = "TileDoorConnecting_" + FString::FromInt(ThisTile->XIndex) + "_" + FString::FromInt(ThisTile->ZIndex) + "_to_" + FString::FromInt(UpNeighbor->XIndex) + "_" + FString::FromInt(UpNeighbor->ZIndex);
-			const FVector UpDoorSpawnLocation = ThisTile->DownDoorSpawnPoint.GetLocation() + ThisTile->GetActorLocation();
-			const FTransform Spawm = FTransform(ThisTile->DownDoorSpawnPoint.GetRotation(), UpDoorSpawnLocation);
+			//UE_LOG(LogTemp, Log, TEXT("Check1: %d"), *ThisTile->DownDoorSpawnPoint.GetLocation());
+			const FVector UpDoorSpawnLocation = ThisTile->UpDoorSpawnPoint.GetLocation() + ThisTile->GetActorLocation();
+			const FTransform Spawm = FTransform(ThisTile->UpDoorSpawnPoint.GetRotation(), UpDoorSpawnLocation);
 			ThisTile->UpDoor = GetWorld()->SpawnActor<ASTileDoor>(TileDoor, Spawm, SpawnParams);
 			ThisTile->UpDoor->SetActorLabel(TileUpDoorName);
 			ThisTile->UpDoor->SetOwner(ThisTile);
@@ -1261,9 +1263,9 @@ void ASTileManager::LinkTile(ASTile* ThisTile, FMultiTileStruct Col)
 		{
 			//UE_LOG(LogTemp, Log, TEXT("Check2: %d"), ThisTile->XIndex);
 			FString TileLeftDoorName = "TileDoorConnecting_" + FString::FromInt(ThisTile->XIndex) + "_" + FString::FromInt(ThisTile->ZIndex) + "_to_" + FString::FromInt(LeftNeighbor->XIndex) + "_" + FString::FromInt(LeftNeighbor->ZIndex);
-
 			//add LeftDoorSpawnPoint location to ThisTiles location to give world location
-			FVector LeftDoorSpawnLocation = ThisTile->RightDoorSpawnPoint.GetLocation() + ThisTile->GetActorLocation();
+			FVector LeftDoorSpawnLocation = ThisTile->LeftDoorSpawnPoint.GetLocation() + ThisTile->GetActorLocation();
+
 			const FTransform Spawm = FTransform(ThisTile->LeftDoorSpawnPoint.GetRotation(), LeftDoorSpawnLocation);
 			ThisTile->LeftDoor = GetWorld()->SpawnActor<ASTileDoor>(TileDoor, Spawm, SpawnParams);
 			ThisTile->LeftDoor->SetActorLabel(TileLeftDoorName);
