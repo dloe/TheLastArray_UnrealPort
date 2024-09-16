@@ -1207,16 +1207,16 @@ void ASTileManager::LinkTile(ASTile* ThisTile, FMultiTileStruct Col)
 		//TODO: may need work here
 		if (!UpNeighbor->UpDoor)
 		{
-			const FString TileUpDoorName = "TileDoorConnecting_" + FString::FromInt(ThisTile->XIndex) + "_" + FString::FromInt(ThisTile->ZIndex) + "_to_" + FString::FromInt(UpNeighbor->XIndex) + "_" + FString::FromInt(UpNeighbor->ZIndex);
-			const FVector UpDoorSpawnLocation = ThisTile->DownDoorSpawnPoint.GetLocation() + ThisTile->GetActorLocation();
-			const FTransform Spawm = FTransform(ThisTile->DownDoorSpawnPoint.GetRotation(), UpDoorSpawnLocation);
-			ThisTile->UpDoor = GetWorld()->SpawnActor<ASTileDoor>(TileDoor, Spawm, SpawnParams);
-			ThisTile->UpDoor->SetActorLabel(TileUpDoorName);
-			ThisTile->UpDoor->SetOwner(ThisTile);
+			const FString TileDownDoorName = "TileDoorConnecting_" + FString::FromInt(ThisTile->XIndex) + "_" + FString::FromInt(ThisTile->ZIndex) + "_to_" + FString::FromInt(UpNeighbor->XIndex) + "_" + FString::FromInt(UpNeighbor->ZIndex);
+			const FVector DownDoorSpawnLocation = ThisTile->DownDoorSpawnPoint.GetLocation() + ThisTile->GetActorLocation();
+			const FTransform Spawm = FTransform(ThisTile->DownDoorSpawnPoint.GetRotation(), DownDoorSpawnLocation);
+			ThisTile->DownDoor = GetWorld()->SpawnActor<ASTileDoor>(TileDoor, Spawm, SpawnParams);
+			ThisTile->DownDoor->SetActorLabel(TileDownDoorName);
+			ThisTile->DownDoor->SetOwner(ThisTile);
 #if WITH_EDITOR
-			ThisTile->UpDoor->SetFolderPath(DoorSubFolderName);
+			ThisTile->DownDoor->SetFolderPath(DoorSubFolderName);
 #endif
-			UpNeighbor->DownDoor = ThisTile->UpDoor;
+			UpNeighbor->UpDoor = ThisTile->DownDoor;
 		}
 	}
 	if (ThisTile->XIndex > 0)
