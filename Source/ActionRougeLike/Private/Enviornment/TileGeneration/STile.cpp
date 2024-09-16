@@ -166,6 +166,42 @@ bool ASTile::HasValidUpNeighbor()
 	return result;
 }
 
+void ASTile::TurnAllDoorsInactive()
+{
+	if(HasValidDownNeighbor())
+		DownDoor->DoorActive =false;
+	if(HasValidUpNeighbor())
+		UpDoor->DoorActive = false;
+	if(HasValidRightNeighbor())
+		RightDoor =false;
+	if(HasValidLeftNeighbor())
+		LeftDoor = false;
+}
+
+void ASTile::ActivateUpDoor()
+{
+	if (HasValidUpNeighbor())
+		UpDoor->DoorActive = true;
+}
+
+void ASTile::ActivateDownDoor()
+{
+	if (HasValidDownNeighbor())
+		DownDoor->DoorActive = true;
+}
+
+void ASTile::ActivateRightDoor()
+{
+	if (HasValidRightNeighbor())
+		RightDoor->DoorActive = true;
+}
+
+void ASTile::ActivateLeftDoor()
+{
+	if (HasValidLeftNeighbor())
+		LeftDoor->DoorActive = true;
+}
+
 #pragma endregion
 
 

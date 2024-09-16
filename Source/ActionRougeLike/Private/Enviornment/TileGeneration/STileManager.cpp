@@ -521,6 +521,8 @@ void ASTileManager::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& CurrentPath)
 		BackTrackHistory.Add(CurrentTile);
 		CurrentPath.Remove(CurrentTile);
 
+		CurrentTile->TurnAllDoorsInactive();
+
 		//E_LOG(LogTemp, Log, TEXT("Removed Instances: %d"), CurrentPath.Remove(CurrentTile).toString());
 		CheckTile(CurrentTile->PreviousTile, CurrentPath);
 	} // boss room checks
@@ -531,6 +533,8 @@ void ASTileManager::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& CurrentPath)
 		AddTileToPath(CurrentTile);
 		AddTileToPath(CurrentTile->UpNeighbor);
 
+		CurrentTile->ActivateUpDoor();
+
 	}
 	else if ((CurrentTile->DownNeighbor && CurrentTile->DownNeighbor->IsBossTile()))
 	{
@@ -538,6 +542,7 @@ void ASTileManager::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& CurrentPath)
 		CurrentTile->CheckForPath = true;
 		AddTileToPath(CurrentTile);
 		AddTileToPath(CurrentTile->DownNeighbor);
+		CurrentTile->ActivateDownDoor();
 	}
 	else if ((CurrentTile->RightNeighbor && CurrentTile->RightNeighbor->IsBossTile()))
 	{
@@ -545,6 +550,7 @@ void ASTileManager::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& CurrentPath)
 		CurrentTile->CheckForPath = true;
 		AddTileToPath(CurrentTile);
 		AddTileToPath(CurrentTile->RightNeighbor);
+		CurrentTile->ActivateRightDoor();
 	}
 	else if ((CurrentTile->LeftNeighbor && CurrentTile->LeftNeighbor->IsBossTile()))
 	{
@@ -552,6 +558,7 @@ void ASTileManager::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& CurrentPath)
 		CurrentTile->CheckForPath = true;
 		AddTileToPath(CurrentTile);
 		AddTileToPath(CurrentTile->LeftNeighbor);
+		CurrentTile->ActivateLeftDoor();
 	}
 	else {
 		//now that we know theres valid neighbors and none of them are the boss room, lets check our neighbors
@@ -573,10 +580,12 @@ void ASTileManager::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& CurrentPath)
 				{
 					//add this tile to path, go to up neighbor
 					//UE_LOG(LogTemp, Log, TEXT("Up Neighbor Valid: %d,%d - going there"), CurrentTile->UpNeighbor->XIndex, CurrentTile->UpNeighbor->ZIndex);
+					CurrentTile->ActivateUpDoor();
 					CurrentTile->UpNeighbor->PreviousTile = CurrentTile;
 					AddTileToPath(CurrentTile);
 					//no need to keep going through other directions directions
 					DirectionCount = 5;
+					
 					CheckTile(CurrentTile->UpNeighbor, CurrentPath);
 				}
 				break;
@@ -585,6 +594,7 @@ void ASTileManager::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& CurrentPath)
 				if (CurrentTile->HasValidDownNeighbor() && !CurrentTile->DownNeighbor->CheckForPath && !CurrentTile->DownNeighbor->IsStartingTile())
 				{
 					//UE_LOG(LogTemp, Log, TEXT("Down Neighbor Valid: %d,%d - going there"), CurrentTile->DownNeighbor->XIndex, CurrentTile->DownNeighbor->ZIndex);
+					CurrentTile->ActivateDownDoor();
 					CurrentTile->DownNeighbor->PreviousTile = CurrentTile;
 					AddTileToPath(CurrentTile);
 					DirectionCount = 5;
@@ -596,6 +606,7 @@ void ASTileManager::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& CurrentPath)
 				if (CurrentTile->HasValidLeftNeighbor() && !CurrentTile->LeftNeighbor->CheckForPath && !CurrentTile->LeftNeighbor->IsStartingTile())
 				{
 					//UE_LOG(LogTemp, Log, TEXT("Left Neighbor Valid: %d,%d - going there"), CurrentTile->LeftNeighbor->XIndex, CurrentTile->LeftNeighbor->ZIndex);
+					CurrentTile->ActivateLeftDoor();
 					CurrentTile->LeftNeighbor->PreviousTile = CurrentTile;
 					AddTileToPath(CurrentTile);
 					DirectionCount = 5;
@@ -607,6 +618,7 @@ void ASTileManager::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& CurrentPath)
 				if (CurrentTile->HasValidRightNeighbor() && !CurrentTile->RightNeighbor->CheckForPath && !CurrentTile->RightNeighbor->IsStartingTile())
 				{
 					//UE_LOG(LogTemp, Log, TEXT("Right Neighbor Valid: %d,%d - going there"), CurrentTile->RightNeighbor->XIndex, CurrentTile->RightNeighbor->ZIndex);
+					CurrentTile->ActivateRightDoor();
 					CurrentTile->RightNeighbor->PreviousTile = CurrentTile;
 					AddTileToPath(CurrentTile);
 					DirectionCount = 5;
@@ -673,8 +685,8 @@ void ASTileManager::RandomRoomsAndBranchesAdditions()
 		//TO DO: door logic goes here - may not need
 		if (DoorsActive)
 		{
-			BranchArray[0]->ActivateDoorsBranch();
-			BranchArray[0]->TileDescription += "_StartofBranch";
+			//BranchArray[0]->ActivateDoorsBranch();
+			//BranchArray[0]->TileDescription += "_StartofBranch";
 		}
 
 		//run through branch
@@ -703,13 +715,13 @@ void ASTileManager::RandomRoomsAndBranchesAdditions()
 		//ActiveDoorBranch stuff
 		if (DoorsActive)
 		{
-			for (int Index = 1; Index < BranchArray.Num(); Index++)
+			/*for (int Index = 1; Index < BranchArray.Num(); Index++)
 			{
 				if (BranchArray[Index]->TileStatus == ETileStatus::ETile_ROOM)
 				{
 					BranchArray[Index]->ActivateDoorsBranch();
 				}
-			}
+			}*/
 		}
 
 		//start of this branch will have the door connecting to previous tile, the rest of the path will not have a door connecting to anything part of the path
@@ -767,7 +779,7 @@ void ASTileManager::AddSingleRooms()
 
 				if (DoorsActive)
 				{
-					Current->ActivateDoorsRandom();
+					/*Current->ActivateDoorsRandom();*/
 				}
 				MakeAvailableTiles();
 			}
@@ -852,13 +864,14 @@ void ASTileManager::CreateSpawnRoom()
 		const FVector UpDoorSpawnLocation = PlayerStartingTileBase->DownDoorSpawnPoint.GetLocation() + PlayerStartingTileBase->GetActorLocation();
 		const FTransform Spawm = FTransform(PlayerStartingTileBase->UpDoorSpawnPoint.GetRotation(), UpDoorSpawnLocation);
 		PlayerStartingTileBase->UpDoor = GetWorld()->SpawnActor<ASTileDoor>(TileDoor, Spawm, SpawnParams);
+		DoorArray.Add(PlayerStartingTileBase->UpDoor);
 		PlayerStartingTileBase->UpDoor->SetActorLabel(TileUpDoorName);
 		PlayerStartingTileBase->UpDoor->SetOwner(StartingTile);
 #if WITH_EDITOR
 		PlayerStartingTileBase->UpDoor->SetFolderPath(DoorSubFolderName);
 #endif
 		StartingTile->DownDoor = PlayerStartingTileBase->UpDoor;
-
+		PlayerStartingTileBase->ActivateUpDoor();
 		break;
 	}
 
@@ -974,6 +987,7 @@ void ASTileManager::CreateSecretRoom()
 	//UE_LOG(LogTemp, Log, TEXT("Selected:  x= %d, y = %d], z = %d"), test->GetActorLocation().X, test->GetActorLocation().Y, test->GetActorLocation().Z);
 
 	FString name = test->GetActorLabel();
+	//ASTile* tempTile;
 	//UE_LOG(LogTemp, Log, TEXT("Tile: %s"), *name);
 
 	//TODO: weird but with center of tile being at the top, causing a 240 offset. Will need to investigate later
@@ -981,7 +995,7 @@ void ASTileManager::CreateSecretRoom()
 	{
 	case 1:
 		//up
-		//UE_LOG(LogTemp, Log, TEXT("up neighbor"));
+		UE_LOG(LogTemp, Log, TEXT("up neighbor"));
 		//TODO: may need to fix rotation?
 		//FVector(StartingTile->GetActorLocation().X, StartingTile->GetActorLocation().Y + (StartingTile->TileLength), StartingTile->GetActorLocation().Z);
 		SpawnPos = FVector(selected.tile->GetActorLocation().X, selected.tile->GetActorLocation().Y - (StartingTile->TileLength), selected.tile->GetActorLocation().Z); //+ 240
@@ -989,40 +1003,129 @@ void ASTileManager::CreateSecretRoom()
 		//SpawnRot = FRotator(PlayerSpawnPresentTile->GetActorRotation().Euler().X, -90.0f, PlayerSpawnPresentTile->GetActorRotation().Euler().Z);
 		SecretRoom = PlayerSpawnPresentTile = GetWorld()->SpawnActor<ASTile>(MyLocalLevel->PresetSecretRoomTile, SpawnPos, SpawnRot, SpawnParams);
 		SecretRoom->DownNeighbor = selected.tile;
+
+		//only need to set one door
+		if (!selected.tile->HasValidUpNeighbor())
+		{
+			//spawn the door ourselves
+			const FString TileUpDoorName = "TileDoorConnecting_" + FString::FromInt(selected.tile->XIndex) + "_" + FString::FromInt(selected.tile->ZIndex) + "_to_SecretRoom";
+			//UE_LOG(LogTemp, Log, TEXT("Check1: %d"), *ThisTile->DownDoorSpawnPoint.GetLocation());
+			const FVector UpDoorSpawnLocation = selected.tile->UpDoorSpawnPoint.GetLocation() + selected.tile->GetActorLocation();
+			const FTransform Spawm = FTransform(selected.tile->UpDoorSpawnPoint.GetRotation(), UpDoorSpawnLocation);
+			selected.tile->UpDoor = GetWorld()->SpawnActor<ASTileDoor>(TileDoor, Spawm, SpawnParams);
+			DoorArray.Add(selected.tile->UpDoor);
+			selected.tile->UpDoor->SetActorLabel(TileUpDoorName);
+			selected.tile->UpDoor->SetOwner(selected.tile);
+#if WITH_EDITOR
+			selected.tile->UpDoor->SetFolderPath(DoorSubFolderName);
+#endif
+		}
+		SecretRoom->DownDoor = selected.tile->UpDoor;
+
+
+
 		selected.tile->UpNeighbor = SecretRoom;
+		SecretRoom->ActivateDownDoor();
+
 		break;
 	case 2:
 		//down
-		//UE_LOG(LogTemp, Log, TEXT("down neighbor"));
+		UE_LOG(LogTemp, Log, TEXT("down neighbor"));
 		//TODO: may need to fix rotation?
 		SpawnPos = FVector(selected.tile->GetActorLocation().X, selected.tile->GetActorLocation().Y + (StartingTile->TileLength), selected.tile->GetActorLocation().Z + 240);
 		//UE_LOG(LogTemp, Log, TEXT("SpawnPas: %s"), *SpawnPos.ToString());
 		SpawnRot = FRotator(PlayerSpawnPresentTile->GetActorRotation().Euler().X, 180.0f, PlayerSpawnPresentTile->GetActorRotation().Euler().Z);
 		SecretRoom = PlayerSpawnPresentTile = GetWorld()->SpawnActor<ASTile>(MyLocalLevel->PresetSecretRoomTile, SpawnPos, SpawnRot, SpawnParams);
 		SecretRoom->UpNeighbor = selected.tile;
+
+		//only need to set one door
+		if (!selected.tile->HasValidDownNeighbor())
+		{
+			//spawn the door ourselves
+			const FString TileDownDoorName = "TileDoorConnecting_" + FString::FromInt(selected.tile->XIndex) + "_" + FString::FromInt(selected.tile->ZIndex) + "_to_SecretRoom";
+			//UE_LOG(LogTemp, Log, TEXT("Check1: %d"), *ThisTile->DownDoorSpawnPoint.GetLocation());
+			const FVector DownDoorSpawnLocation = selected.tile->DownDoorSpawnPoint.GetLocation() + selected.tile->GetActorLocation();
+			const FTransform Spawm = FTransform(selected.tile->DownDoorSpawnPoint.GetRotation(), DownDoorSpawnLocation);
+			selected.tile->DownDoor = GetWorld()->SpawnActor<ASTileDoor>(TileDoor, Spawm, SpawnParams);
+			DoorArray.Add(selected.tile->DownDoor);
+			selected.tile->DownDoor->SetActorLabel(TileDownDoorName);
+			selected.tile->DownDoor->SetOwner(selected.tile);
+#if WITH_EDITOR
+			selected.tile->DownDoor->SetFolderPath(DoorSubFolderName);
+#endif
+		}
+
+		SecretRoom->UpDoor = selected.tile->DownDoor;
+
+
 		selected.tile->DownNeighbor = SecretRoom;
+		SecretRoom->ActivateUpDoor();
+
 		break;
 	case 3:
 		//right
-		//UE_LOG(LogTemp, Log, TEXT("left neighbor"));
+		UE_LOG(LogTemp, Log, TEXT("left neighbor"));
 		//TODO: may need to fix rotation?
 		SpawnPos = FVector(selected.tile->GetActorLocation().X - (selected.tile->TileLength), selected.tile->GetActorLocation().Y, selected.tile->GetActorLocation().Z + 240);
 		//UE_LOG(LogTemp, Log, TEXT("SpawnPas: %s"), *SpawnPos.ToString());
 		SpawnRot = FRotator(PlayerSpawnPresentTile->GetActorRotation().Euler().X, 90.0f, PlayerSpawnPresentTile->GetActorRotation().Euler().Z);
 		SecretRoom = PlayerSpawnPresentTile = GetWorld()->SpawnActor<ASTile>(MyLocalLevel->PresetSecretRoomTile, SpawnPos, SpawnRot, SpawnParams);
 		SecretRoom->RightNeighbor = selected.tile;
+		
+		//only need to set one door
+		if (!selected.tile->HasValidLeftNeighbor())
+		{
+			//spawn the door ourselves
+			const FString TileLeftDoorName = "TileDoorConnecting_" + FString::FromInt(selected.tile->XIndex) + "_" + FString::FromInt(selected.tile->ZIndex) + "_to_SecretRoom";
+			//UE_LOG(LogTemp, Log, TEXT("Check1: %d"), *ThisTile->DownDoorSpawnPoint.GetLocation());
+			const FVector LeftDoorSpawnLocation = selected.tile->LeftDoorSpawnPoint.GetLocation() + selected.tile->GetActorLocation();
+			const FTransform Spawm = FTransform(selected.tile->LeftDoorSpawnPoint.GetRotation(), LeftDoorSpawnLocation);
+			selected.tile->LeftDoor = GetWorld()->SpawnActor<ASTileDoor>(TileDoor, Spawm, SpawnParams);
+			DoorArray.Add(selected.tile->LeftDoor);
+			selected.tile->LeftDoor->SetActorLabel(TileLeftDoorName);
+			selected.tile->LeftDoor->SetOwner(selected.tile);
+#if WITH_EDITOR
+			selected.tile->LeftDoor->SetFolderPath(DoorSubFolderName);
+#endif
+		}
+
+		SecretRoom->RightDoor = selected.tile->LeftDoor;
+
 		selected.tile->LeftNeighbor = SecretRoom;
+		SecretRoom->ActivateLeftDoor();
 		break;
 	case 4:
 		//left
-		//UE_LOG(LogTemp, Log, TEXT("right neighbor"));
+		UE_LOG(LogTemp, Log, TEXT("right neighbor"));
 		//TODO: may need to fix rotation?
 		SpawnPos = FVector(selected.tile->GetActorLocation().X + (selected.tile->TileLength), selected.tile->GetActorLocation().Y, selected.tile->GetActorLocation().Z + 240);
 		//UE_LOG(LogTemp, Log, TEXT("SpawnPas: %s"), *SpawnPos.ToString());
 		SpawnRot = FRotator(PlayerSpawnPresentTile->GetActorRotation().Euler().X, -90.0f, PlayerSpawnPresentTile->GetActorRotation().Euler().Z);
 		SecretRoom = PlayerSpawnPresentTile = GetWorld()->SpawnActor<ASTile>(MyLocalLevel->PresetSecretRoomTile, SpawnPos, SpawnRot, SpawnParams);
 		SecretRoom->LeftNeighbor = selected.tile;
+		
+
+		//only need to set one door
+		if (!selected.tile->HasValidRightNeighbor())
+		{
+			//spawn the door ourselves
+			const FString TileRightDoorName = "TileDoorConnecting_" + FString::FromInt(selected.tile->XIndex) + "_" + FString::FromInt(selected.tile->ZIndex) + "_to_SecretRoom";
+			//UE_LOG(LogTemp, Log, TEXT("Check1: %d"), *ThisTile->DownDoorSpawnPoint.GetLocation());
+			const FVector RightDoorSpawnLocation = selected.tile->RightDoorSpawnPoint.GetLocation() + selected.tile->GetActorLocation();
+			const FTransform Spawm = FTransform(selected.tile->RightDoorSpawnPoint.GetRotation(), RightDoorSpawnLocation);
+			selected.tile->RightDoor = GetWorld()->SpawnActor<ASTileDoor>(TileDoor, Spawm, SpawnParams);
+			DoorArray.Add(selected.tile->RightDoor);
+			selected.tile->RightDoor->SetActorLabel(TileRightDoorName);
+			selected.tile->RightDoor->SetOwner(selected.tile);
+#if WITH_EDITOR
+			selected.tile->RightDoor->SetFolderPath(DoorSubFolderName);
+#endif
+		}
+		SecretRoom->LeftDoor = selected.tile->RightDoor;
+		
+		
 		selected.tile->RightNeighbor = SecretRoom;
+		SecretRoom->ActivateRightDoor();
 		break;
 	}
 	// TO DO: this will need to be updated to a specific Secrete Room BP set in LocalLevel
@@ -1159,16 +1262,24 @@ void ASTileManager::ActivateAllDoors()
 {
 	//for(int pathCount)
 
-	for (int count = 0; count < LevelPath.Num(); count++)
+	/*for (int count = 0; count < LevelPath.Num(); count++)
 	{
 		LevelPath[count]->ActivateDoorToPath();
+	}*/
+
+	for (int doorIndex = 0; doorIndex < DoorArray.Num(); doorIndex++)
+	{
+		//remove all doors inactive (aka the ones not connecting paths)
+
 	}
+
+	//remove null rooms
 	DeactiveInactiveRooms();
 
-	for (int count2 = 0; count2 < AllActiveTiles.Num(); count2++)
+	/*for (int count2 = 0; count2 < AllActiveTiles.Num(); count2++)
 	{
 		AllActiveTiles[count2]->SyncDoors();
-	}
+	}*/
 
 }
 
@@ -1240,6 +1351,7 @@ void ASTileManager::LinkTile(ASTile* ThisTile, FMultiTileStruct Col)
 			const FVector UpDoorSpawnLocation = ThisTile->UpDoorSpawnPoint.GetLocation() + ThisTile->GetActorLocation();
 			const FTransform Spawm = FTransform(ThisTile->UpDoorSpawnPoint.GetRotation(), UpDoorSpawnLocation);
 			ThisTile->UpDoor = GetWorld()->SpawnActor<ASTileDoor>(TileDoor, Spawm, SpawnParams);
+			DoorArray.Add(ThisTile->UpDoor);
 			ThisTile->UpDoor->SetActorLabel(TileUpDoorName);
 			ThisTile->UpDoor->SetOwner(ThisTile);
 #if WITH_EDITOR
@@ -1268,6 +1380,7 @@ void ASTileManager::LinkTile(ASTile* ThisTile, FMultiTileStruct Col)
 
 			const FTransform Spawm = FTransform(ThisTile->LeftDoorSpawnPoint.GetRotation(), LeftDoorSpawnLocation);
 			ThisTile->LeftDoor = GetWorld()->SpawnActor<ASTileDoor>(TileDoor, Spawm, SpawnParams);
+			DoorArray.Add(ThisTile->LeftDoor);
 			ThisTile->LeftDoor->SetActorLabel(TileLeftDoorName);
 			ThisTile->LeftDoor->SetOwner(ThisTile);
 #if WITH_EDITOR

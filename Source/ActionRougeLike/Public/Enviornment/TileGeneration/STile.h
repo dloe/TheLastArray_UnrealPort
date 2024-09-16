@@ -187,6 +187,21 @@ public:
 	UFUNCTION(Category = "Tile Components - Neighbors")
 	bool HasValidUpNeighbor();
 
+	UFUNCTION(Category = "Tile Components - Doors")
+	void TurnAllDoorsInactive();
+
+	UFUNCTION(Category = "Tile Components - Doors")
+	void ActivateUpDoor();
+
+	UFUNCTION(Category = "Tile Components - Doors")
+	void ActivateDownDoor();
+
+	UFUNCTION(Category = "Tile Components - Doors")
+	void ActivateRightDoor();
+
+	UFUNCTION(Category = "Tile Components - Doors")
+	void ActivateLeftDoor();
+
 #pragma endregion
 
 };

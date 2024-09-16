@@ -140,6 +140,10 @@ public:
 
 	//list of possible starting tiles - DO DO: PROTECT THIS LATER
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
+	TArray<AActor*> DoorArray;
+
+	//list of possible starting tiles - DO DO: PROTECT THIS LATER
+	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	int PathNumber = 0;
 
 	//list of current active tiles - DO DO: PROTECT THIS LATER
