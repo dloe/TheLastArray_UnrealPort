@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "STileManager.h"
+#include "Enviornment/TileGeneration/STileManager.h"
 #include "SLocalLevel.h"
 #include <Engine/World.h>
 #include <string>
@@ -1233,7 +1233,7 @@ void ASTileManager::LinkTile(ASTile* ThisTile, FMultiTileStruct Col)
 		//TODO: may need work here
 		if (!UpNeighbor->DownDoor)
 		{
-			UE_LOG(LogTemp, Log, TEXT("Check1: %d"), ThisTile->ZIndex);
+			//UE_LOG(LogTemp, Log, TEXT("Check1: %d"), ThisTile->ZIndex);
 			const FString TileUpDoorName = "TileDoorConnecting_" + FString::FromInt(ThisTile->XIndex) + "_" + FString::FromInt(ThisTile->ZIndex) + "_to_" + FString::FromInt(UpNeighbor->XIndex) + "_" + FString::FromInt(UpNeighbor->ZIndex);
 			const FVector UpDoorSpawnLocation = ThisTile->DownDoorSpawnPoint.GetLocation() + ThisTile->GetActorLocation();
 			const FTransform Spawm = FTransform(ThisTile->DownDoorSpawnPoint.GetRotation(), UpDoorSpawnLocation);
@@ -1259,7 +1259,7 @@ void ASTileManager::LinkTile(ASTile* ThisTile, FMultiTileStruct Col)
 		//if our lower neighbor doesn't already have a door connecting up
 		if (!LeftNeighbor->RightDoor)
 		{
-			UE_LOG(LogTemp, Log, TEXT("Check2: %d"), ThisTile->XIndex);
+			//UE_LOG(LogTemp, Log, TEXT("Check2: %d"), ThisTile->XIndex);
 			FString TileLeftDoorName = "TileDoorConnecting_" + FString::FromInt(ThisTile->XIndex) + "_" + FString::FromInt(ThisTile->ZIndex) + "_to_" + FString::FromInt(LeftNeighbor->XIndex) + "_" + FString::FromInt(LeftNeighbor->ZIndex);
 
 			//add LeftDoorSpawnPoint location to ThisTiles location to give world location

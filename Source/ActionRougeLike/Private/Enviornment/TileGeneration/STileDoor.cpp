@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "STileDoor.h"
+#include "Enviornment/TileGeneration/STileDoor.h"
 
 // Sets default values
 ASTileDoor::ASTileDoor()

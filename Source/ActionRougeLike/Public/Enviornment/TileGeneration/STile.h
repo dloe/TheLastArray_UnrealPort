@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "STileDoor.h"
+#include "Enviornment/TileGeneration/STileDoor.h"
 #include "STile.generated.h"
 
 UENUM(BlueprintType)
