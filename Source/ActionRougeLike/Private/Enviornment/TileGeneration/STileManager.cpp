@@ -462,6 +462,7 @@ void ASTileManager::GeneratePath()
 	if (DebugPrints)
 		UE_LOG(LogTemp, Log, TEXT("=================== Finished All Doors - Implementing Final Tile Setup =============================="));
 
+	DeactiveInactiveRooms();
 
 	//if (DebugPrints)
 	//	UE_LOG(LogTemp, Log, TEXT("=================== Finished Implementing Final Tile Setup - Beginning Populating Grid =============================="));
@@ -1308,8 +1309,9 @@ void ASTileManager::FinalDoorSetupDoors()
 	}
 
 	//remove null rooms
-	DeactiveInactiveRooms();
+	//DeactiveInactiveRooms();
 
+	//TODO: Sync doors?
 	/*for (int count2 = 0; count2 < AllActiveTiles.Num(); count2++)
 	{
 		AllActiveTiles[count2]->SyncDoors();
@@ -1324,7 +1326,22 @@ void ASTileManager::FinalDoorSetupDoors()
 /// </summary>
 void ASTileManager::DeactiveInactiveRooms()
 {
+	if (DebugPrints)
+		UE_LOG(LogTemp, Log, TEXT("Removing Unwanted tiles..."));
 
+	for(FMultiTileStruct* row : Grid2DArray)
+	{
+		for (ASTile* tile : row->TileColumn)
+		{
+			if (tile->TileStatus == ETileStatus::ETile_NULLROOM)
+			{
+				//Destroy(tile);
+				tile->Destroy();
+			}
+			//turn on walls at borders of path handled in levelassetspawn
+		}
+		
+	}
 }
 
 /// <summary>
@@ -1346,7 +1363,7 @@ TArray <int> ASTileManager::Reshuffle2(TArray <int> ar)
 }
 
 /// <summary>
-/// Gets current grid denstiy
+/// Gets current grid density
 /// </summary>
 /// <returns></returns>
 float ASTileManager::GetCurrentGridDensity()
