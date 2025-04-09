@@ -128,6 +128,7 @@ void ASTileManager::Create2DTileArray()
 
 		Grid2DArray.Add(Col);
 	}
+	totalGridTilesAvailable = (LevelHeight * LevelWidth) * gridDensity;
 	if (DebugPrints)
 		UE_LOG(LogTemp, Log, TEXT("=================== 2D array CREATED! =============================="));
 }
@@ -420,7 +421,7 @@ void ASTileManager::GeneratePath()
 	//AddTileToPath(StartingTile);
 
 	CheckTile(StartingTile, LevelPath);
-
+	
 	if (DebugPrints) {
 		//draw lines through path
 		for (int Index = 0; Index < LevelPath.Num() - 1; Index++)
@@ -453,12 +454,13 @@ void ASTileManager::GeneratePath()
 		if (DebugPrints)
 			UE_LOG(LogTemp, Log, TEXT("=================== Finished Secret Room - Activating All Doors =============================="));
 
+		FinalDoorSetupDoors();
 	}
 
 
 
-	//if (DebugPrints)
-	//	UE_LOG(LogTemp, Log, TEXT("=================== Finished All Doors - Implementing Final Tile Setup =============================="));
+	if (DebugPrints)
+		UE_LOG(LogTemp, Log, TEXT("=================== Finished All Doors - Implementing Final Tile Setup =============================="));
 
 
 	//if (DebugPrints)
@@ -674,10 +676,15 @@ void ASTileManager::RandomRoomsAndBranchesAdditions()
 		if (DebugPrints)
 			UE_LOG(LogTemp, Log, TEXT("Making Branch: %d with length %d"), Branch, BranchLength);
 
-		ASTile* StartingBranchTile = AvailableTiles[GameStream.RandRange(0, AvailableTiles.Num() - 1)];
+		int indexChoosen = GameStream.RandRange(0, AvailableTiles.Num() - 1);
+		ASTile* StartingBranchTile = AvailableTiles[indexChoosen];
+
 		TArray<ASTile*>	BranchArray;
 
+
 		AvailableTiles.Remove(StartingTile);
+
+		//added StartingBranchTile to branch array for debug purposes
 
 		CheckBranchTile(StartingBranchTile, BranchArray, BranchLength);
 
@@ -710,6 +717,13 @@ void ASTileManager::RandomRoomsAndBranchesAdditions()
 			}
 		}
 
+
+		//this may be done already in old door logic, dont implement this until verified
+		//which door will connect this to the main branch? (this connected tile to the main branch will be added to the front of the branch array
+		//start of this branch is currently index 0
+
+
+
 		// MORE DOOR LOGIC HERE - May not need
 		//ActiveDoorBranch stuff
 		if (DoorsActive)
@@ -721,6 +735,8 @@ void ASTileManager::RandomRoomsAndBranchesAdditions()
 					BranchArray[Index]->ActivateDoorsBranch();
 				}
 			}*/
+
+			//when we add the door that connects the tile to the branch, that tile will be inserted as index 0 of our branch array
 		}
 
 		//start of this branch will have the door connecting to previous tile, the rest of the path will not have a door connecting to anything part of the path
@@ -732,6 +748,7 @@ void ASTileManager::RandomRoomsAndBranchesAdditions()
 
 		//Debug draw branch
 		if (DebugPrints) {
+
 			//draw lines through path
 			for (int Index = 0; Index < BranchArray.Num() - 1; Index++)
 			{
@@ -761,7 +778,11 @@ void ASTileManager::AddSingleRooms()
 
 	for (int STileCount = 0; STileCount < FillerRooms; STileCount++)
 	{
-		if (LevelWidth - AllActiveTiles.Num() >= LevelHeight / (LevelWidth * 2))
+		//total tiles * density percentage
+		//ensure that total tiles / used tiles doesn't exceed this percentage
+
+		//if (LevelWidth - AllActiveTiles.Num() >= LevelHeight / (LevelWidth * 2))
+		if(gridDensity >= GetCurrentGridDensity())
 		{
 			ASTile* Current = AvailableTiles[GameStream.RandRange(0, AvailableTiles.Num() - 1)];
 			//UE_LOG(LogTemp, Log, TEXT("Room selected: %d:%d"), Current->XIndex, Current->ZIndex);
@@ -771,6 +792,8 @@ void ASTileManager::AddSingleRooms()
 				AvailableTiles.Remove(Current);
 				AllActiveTiles.AddUnique(Current);
 				Current->TileDescription = "Random Single Room";
+
+				SingleRoomsDoorSetup(Current);
 
 				//Activate Doors
 				//Remake new available list (with this currents neighbors now added
@@ -791,6 +814,50 @@ void ASTileManager::AddSingleRooms()
 	}
 
 
+}
+
+//find a random side, and connect door to first room we find that isn't boss room, or starting room
+void ASTileManager::SingleRoomsDoorSetup(ASTile* CurrentTile)
+{
+	TArray <int> DirectionsToCheck = { 1, 2, 3, 4 };
+	DirectionsToCheck = Reshuffle2(DirectionsToCheck);
+
+	//pick direction and begin CheckTile
+	for (int DirectionCount = 0; DirectionCount < DirectionsToCheck.Num(); DirectionCount++)
+	{
+		switch (DirectionsToCheck[DirectionCount])
+		{
+			case 1:
+			//check up side
+				if (CurrentTile->HasValidUpNeighbor() && CurrentTile->IsBossTile() && CurrentTile->IsStartingTile())
+				{
+					CurrentTile->ActivateUpDoor();
+					return;
+				}
+				break;
+			case 2:
+				if (CurrentTile->HasValidDownNeighbor() && CurrentTile->IsBossTile() && CurrentTile->IsStartingTile())
+				{
+					CurrentTile-> ActivateDownDoor();
+					return;
+				}
+				break;
+			case 3:
+				if (CurrentTile->HasValidLeftNeighbor() && CurrentTile->IsBossTile() && CurrentTile->IsStartingTile())
+				{
+					CurrentTile->ActivateLeftDoor();
+					return;
+				}
+				break;
+			case 4:
+				if (CurrentTile->HasValidRightNeighbor() && CurrentTile->IsBossTile() && CurrentTile->IsStartingTile())
+				{
+					CurrentTile->ActivateRightDoor();
+					return;
+				}
+				break;
+		}
+	}
 }
 
 /// <summary>
@@ -979,7 +1046,7 @@ void ASTileManager::CreateSecretRoom()
 
 	//we now have our room we selected and the neighbor in which we are using for our secret room
 	FVector SpawnPos;
-	FRotator SpawnRot;
+	FRotator SpawnRot = FRotator(0.0f, 0.0f, 0.0f);
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	//UE_LOG(LogTemp, Log, TEXT("Picked - %d - side of [%d,%d]"), selected.neighborArray[loc], selected.tile->XIndex, selected.tile->ZIndex);
@@ -1118,6 +1185,9 @@ void ASTileManager::CheckBranchTile(ASTile* TileToAdd, TArray<ASTile*>& CurrentP
 		{
 			//theres no where to go, lets just end the branch here to save time
 			Length = 0;
+
+			//TODO: Should there be a possibility of this end of branch connecting else where? or should it be purely linear?
+
 			//exit branch
 			return;
 		}
@@ -1134,6 +1204,7 @@ void ASTileManager::CheckBranchTile(ASTile* TileToAdd, TArray<ASTile*>& CurrentP
 				if (TileToAdd->HasValidUpNeighbor() && !TileToAdd->UpNeighbor->CheckForPath && !TileToAdd->UpNeighbor->IsStartingTile()) {
 					TileToAdd->UpNeighbor->PreviousTile = TileToAdd;
 					Length--;
+					TileToAdd->ActivateUpDoor();
 					CheckBranchTile(TileToAdd->UpNeighbor, CurrentPath, Length);
 					return;
 				}
@@ -1144,6 +1215,7 @@ void ASTileManager::CheckBranchTile(ASTile* TileToAdd, TArray<ASTile*>& CurrentP
 
 					TileToAdd->DownNeighbor->PreviousTile = TileToAdd;
 					Length--;
+					TileToAdd->ActivateDownDoor();
 					CheckBranchTile(TileToAdd->DownNeighbor, CurrentPath, Length);
 					return;
 				}
@@ -1154,6 +1226,7 @@ void ASTileManager::CheckBranchTile(ASTile* TileToAdd, TArray<ASTile*>& CurrentP
 
 					TileToAdd->LeftNeighbor->PreviousTile = TileToAdd;
 					Length--;
+					TileToAdd->ActivateLeftDoor();
 					CheckBranchTile(TileToAdd->LeftNeighbor, CurrentPath, Length);
 					return;
 				}
@@ -1164,6 +1237,7 @@ void ASTileManager::CheckBranchTile(ASTile* TileToAdd, TArray<ASTile*>& CurrentP
 
 					TileToAdd->RightNeighbor->PreviousTile = TileToAdd;
 					Length--;
+					TileToAdd->ActivateRightDoor();
 					CheckBranchTile(TileToAdd->RightNeighbor, CurrentPath, Length);
 					return;
 				}
@@ -1213,7 +1287,7 @@ void ASTileManager::MakeAvailableTiles()
 /// 
 /// - Activating all doors, on main path
 /// </summary>
-void ASTileManager::ActivateAllDoors()
+void ASTileManager::FinalDoorSetupDoors()
 {
 	//for(int pathCount)
 
@@ -1225,7 +1299,12 @@ void ASTileManager::ActivateAllDoors()
 	for (int doorIndex = 0; doorIndex < DoorArray.Num(); doorIndex++)
 	{
 		//remove all doors inactive (aka the ones not connecting paths)
-
+		ASTileDoor* door = DoorArray[doorIndex];
+		if (!door->DoorActive)
+		{
+			//delete door
+			door->Destroy();
+		}
 	}
 
 	//remove null rooms
@@ -1267,6 +1346,15 @@ TArray <int> ASTileManager::Reshuffle2(TArray <int> ar)
 }
 
 /// <summary>
+/// Gets current grid denstiy
+/// </summary>
+/// <returns></returns>
+float ASTileManager::GetCurrentGridDensity()
+{
+	return (float)AllActiveTiles.Num() / (float)(LevelHeight * LevelWidth);
+}
+
+/// <summary>
 /// Dylan Loe
 /// 
 /// ASSIGNING THE NEIGHBORS AND LINKING DOORS PER TILE
@@ -1282,7 +1370,7 @@ void ASTileManager::LinkTile(ASTile* ThisTile, FMultiTileStruct Col)
 {
 	//for now I'm going to make right direction the positive one and left is negative
 	//2,1
-	UE_LOG(LogTemp, Log, TEXT("Currently on Tile: %d,%d"), ThisTile->XIndex, ThisTile->ZIndex);
+	//UE_LOG(LogTemp, Log, TEXT("Currently on Tile: %d,%d"), ThisTile->XIndex, ThisTile->ZIndex);
 
 	if (ThisTile->ZIndex > 0)
 	{

@@ -89,13 +89,19 @@ public:
 	int LevelHeight = 5;
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	int LevelWidth = 5;
+	//density of grid - percentage of non-main path tiles compared to total tiles while still not overcrowding
+	UPROPERTY(EditAnywhere, Category = "Tile Generation")
+	float gridDensity = 0.5;
+
+	UPROPERTY(EditAnywhere, Category = "Tile Generation")
+	int totalGridTilesAvailable = -1;
 
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	ALocalLevel* MyLocalLevel;
 
 	//are doors to be used in levels, some might not need them
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
-	bool DoorsActive = false;
+	bool DoorsActive = true;
 
 	//root component
 	UPROPERTY(VisibleAnywhere)
@@ -141,7 +147,7 @@ public:
 
 	//list of possible starting tiles - DO DO: PROTECT THIS LATER
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
-	TArray<AActor*> DoorArray;
+	TArray<ASTileDoor*> DoorArray;
 
 	//list of possible starting tiles - DO DO: PROTECT THIS LATER
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
@@ -220,6 +226,9 @@ protected:
 	void AddSingleRooms();
 
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
+	void SingleRoomsDoorSetup(ASTile* CurrentTile);
+
+	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
 	void CreateSpawnRoom();
 
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
@@ -232,7 +241,7 @@ protected:
 	void MakeAvailableTiles();
 
 	UFUNCTION(BlueprintCallable, Category = "Door Setup")
-	void ActivateAllDoors();
+	void FinalDoorSetupDoors();
 
 	UFUNCTION(BlueprintCallable, Category = "Door Setup")
 	void DeactiveInactiveRooms();
@@ -242,6 +251,9 @@ protected:
 
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
 	TArray <int> Reshuffle2(TArray <int> ar);
+
+	UFUNCTION(BlueprintCallable, Category = "Tile Generation")
+	float GetCurrentGridDensity();
 
 	//For debug if we want to hard code a specific side to test, we set to 0 -3 otherwise it will get overridden
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
