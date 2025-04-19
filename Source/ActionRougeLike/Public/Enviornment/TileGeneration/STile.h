@@ -195,8 +195,31 @@ public:
 	UFUNCTION(Category = "Tile Components - Neighbors")
 	bool HasValidUpNeighbor();
 
+	//These are neighbors that are existing that we want to connect to
+	UFUNCTION(Category = "Tile Components - Neighbors")
+	bool HasConnectedRightNeighbor();
+
+	UFUNCTION(Category = "Tile Components - Neighbors")
+	bool HasConnectedLeftNeighbor();
+
+	UFUNCTION(Category = "Tile Components - Neighbors")
+	bool HasConnectedUpNeighbor();
+
+	UFUNCTION(Category = "Tile Components - Neighbors")
+	bool HasConnectedDownNeighbor();
+
 	UFUNCTION(Category = "Tile Components - Doors")
 	void TurnAllDoorsInactive();
+
+	//connect tile door to path (so not a valid tile that could be placed but a tile that already exists there)
+	UFUNCTION(Category = "Tile Components - Doors")
+	void ConnectUpDoor();
+	UFUNCTION(Category = "Tile Components - Doors")
+	void ConnectDownDoor();
+	UFUNCTION(Category = "Tile Components - Doors")
+	void ConnectLeftDoor();
+	UFUNCTION(Category = "Tile Components - Doors")
+	void ConnectRightDoor();
 
 	UFUNCTION(Category = "Tile Components - Doors")
 	void ActivateUpDoor();

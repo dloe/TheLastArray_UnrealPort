@@ -192,6 +192,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	int FailsafeCount = 0;
 
+	UPROPERTY(EditAnywhere, Category = "Tile Generation")
+	FTransform doorTransform;
+
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
 	void TileGeneration();
 
@@ -247,7 +250,7 @@ protected:
 	void DeactiveInactiveRooms();
 
 	UFUNCTION(Category = "Door Setup")
-	void SpawnDoor(ASTile* tile, ETileSide SideToSpawnDoor, FString NameOfTileToConnect);
+	void SpawnDoor(ASTile* tile, ETileSide SideToSpawnDoor, FString NameOfTileToConnect, bool heightAdjustment, FTransform doorAdjustment);
 
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
 	TArray <int> Reshuffle2(TArray <int> ar);

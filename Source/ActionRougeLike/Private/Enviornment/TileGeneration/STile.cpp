@@ -166,6 +166,55 @@ bool ASTile::HasValidUpNeighbor()
 	return result;
 }
 
+//we want a valid right neighbor, and a tile status that could be activated and attached to main path or some room
+bool ASTile::HasConnectedRightNeighbor()
+{
+	bool result = false;
+	
+	if (RightNeighbor != NULL && (RightNeighbor->TileStatus == ETileStatus::ETile_PATH || RightNeighbor->TileStatus == ETileStatus::ETile_ROOM))
+	{
+		result = true;
+	}
+
+	return result;
+}
+
+bool ASTile::HasConnectedLeftNeighbor()
+{
+	bool result = false;
+
+	if (LeftNeighbor != NULL && (LeftNeighbor->TileStatus == ETileStatus::ETile_PATH || LeftNeighbor->TileStatus == ETileStatus::ETile_ROOM))
+	{
+		result = true;
+	}
+
+	return result;
+}
+
+bool ASTile::HasConnectedUpNeighbor()
+{
+	bool result = false;
+
+	if (UpNeighbor != NULL && (UpNeighbor->TileStatus == ETileStatus::ETile_PATH || UpNeighbor->TileStatus == ETileStatus::ETile_ROOM))
+	{
+		result = true;
+	}
+
+	return result;
+}
+
+bool ASTile::HasConnectedDownNeighbor()
+{
+	bool result = false;
+
+	if (DownNeighbor != NULL && (DownNeighbor->TileStatus == ETileStatus::ETile_PATH || DownNeighbor->TileStatus == ETileStatus::ETile_ROOM))
+	{
+		result = true;
+	}
+
+	return result;
+}
+
 void ASTile::TurnAllDoorsInactive()
 {
 	if(HasValidDownNeighbor())
@@ -176,6 +225,27 @@ void ASTile::TurnAllDoorsInactive()
 		RightDoor =false;
 	if(HasValidLeftNeighbor())
 		LeftDoor = false;
+}
+
+//should i have more checks in here?
+void ASTile::ConnectUpDoor()
+{
+	UpDoor->DoorActive = true;
+}
+
+void ASTile::ConnectDownDoor()
+{
+	DownDoor->DoorActive = true;
+}
+
+void ASTile::ConnectLeftDoor()
+{
+	LeftDoor->DoorActive = true;
+}
+
+void ASTile::ConnectRightDoor()
+{
+	RightDoor->DoorActive = true;
 }
 
 void ASTile::ActivateUpDoor()
