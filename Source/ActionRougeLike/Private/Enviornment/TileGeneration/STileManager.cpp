@@ -464,6 +464,7 @@ void ASTileManager::GeneratePath()
 	if (DebugPrints)
 		UE_LOG(LogTemp, Log, TEXT("=================== Finished All Doors - Implementing Final Tile Setup =============================="));
 
+	
 	DeactiveInactiveRooms();
 
 	//if (DebugPrints)
@@ -847,6 +848,7 @@ void ASTileManager::SingleRoomsDoorSetup(ASTile* CurrentTile)
 					return;
 				}
 				break;
+				//
 			case 2:
 				if (CurrentTile->HasConnectedDownNeighbor())
 				{
@@ -1069,119 +1071,105 @@ void ASTileManager::CreateSecretRoom()
 	//UE_LOG(LogTemp, Log, TEXT("Tile: %s"), *name);
 	FVector Origin;
 	FVector Extents;
+	FString TileDoorName;
 
 	//TODO: weird but with center of tile being at the top, causing a 240 offset. Will need to investigate later
 	switch (selected.neighborArray[loc])
 	{
 	case 1:
-		//up
 		UE_LOG(LogTemp, Log, TEXT("up neighbor"));
-		//TODO: may need to fix rotation?
-		//FVector(StartingTile->GetActorLocation().X, StartingTile->GetActorLocation().Y + (StartingTile->TileLength), StartingTile->GetActorLocation().Z);
-		SpawnPos = FVector(selected.tile->GetActorLocation().X, selected.tile->GetActorLocation().Y - (StartingTile->TileLength), selected.tile->GetActorLocation().Z); //+ 240
-		//UE_LOG(LogTemp, Log, TEXT("SpawnPas: %s"), *SpawnPos.ToString());
-		//SpawnRot = FRotator(PlayerSpawnPresentTile->GetActorRotation().Euler().X, -90.0f, PlayerSpawnPresentTile->GetActorRotation().Euler().Z);
-		SecretRoom = PlayerSpawnPresentTile = GetWorld()->SpawnActor<ASTile>(MyLocalLevel->PresetSecretRoomTile, SpawnPos, SpawnRot, SpawnParams);
-		SecretRoom->DownNeighbor = selected.tile;
 
-		//only need to set one door
-		if (!selected.tile->HasValidUpNeighbor())
+		//TODO: may need to fix rotation? 
+		if (selected.tile->UpNeighbor == NULL)
 		{
-			SpawnDoor(selected.tile, ETileSide::ETile_Up, "SecretRoom",true, doorTransform);
+			SpawnPos = FVector(selected.tile->GetActorLocation().X, selected.tile->GetActorLocation().Y - (StartingTile->TileLength), selected.tile->GetActorLocation().Z); //+ 240
+			//UE_LOG(LogTemp, Log, TEXT("SpawnPas: %s"), *SpawnPos.ToString());
+			//SpawnRot = FRotator(selected.tile->GetActorRotation().Euler().X, 180.0f, selected.tile->GetActorRotation().Euler().Z);
+			SecretRoom = GetWorld()->SpawnActor<ASTile>(TileBase, SpawnPos, SpawnRot, SpawnParams);
+			SpawnDoor(SecretRoom, ETileSide::ETile_Down, "SecretRoom", false, doorTransform);
 		}
-		SecretRoom->DownDoor = selected.tile->UpDoor;
+		else if (selected.tile->UpNeighbor->TileStatus == ETileStatus::ETile_NULLROOM) { //confirmed this works now get other wey of working
+			//rotate tile? may need tile to be setup for easier testing of rotation
+			SecretRoom = selected.tile->UpNeighbor;
+			SetupDoor(SecretRoom, ETileSide::ETile_Down, "SecretRoom", selected.tile->UpDoor);
+		}
 
-
-
+		SecretRoom->DownNeighbor = selected.tile;
+		selected.tile->UpDoor = SecretRoom->DownDoor;
 		selected.tile->UpNeighbor = SecretRoom;
-		SecretRoom->ActivateDownDoor();
 
 		break;
 	case 2:
 		//down
 		UE_LOG(LogTemp, Log, TEXT("down neighbor"));
-		//TODO: may need to fix rotation? 
-		SpawnPos = FVector(selected.tile->GetActorLocation().X, selected.tile->GetActorLocation().Y + (StartingTile->TileLength), selected.tile->GetActorLocation().Z + 240);
-		//UE_LOG(LogTemp, Log, TEXT("SpawnPas: %s"), *SpawnPos.ToString());
-		SpawnRot = FRotator(PlayerSpawnPresentTile->GetActorRotation().Euler().X, 180.0f, PlayerSpawnPresentTile->GetActorRotation().Euler().Z);
-		SecretRoom = PlayerSpawnPresentTile = GetWorld()->SpawnActor<ASTile>(TileBase, SpawnPos, SpawnRot, SpawnParams);
-		SecretRoom->UpNeighbor = selected.tile;
 
-		//only need to set one door
-		if (!selected.tile->HasConnectedDownNeighbor())
-		{
-			SpawnDoor(SecretRoom, ETileSide::ETile_Up, "SecretRoom",true, doorTransform);
-			//UE_LOG(LogTemp, Log, TEXT(selected.tile->DownDoor->GetActorLocation().ToString()));
-			//UE_LOG(LogTemp, Log, TEXT("Actor Location: X=%f, Y=%f, Z=%f"), SecretRoom->UpDoor->GetActorLocation().X, SecretRoom->UpDoor->GetActorLocation().Y, SecretRoom->UpDoor->GetActorLocation().Z);
+		//TODO: may need to fix rotation? 
+		if (selected.tile->DownNeighbor == NULL)
+		{	
+			SpawnPos = FVector(selected.tile->GetActorLocation().X, selected.tile->GetActorLocation().Y + (StartingTile->TileLength), selected.tile->GetActorLocation().Z);
+			//UE_LOG(LogTemp, Log, TEXT("SpawnPas: %s"), *SpawnPos.ToString());
+			SpawnRot = FRotator(selected.tile->GetActorRotation().Euler().X, 180.0f, selected.tile->GetActorRotation().Euler().Z);
+			SecretRoom = GetWorld()->SpawnActor<ASTile>(TileBase, SpawnPos, SpawnRot, SpawnParams);
+			SpawnDoor(SecretRoom, ETileSide::ETile_Up, "SecretRoom", false, doorTransform);
+		}
+		else if(selected.tile->DownNeighbor->TileStatus == ETileStatus::ETile_NULLROOM) { //confirmed this works now get other wey of working
+			//rotate tile? may need tile to be setup for easier testing of rotation
+			SecretRoom = selected.tile->DownNeighbor;
+			SetupDoor(SecretRoom, ETileSide::ETile_Up, "SecretRoom", selected.tile->DownDoor);
 		}
 
-		//SecretRoom->UpDoor = selected.tile->DownDoor;
+		SecretRoom->UpNeighbor = selected.tile;
 		selected.tile->DownDoor = SecretRoom->UpDoor;
-		//UE_LOG(LogTemp, Log, TEXT("Door Actor Location: X=%f, Y=%f, Z=%f"), SecretRoom->UpDoor->GetActorLocation().X, SecretRoom->UpDoor->GetActorLocation().Y, SecretRoom->UpDoor->GetActorLocation().Z);
-		//UE_LOG(LogTemp, Log, TEXT("Tile Actor Location: X=%f, Y=%f, Z=%f"), SecretRoom->GetActorLocation().X, SecretRoom->GetActorLocation().Y, SecretRoom->GetActorLocation().Z);
-
 		selected.tile->DownNeighbor = SecretRoom;
-		selected.tile->ConnectDownDoor();
-		//SecretRoom->ConnectUpDoor();
-		//SecretRoom->ActivateUpDoor();
-		
-		
-		SecretRoom->GetActorBounds(false, Origin, Extents);
 
-		UE_LOG(LogTemp, Warning, TEXT("Actor Bounds Origin: X=%f, Y=%f, Z=%f"), Origin.X, Origin.Y, Origin.Z);
-
-		Origin.Set(0,0,0);
-		Extents.Set(0, 0, 0);
-
-		selected.tile->GetActorBounds(true, Origin, Extents);
-		UE_LOG(LogTemp, Warning, TEXT("Normal Actor Bounds Origin: X=%f, Y=%f, Z=%f"), Origin.X, Origin.Y, Origin.Z);
-
-		//UE_LOG(LogTemp, Log, TEXT("Door Actor Location: X=%f, Y=%f, Z=%f"), SecretRoom->UpDoor->GetActorLocation().X, SecretRoom->UpDoor->GetActorLocation().Y, SecretRoom->UpDoor->GetActorLocation().Z);
-		//UE_LOG(LogTemp, Log, TEXT("Tile Actor Location: X=%f, Y=%f, Z=%f"), SecretRoom->GetActorLocation().X, SecretRoom->GetActorLocation().Y, SecretRoom->GetActorLocation().Z);
-		
 		break;
 	case 3:
 		//right
 		UE_LOG(LogTemp, Log, TEXT("left neighbor"));
-		//TODO: may need to fix rotation?
-		SpawnPos = FVector(selected.tile->GetActorLocation().X - (selected.tile->TileLength), selected.tile->GetActorLocation().Y, selected.tile->GetActorLocation().Z + 240);
-		//UE_LOG(LogTemp, Log, TEXT("SpawnPas: %s"), *SpawnPos.ToString());
-		SpawnRot = FRotator(PlayerSpawnPresentTile->GetActorRotation().Euler().X, 90.0f, PlayerSpawnPresentTile->GetActorRotation().Euler().Z);
-		SecretRoom = PlayerSpawnPresentTile = GetWorld()->SpawnActor<ASTile>(MyLocalLevel->PresetSecretRoomTile, SpawnPos, SpawnRot, SpawnParams);
-		SecretRoom->RightNeighbor = selected.tile;
-		
-		//only need to set one door
-		if (!selected.tile->HasValidLeftNeighbor())
+
+		//TODO: may need to fix rotation? 
+		if (selected.tile->LeftNeighbor == NULL)
 		{
-			SpawnDoor(selected.tile, ETileSide::ETile_Left, "SecretRoom",true, doorTransform);
+			SpawnPos = FVector(selected.tile->GetActorLocation().X - (selected.tile->TileLength), selected.tile->GetActorLocation().Y, selected.tile->GetActorLocation().Z + 240);
+			//UE_LOG(LogTemp, Log, TEXT("SpawnPas: %s"), *SpawnPos.ToString());
+			SpawnRot = FRotator(PlayerSpawnPresentTile->GetActorRotation().Euler().X, 90.0f, PlayerSpawnPresentTile->GetActorRotation().Euler().Z);
+			SecretRoom = GetWorld()->SpawnActor<ASTile>(TileBase, SpawnPos, SpawnRot, SpawnParams);
+			SpawnDoor(SecretRoom, ETileSide::ETile_Right, "SecretRoom", false, doorTransform);
+		}
+		else if (selected.tile->LeftNeighbor->TileStatus == ETileStatus::ETile_NULLROOM) { //confirmed this works now get other wey of working
+			//rotate tile? may need tile to be setup for easier testing of rotation
+			SecretRoom = selected.tile->LeftNeighbor;
+			SetupDoor(SecretRoom, ETileSide::ETile_Right, "SecretRoom", selected.tile->LeftDoor);
 		}
 
-		SecretRoom->RightDoor = selected.tile->LeftDoor;
-
+		SecretRoom->RightNeighbor = selected.tile;
+		selected.tile->LeftDoor = SecretRoom->RightDoor;
 		selected.tile->LeftNeighbor = SecretRoom;
-		SecretRoom->ActivateLeftDoor();
+
 		break;
 	case 4:
 		//left
 		UE_LOG(LogTemp, Log, TEXT("right neighbor"));
-		//TODO: may need to fix rotation?
-		SpawnPos = FVector(selected.tile->GetActorLocation().X + (selected.tile->TileLength), selected.tile->GetActorLocation().Y, selected.tile->GetActorLocation().Z + 240);
-		//UE_LOG(LogTemp, Log, TEXT("SpawnPas: %s"), *SpawnPos.ToString());
-		SpawnRot = FRotator(PlayerSpawnPresentTile->GetActorRotation().Euler().X, -90.0f, PlayerSpawnPresentTile->GetActorRotation().Euler().Z);
-		SecretRoom = PlayerSpawnPresentTile = GetWorld()->SpawnActor<ASTile>(MyLocalLevel->PresetSecretRoomTile, SpawnPos, SpawnRot, SpawnParams);
-		SecretRoom->LeftNeighbor = selected.tile;
-		
 
-		//only need to set one door
-		if (!selected.tile->HasValidRightNeighbor())
+		//TODO: may need to fix rotation? 
+		if (selected.tile->RightNeighbor == NULL)
 		{
-			SpawnDoor(selected.tile, ETileSide::ETile_Right, "SecretRoom",true, doorTransform);
+			SpawnPos = FVector(selected.tile->GetActorLocation().X + (selected.tile->TileLength), selected.tile->GetActorLocation().Y, selected.tile->GetActorLocation().Z + 240);
+			//UE_LOG(LogTemp, Log, TEXT("SpawnPas: %s"), *SpawnPos.ToString());
+			SpawnRot = FRotator(PlayerSpawnPresentTile->GetActorRotation().Euler().X, -90.0f, PlayerSpawnPresentTile->GetActorRotation().Euler().Z);
+			SecretRoom = GetWorld()->SpawnActor<ASTile>(TileBase, SpawnPos, SpawnRot, SpawnParams);
+			SpawnDoor(SecretRoom, ETileSide::ETile_Left, "SecretRoom", false, doorTransform);
 		}
-		SecretRoom->LeftDoor = selected.tile->RightDoor;
-		
-		
+		else if (selected.tile->RightNeighbor->TileStatus == ETileStatus::ETile_NULLROOM) { //confirmed this works now get other wey of working
+			//rotate tile? may need tile to be setup for easier testing of rotation
+			SecretRoom = selected.tile->RightNeighbor;
+			SetupDoor(SecretRoom, ETileSide::ETile_Left, "SecretRoom", selected.tile->RightDoor);
+		}
+
+		SecretRoom->LeftNeighbor = selected.tile;
+		selected.tile->RightDoor = SecretRoom->LeftDoor;
 		selected.tile->RightNeighbor = SecretRoom;
-		SecretRoom->ActivateRightDoor();
+
 		break;
 	}
 	// TO DO: this will need to be updated to a specific Secrete Room BP set in LocalLevel
@@ -1195,8 +1183,6 @@ void ASTileManager::CreateSecretRoom()
 
 	//ACTIVATE WALLS
 	SecretRoom->ActivateWalls();
-	//UE_LOG(LogTemp, Log, TEXT("Door Actor Location: X=%f, Y=%f, Z=%f"), SecretRoom->UpDoor->GetActorLocation().X, SecretRoom->UpDoor->GetActorLocation().Y, SecretRoom->UpDoor->GetActorLocation().Z);
-	//UE_LOG(LogTemp, Log, TEXT("Tile Actor Location: X=%f, Y=%f, Z=%f"), SecretRoom->GetActorLocation().X, SecretRoom->GetActorLocation().Y, SecretRoom->GetActorLocation().Z);
 }
 
 /// <summary>
@@ -1542,6 +1528,43 @@ void ASTileManager::SpawnDoor(ASTile* tile, ETileSide SideToSpawnDoor, FString N
 
 
 	ASTileDoor* door = GetWorld()->SpawnActor<ASTileDoor>(TileDoor, Spawm, SpawnParams);
+
+	SetupDoor(tile, SideToSpawnDoor, NameOfTileToConnect, door);
+
+	/*door->DoorActive = true;
+	DoorArray.Add(door);
+	door->SetActorLabel(TileDoorName);
+	door->SetOwner(this);
+#if WITH_EDITOR
+	door->SetFolderPath(DoorSubFolderName);
+#endif
+
+	switch (SideToSpawnDoor)
+	{
+	case ETileSide::ETile_Up:
+		tile->UpDoor = door;
+		break;
+	case ETileSide::ETile_Down:
+		tile->DownDoor = door;
+		break;
+	case ETileSide::ETile_Left:
+		tile->LeftDoor = door;
+		break;
+	case ETileSide::ETile_Right:
+		tile->RightDoor = door;
+		break;
+	default:
+		break;
+	}*/
+
+}
+
+void ASTileManager::SetupDoor(ASTile* tile, ETileSide SideToSpawnDoor, FString NameOfTileToConnect, ASTileDoor* door)
+{
+
+	//door = GetWorld()->SpawnActor<ASTileDoor>(TileDoor, Spawm, SpawnParams);
+	const FString TileDoorName = "TileDoorConnecting_" + FString::FromInt(tile->XIndex) + "_" + FString::FromInt(tile->ZIndex) + "_to_SecretRoom";
+
 	door->DoorActive = true;
 	DoorArray.Add(door);
 	door->SetActorLabel(TileDoorName);
@@ -1567,7 +1590,5 @@ void ASTileManager::SpawnDoor(ASTile* tile, ETileSide SideToSpawnDoor, FString N
 	default:
 		break;
 	}
-
 }
-
 

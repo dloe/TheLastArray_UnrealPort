@@ -252,6 +252,9 @@ protected:
 	UFUNCTION(Category = "Door Setup")
 	void SpawnDoor(ASTile* tile, ETileSide SideToSpawnDoor, FString NameOfTileToConnect, bool heightAdjustment, FTransform doorAdjustment);
 
+	UFUNCTION(Category = "Door Setup")
+	void SetupDoor(ASTile* tile, ETileSide SideToSpawnDoor, FString NameOfTileToConnect, ASTileDoor* door);
+
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
 	TArray <int> Reshuffle2(TArray <int> ar);
 
