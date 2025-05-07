@@ -533,39 +533,39 @@ void ASTileManager::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& CurrentPath)
 	} // boss room checks
 	else if ((CurrentTile->UpNeighbor && CurrentTile->UpNeighbor->IsBossTile()))
 	{
-		//UE_LOG(LogTemp, Log, TEXT("Found Boss Room! at %d,%d"), CurrentTile->UpNeighbor->XIndex, CurrentTile->UpNeighbor->ZIndex);
+		UE_LOG(LogTemp, Log, TEXT("Found Boss Room! at %d,%d"), CurrentTile->UpNeighbor->XIndex, CurrentTile->UpNeighbor->ZIndex);
 		CurrentTile->CheckForPath = true;
 		AddTileToPath(CurrentTile);
 		AddTileToPath(CurrentTile->UpNeighbor);
 
-		CurrentTile->ActivateUpDoor();
+		CurrentTile->ConnectUpDoor();
 		doorTransform = CurrentTile->UpDoor->GetTransform();
 	}
 	else if ((CurrentTile->DownNeighbor && CurrentTile->DownNeighbor->IsBossTile()))
 	{
-		//UE_LOG(LogTemp, Log, TEXT("Found Boss Room! at %d,%d"), CurrentTile->DownNeighbor->XIndex, CurrentTile->DownNeighbor->ZIndex);
+		UE_LOG(LogTemp, Log, TEXT("Found Boss Room! at %d,%d"), CurrentTile->DownNeighbor->XIndex, CurrentTile->DownNeighbor->ZIndex);
 		CurrentTile->CheckForPath = true;
 		AddTileToPath(CurrentTile);
 		AddTileToPath(CurrentTile->DownNeighbor);
-		CurrentTile->ActivateDownDoor();
+		CurrentTile->ConnectDownDoor();
 		doorTransform = CurrentTile->DownDoor->GetTransform();
 	}
 	else if ((CurrentTile->RightNeighbor && CurrentTile->RightNeighbor->IsBossTile()))
 	{
-		//UE_LOG(LogTemp, Log, TEXT("Found Boss Room! at %d,%d"), CurrentTile->RightNeighbor->XIndex, CurrentTile->RightNeighbor->ZIndex);
+		UE_LOG(LogTemp, Log, TEXT("Found Boss Room! at %d,%d"), CurrentTile->RightNeighbor->XIndex, CurrentTile->RightNeighbor->ZIndex);
 		CurrentTile->CheckForPath = true;
 		AddTileToPath(CurrentTile);
 		AddTileToPath(CurrentTile->RightNeighbor);
-		CurrentTile->ActivateRightDoor();
+		CurrentTile->ConnectRightDoor();
 		doorTransform = CurrentTile->RightDoor->GetTransform();
 	}
 	else if ((CurrentTile->LeftNeighbor && CurrentTile->LeftNeighbor->IsBossTile()))
 	{
-		//UE_LOG(LogTemp, Log, TEXT("Found Boss Room! at %d,%d"), CurrentTile->LeftNeighbor->XIndex, CurrentTile->LeftNeighbor->ZIndex);
+		UE_LOG(LogTemp, Log, TEXT("Found Boss Room! at %d,%d"), CurrentTile->LeftNeighbor->XIndex, CurrentTile->LeftNeighbor->ZIndex);
 		CurrentTile->CheckForPath = true;
 		AddTileToPath(CurrentTile);
 		AddTileToPath(CurrentTile->LeftNeighbor);
-		CurrentTile->ActivateLeftDoor();
+		CurrentTile->ConnectLeftDoor();
 		doorTransform = CurrentTile->LeftDoor->GetTransform();
 	}
 	else {

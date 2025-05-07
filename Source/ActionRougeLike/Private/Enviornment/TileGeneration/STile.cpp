@@ -123,6 +123,7 @@ void ASTile::ShadeTestRoom()
 void ASTile::ShadeEndRoom()
 {
 	DrawDebugSphere(GetWorld(), this->GetActorLocation(), 200.0f, 20, FColor::Black, false, 100);
+	this->SetActorLabel("Tile_FinalRoom");
 	TileStatus = ETileStatus::ETile_BOSSROOM;
 }
 
