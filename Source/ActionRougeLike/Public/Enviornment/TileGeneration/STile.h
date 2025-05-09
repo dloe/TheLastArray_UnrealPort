@@ -84,6 +84,9 @@ public:
 	UFUNCTION(Category = "Tile Stats")
 	bool IsStartingTile() const;
 
+	UFUNCTION(Category = "Tile Stats")
+	bool IsNotSpecialTile();
+
 #pragma endregion
 
 #pragma region Tile Doors
@@ -108,7 +111,7 @@ public:
 	ASTile* PreviousTile;
 
 	UPROPERTY(EditAnywhere, Category = "Tile Components - Path")
-	bool CheckForPath = false;
+	bool CheckForPath = false;                                                   //Is Tile on main path
 
 	UPROPERTY(EditAnywhere, Category = "Tile Components - Path")
 	bool PartOfPath = false;

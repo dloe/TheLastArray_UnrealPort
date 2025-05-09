@@ -33,9 +33,9 @@ void ASTileManager::SeedSetup()
 			UE_LOG(LogTemp, Log, TEXT("Using Supplied Seed..."));
 		//GameStream.Initialize("GameSeed");
 		GameStream.Initialize(GameSeed);
-		
+
 	}
-	
+
 	if (DebugPrints)
 		UE_LOG(LogTemp, Log, TEXT("Seed: %d"), GameStream.GetCurrentSeed());
 }
@@ -103,7 +103,7 @@ void ASTileManager::Create2DTileArray()
 			//spawn in a Tile
 			//UE_LOG(LogTemp, Log, TEXT("--Tile: %f, %f"), XIndex, ZIndex);
 			FString TileName = "Tile_Row" + FString::FromInt(XIndex) + "_Col" + FString::FromInt(ZIndex);
-			
+
 			//if (DebugPrints)
 				//UE_LOG(LogTemp, Log, TEXT("--Tile: %s"), *TileName);
 			//UE_LOG(LogTemp, Log, TEXT("--Tile: %f, %f"), XIndex, ZIndex);
@@ -421,7 +421,7 @@ void ASTileManager::GeneratePath()
 	//AddTileToPath(StartingTile);
 
 	CheckTile(StartingTile, LevelPath);
-	
+
 	if (DebugPrints) {
 		//draw lines through path
 		for (int Index = 0; Index < LevelPath.Num() - 1; Index++)
@@ -431,6 +431,8 @@ void ASTileManager::GeneratePath()
 		}
 	}
 
+	CreateSpawnRoom();
+
 	if (DebugPrints)
 		UE_LOG(LogTemp, Log, TEXT("=================== Finished Path - Adding Random Rooms =============================="));
 
@@ -439,7 +441,7 @@ void ASTileManager::GeneratePath()
 	if (DebugPrints)
 		UE_LOG(LogTemp, Log, TEXT("=================== Finished Random Rooms - Adding Spawn Room =============================="));
 
-	CreateSpawnRoom();
+	
 
 	AddSingleRooms();
 
@@ -458,13 +460,9 @@ void ASTileManager::GeneratePath()
 		FinalDoorSetupDoors();
 	}
 
-	//UE_LOG(LogTemp, Log, TEXT("Door Actor Location: X=%f, Y=%f, Z=%f"), SecretRoom->UpDoor->GetActorLocation().X, SecretRoom->UpDoor->GetActorLocation().Y, SecretRoom->UpDoor->GetActorLocation().Z);
-	//UE_LOG(LogTemp, Log, TEXT("Tile Actor Location: X=%f, Y=%f, Z=%f"), SecretRoom->GetActorLocation().X, SecretRoom->GetActorLocation().Y, SecretRoom->GetActorLocation().Z);
-
 	if (DebugPrints)
 		UE_LOG(LogTemp, Log, TEXT("=================== Finished All Doors - Implementing Final Tile Setup =============================="));
 
-	
 	DeactiveInactiveRooms();
 
 	//if (DebugPrints)
@@ -594,7 +592,7 @@ void ASTileManager::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& CurrentPath)
 					//no need to keep going through other directions directions
 					DirectionCount = 5;
 					doorTransform = CurrentTile->UpDoor->GetTransform();
-					
+
 					CheckTile(CurrentTile->UpNeighbor, CurrentPath);
 				}
 				break;
@@ -688,17 +686,21 @@ void ASTileManager::RandomRoomsAndBranchesAdditions()
 		if (DebugPrints)
 			UE_LOG(LogTemp, Log, TEXT("Making Branch: %d with length %d"), Branch, BranchLength);
 
+		//starting tile for branch
 		int indexChoosen = GameStream.RandRange(0, AvailableTiles.Num() - 1);
 		ASTile* StartingBranchTile = AvailableTiles[indexChoosen];
 
 		TArray<ASTile*>	BranchArray;
 
-
-		AvailableTiles.Remove(StartingTile);
+		//remove starting branch tile
+		AvailableTiles.Remove(StartingBranchTile);
 
 		//added StartingBranchTile to branch array for debug purposes
+		int branchDoorConnectorSideCheck = CheckPathSide(StartingBranchTile);
+		UE_LOG(LogTemp, Log, TEXT("Check start branch %d: %d,%d on side %d"), Branch, StartingBranchTile->XIndex, StartingBranchTile->ZIndex, branchDoorConnectorSideCheck);
+		//TODO: print out which tile and which side we went with
 
-		CheckBranchTile(StartingBranchTile, BranchArray, BranchLength);
+		CheckBranchTile(StartingBranchTile, BranchArray, BranchLength, branchDoorConnectorSideCheck);
 
 		//TO DO: door logic goes here - may not need
 		if (DoorsActive)
@@ -769,7 +771,7 @@ void ASTileManager::RandomRoomsAndBranchesAdditions()
 		}
 	}
 
-	
+
 }
 
 /// <summary>
@@ -794,7 +796,7 @@ void ASTileManager::AddSingleRooms()
 		//ensure that total tiles / used tiles doesn't exceed this percentage
 
 		//if (LevelWidth - AllActiveTiles.Num() >= LevelHeight / (LevelWidth * 2))
-		if(gridDensity >= GetCurrentGridDensity())
+		if (gridDensity >= GetCurrentGridDensity())
 		{
 			ASTile* Current = AvailableTiles[GameStream.RandRange(0, AvailableTiles.Num() - 1)];
 			//UE_LOG(LogTemp, Log, TEXT("Room selected: %d:%d"), Current->XIndex, Current->ZIndex);
@@ -840,36 +842,36 @@ void ASTileManager::SingleRoomsDoorSetup(ASTile* CurrentTile)
 		UE_LOG(LogTemp, Log, TEXT("Number: %d"), DirectionsToCheck[DirectionCount]);
 		switch (DirectionsToCheck[DirectionCount])
 		{
-			case 1:
+		case 1:
 			//check up side
-				if (CurrentTile->HasConnectedUpNeighbor())
-				{
-					CurrentTile->ConnectUpDoor();
-					return;
-				}
-				break;
-				//
-			case 2:
-				if (CurrentTile->HasConnectedDownNeighbor())
-				{
-					CurrentTile->ConnectDownDoor();
-					return;
-				}
-				break;
-			case 3:
-				if (CurrentTile->HasConnectedLeftNeighbor())
-				{
-					CurrentTile->ConnectLeftDoor();
-					return;
-				}
-				break;
-			case 4:
-				if (CurrentTile->HasConnectedRightNeighbor())
-				{
-					CurrentTile->ConnectRightDoor();
-					return;
-				}
-				break;
+			if (CurrentTile->HasConnectedUpNeighbor())
+			{
+				CurrentTile->ConnectUpDoor();
+				return;
+			}
+			break;
+			//
+		case 2:
+			if (CurrentTile->HasConnectedDownNeighbor())
+			{
+				CurrentTile->ConnectDownDoor();
+				return;
+			}
+			break;
+		case 3:
+			if (CurrentTile->HasConnectedLeftNeighbor())
+			{
+				CurrentTile->ConnectLeftDoor();
+				return;
+			}
+			break;
+		case 4:
+			if (CurrentTile->HasConnectedRightNeighbor())
+			{
+				CurrentTile->ConnectRightDoor();
+				return;
+			}
+			break;
 		}
 	}
 }
@@ -914,7 +916,7 @@ void ASTileManager::CreateSpawnRoom()
 		PlayerStartingTileBase->DownNeighbor = StartingTile;
 		UE_LOG(LogTemp, Log, TEXT("No door spawned in start room, add code if we use this route..."));
 
-		
+
 
 		break;
 	case 2:
@@ -955,7 +957,7 @@ void ASTileManager::CreateSpawnRoom()
 		break;
 	}
 
-	
+
 
 
 	//label
@@ -1105,14 +1107,14 @@ void ASTileManager::CreateSecretRoom()
 
 		//TODO: may need to fix rotation? 
 		if (selected.tile->DownNeighbor == NULL)
-		{	
+		{
 			SpawnPos = FVector(selected.tile->GetActorLocation().X, selected.tile->GetActorLocation().Y + (StartingTile->TileLength), selected.tile->GetActorLocation().Z);
 			//UE_LOG(LogTemp, Log, TEXT("SpawnPas: %s"), *SpawnPos.ToString());
 			SpawnRot = FRotator(selected.tile->GetActorRotation().Euler().X, 180.0f, selected.tile->GetActorRotation().Euler().Z);
 			SecretRoom = GetWorld()->SpawnActor<ASTile>(TileBase, SpawnPos, SpawnRot, SpawnParams);
 			SpawnDoor(SecretRoom, ETileSide::ETile_Up, "SecretRoom", false, doorTransform);
 		}
-		else if(selected.tile->DownNeighbor->TileStatus == ETileStatus::ETile_NULLROOM) { //confirmed this works now get other wey of working
+		else if (selected.tile->DownNeighbor->TileStatus == ETileStatus::ETile_NULLROOM) { //confirmed this works now get other wey of working
 			//rotate tile? may need tile to be setup for easier testing of rotation
 			SecretRoom = selected.tile->DownNeighbor;
 			SetupDoor(SecretRoom, ETileSide::ETile_Up, "SecretRoom", selected.tile->DownDoor);
@@ -1193,8 +1195,10 @@ void ASTileManager::CreateSecretRoom()
 /// <param name="TileToAdd"> Current Tile being analyzed </param>
 /// <param name="CurrentPath"> Current branch path we are building </param>
 /// <param name="Length"> given size of path we are aiming for </param>
-void ASTileManager::CheckBranchTile(ASTile* TileToAdd, TArray<ASTile*>& CurrentPath, int Length)
+void ASTileManager::CheckBranchTile(ASTile* TileToAdd, TArray<ASTile*>& CurrentPath, int Length, int prevDirection)
 {
+	//2,3 last one is 3,3
+	//UE_LOG(LogTemp, Log, TEXT("Current Tile: %d,%d"), TileToAdd->XIndex, TileToAdd->ZIndex);
 	if (Length > 0)
 	{
 		CurrentPath.Add(TileToAdd);
@@ -1208,6 +1212,10 @@ void ASTileManager::CheckBranchTile(ASTile* TileToAdd, TArray<ASTile*>& CurrentP
 			Length = 0;
 
 			//TODO: Should there be a possibility of this end of branch connecting else where? or should it be purely linear?
+		
+			
+			
+			ConnectDoorBranch(TileToAdd, prevDirection);
 
 			//exit branch
 			return;
@@ -1223,50 +1231,168 @@ void ASTileManager::CheckBranchTile(ASTile* TileToAdd, TArray<ASTile*>& CurrentP
 			case 1:
 				//UP
 				if (TileToAdd->HasValidUpNeighbor() && !TileToAdd->UpNeighbor->CheckForPath && !TileToAdd->UpNeighbor->IsStartingTile()) {
+					
 					TileToAdd->UpNeighbor->PreviousTile = TileToAdd;
 					Length--;
-					TileToAdd->ActivateUpDoor();
-					CheckBranchTile(TileToAdd->UpNeighbor, CurrentPath, Length);
+					ConnectDoorBranch(TileToAdd, prevDirection);
+					CheckBranchTile(TileToAdd->UpNeighbor, CurrentPath, Length, 1);
 					return;
 				}
 				break;
 			case 2:
 				//DOWN
 				if (TileToAdd->HasValidDownNeighbor() && !TileToAdd->DownNeighbor->CheckForPath && !TileToAdd->DownNeighbor->IsStartingTile()) {
-
+					
 					TileToAdd->DownNeighbor->PreviousTile = TileToAdd;
 					Length--;
-					TileToAdd->ActivateDownDoor();
-					CheckBranchTile(TileToAdd->DownNeighbor, CurrentPath, Length);
+					ConnectDoorBranch(TileToAdd, prevDirection);
+					CheckBranchTile(TileToAdd->DownNeighbor, CurrentPath, Length, 2);
 					return;
 				}
 				break;
 			case 3:
 				//LEFT
 				if (TileToAdd->HasValidLeftNeighbor() && !TileToAdd->LeftNeighbor->CheckForPath && !TileToAdd->LeftNeighbor->IsStartingTile()) {
-
+					
 					TileToAdd->LeftNeighbor->PreviousTile = TileToAdd;
 					Length--;
-					TileToAdd->ActivateLeftDoor();
-					CheckBranchTile(TileToAdd->LeftNeighbor, CurrentPath, Length);
+					ConnectDoorBranch(TileToAdd, prevDirection);
+					CheckBranchTile(TileToAdd->LeftNeighbor, CurrentPath, Length, 3);
 					return;
 				}
 				break;
 			case 4:
 				//RIGHT
 				if (TileToAdd->HasValidRightNeighbor() && !TileToAdd->RightNeighbor->CheckForPath && !TileToAdd->RightNeighbor->IsStartingTile()) {
-
+					
 					TileToAdd->RightNeighbor->PreviousTile = TileToAdd;
 					Length--;
-					TileToAdd->ActivateRightDoor();
-					CheckBranchTile(TileToAdd->RightNeighbor, CurrentPath, Length);
+					ConnectDoorBranch(TileToAdd, prevDirection);
+					CheckBranchTile(TileToAdd->RightNeighbor, CurrentPath, Length, 4);
 					return;
 				}
 				break;
 			}
 		}
 	}
+	
 	return;
+}
+
+/// <summary>
+/// When going through the branch tiles to add, we need to activate the door of the previous tile visited.
+/// (Passed in via prevDirection where 1 = Up, 2 = down, 3 = left, 4 = right
+/// </summary>
+/// <param name="TileToAdd"></param>
+/// <param name="CurrentPath"></param>
+/// <param name="Length"></param>
+/// <param name="prevDirection"></param>
+void ASTileManager::ConnectDoorBranch(ASTile* TileToAdd, int prevDirection)
+{
+	switch (prevDirection) {
+	case 1: //prev was up
+		//prev tile was up direction to get here, therefore this tile's down neighbor was the up neighbor of the prev tile
+		TileToAdd->ConnectDownDoor();
+		break;
+	case 2: //prev was down
+		TileToAdd->ConnectUpDoor();
+		break;
+	case 3: //prev was left
+		TileToAdd->ConnectRightDoor();
+		break;
+	case 4: //prev was right
+		TileToAdd->ConnectLeftDoor();
+		break;
+	}
+}
+
+//pass in tile, check which side connects to path
+int ASTileManager::CheckPathSide(ASTile* TileToCheck)
+{
+	//needs to be random
+	TArray <int> DirectionsToCheck = { 1, 2, 3, 4 };
+
+	DirectionsToCheck = Reshuffle2(DirectionsToCheck);
+
+	int choice = 0;
+
+	for (int DirectionCount = 0; DirectionCount < DirectionsToCheck.Num(); DirectionCount++) {
+		switch (DirectionsToCheck[DirectionCount]) {
+
+		case 2:
+			//
+			if (TileToCheck->HasConnectedUpNeighbor() && TileToCheck->UpNeighbor->CheckForPath && TileToCheck->UpNeighbor->IsNotSpecialTile())
+			{
+				return 2;
+			}
+
+			break;
+		case 1:
+			//
+			if (TileToCheck->HasConnectedDownNeighbor() && TileToCheck->DownNeighbor->CheckForPath && TileToCheck->DownNeighbor->IsNotSpecialTile())
+			{
+				return 1;
+			}
+
+			break;
+		case 4:
+			//
+			if (TileToCheck->HasConnectedLeftNeighbor() && TileToCheck->LeftNeighbor->CheckForPath && TileToCheck->LeftNeighbor->IsNotSpecialTile())
+			{
+				return 4;
+			}
+			break;
+		case 3:
+			//
+			if (TileToCheck->HasConnectedRightNeighbor() && TileToCheck->RightNeighbor->CheckForPath && TileToCheck->RightNeighbor->IsNotSpecialTile())
+			{
+				return 3;
+			}
+			break;
+		}
+	}
+
+	//UE_LOG(LogTemp, Log, TEXT("No main path tile neighbors, checking for any normal non-null rooms"));
+	//if no direct path detected, check if room status
+	DirectionsToCheck = Reshuffle2(DirectionsToCheck);
+	for (int DirectionCount = 0; DirectionCount < DirectionsToCheck.Num(); DirectionCount++) {
+		switch (DirectionsToCheck[DirectionCount]) {
+
+		case 2:
+			//
+			if (TileToCheck->HasConnectedUpNeighbor() && TileToCheck->UpNeighbor->IsNotSpecialTile())
+			{
+				return 2;
+			}
+
+			break;
+		case 1:
+			//
+			if (TileToCheck->HasConnectedDownNeighbor() && TileToCheck->DownNeighbor->IsNotSpecialTile())
+			{
+				return 1;
+			}
+
+			break;
+		case 4:
+			//
+			if (TileToCheck->HasConnectedLeftNeighbor() && TileToCheck->LeftNeighbor->IsNotSpecialTile())
+			{
+				return 4;
+			}
+			break;
+		case 3:
+			//
+			if (TileToCheck->HasConnectedRightNeighbor() && TileToCheck->RightNeighbor->IsNotSpecialTile())
+			{
+				return 3;
+			}
+			break;
+		}
+	}
+
+	UE_LOG(LogTemp, Error, TEXT("This should never run."));
+	return -1;
 }
 
 /// <summary>
@@ -1340,7 +1466,7 @@ void ASTileManager::FinalDoorSetupDoors()
 }
 
 /// <summary>
-/// Dylan Log
+/// Dylan Loe
 /// 
 /// - Will run through once Secret room and Door configuration is implemented to remove NULL rooms from Tile Map
 /// </summary>
@@ -1349,7 +1475,7 @@ void ASTileManager::DeactiveInactiveRooms()
 	if (DebugPrints)
 		UE_LOG(LogTemp, Log, TEXT("Removing Unwanted tiles..."));
 
-	for(FMultiTileStruct* row : Grid2DArray)
+	for (FMultiTileStruct* row : Grid2DArray)
 	{
 		for (ASTile* tile : row->TileColumn)
 		{
@@ -1360,7 +1486,7 @@ void ASTileManager::DeactiveInactiveRooms()
 			}
 			//turn on walls at borders of path handled in levelassetspawn
 		}
-		
+
 	}
 }
 
@@ -1442,7 +1568,7 @@ void ASTileManager::LinkTile(ASTile* ThisTile, FMultiTileStruct Col)
 	}
 	if (ThisTile->XIndex > 0)
 	{
-		
+
 		//assign this tiles left neighbor from grid and save it locally
 		ASTile* LeftNeighbor = ThisTile->LeftNeighbor = Grid2DArray[ThisTile->XIndex - 1]->TileColumn[ThisTile->ZIndex];
 		//save that tiles right neighbor to be this tile
@@ -1492,7 +1618,7 @@ void ASTileManager::SpawnDoor(ASTile* tile, ETileSide SideToSpawnDoor, FString N
 	case ETileSide::ETile_Up:
 		doorSpawnPoint = tile->UpDoorSpawnPoint;
 		//tile->UpDoorSpawnPoint.GetLocation().X;
-		
+
 		break;
 	case ETileSide::ETile_Down:
 		doorSpawnPoint = tile->DownDoorSpawnPoint;
@@ -1507,7 +1633,7 @@ void ASTileManager::SpawnDoor(ASTile* tile, ETileSide SideToSpawnDoor, FString N
 		break;
 	}
 	//UE_LOG(LogTemp, Log, TEXT("Door Location Actor Location: X=%f, Y=%f, Z=%f"), tile->UpDoorSpawnPoint.GetLocation().X, tile->UpDoorSpawnPoint.GetLocation().Y, tile->UpDoorSpawnPoint.GetLocation().Z);
-	
+
 	//if height change flag is true, this is the secret room. Manually lower height of door by 495 - 2.5
 	//TODO: Why is it on the z axis? Is on the door spawn where ever that is???
 	if (heightAdjustment)
@@ -1516,9 +1642,9 @@ void ASTileManager::SpawnDoor(ASTile* tile, ETileSide SideToSpawnDoor, FString N
 		//height is 125 in bp try that?
 		FVector AdjustedLocation = FVector(CurrentLocation.X, CurrentLocation.Y, 760.0f);
 		doorSpawnPoint.SetLocation(AdjustedLocation);
-		
+
 	}
-	
+
 
 	//this could be problematic line, the secret room's center is offset from normal tiles
 	//before this was this objects transform not the tiles location

@@ -238,7 +238,13 @@ protected:
 	void CreateSecretRoom();
 
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
-	void CheckBranchTile(ASTile* TileToAdd, TArray<ASTile*>& CurrentPath, int Length);
+	void CheckBranchTile(ASTile* TileToAdd, TArray<ASTile*>& CurrentPath, int Length, int prevDirection);
+
+	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
+	void ConnectDoorBranch(ASTile* TileToAdd, int prevDirection);
+
+	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
+	int CheckPathSide(ASTile* TileToAdd);
 
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
 	void MakeAvailableTiles();

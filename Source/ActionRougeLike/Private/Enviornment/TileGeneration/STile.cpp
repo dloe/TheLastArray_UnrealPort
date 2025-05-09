@@ -49,6 +49,17 @@ bool ASTile::IsStartingTile() const
 	return TileStatus == ETileStatus::ETile_STARTINGROOM;
 }
 
+//if tile is starting, boss, secret
+bool ASTile::IsNotSpecialTile()
+{
+	if (TileStatus != ETileStatus::ETile_BOSSROOM && TileStatus != ETileStatus::ETile_SECRETROOM && TileStatus != ETileStatus::ETile_STARTINGROOM)
+	{
+		//UE_LOG(LogTemp, Log, TEXT("Check12"));
+		return true;
+	} else 
+		return false;
+}
+
 #pragma region Door Setup
 
 
@@ -194,14 +205,15 @@ bool ASTile::HasConnectedLeftNeighbor()
 
 bool ASTile::HasConnectedUpNeighbor()
 {
-	bool result = false;
+	//bool result = false;
 
 	if (UpNeighbor != NULL && (UpNeighbor->TileStatus == ETileStatus::ETile_PATH || UpNeighbor->TileStatus == ETileStatus::ETile_ROOM))
 	{
-		result = true;
+		//UE_LOG(LogTemp, Log, TEXT("Check4"));
+		return true;
 	}
 
-	return result;
+	return false;
 }
 
 bool ASTile::HasConnectedDownNeighbor()
