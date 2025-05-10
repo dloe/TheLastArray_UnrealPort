@@ -165,7 +165,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	int FillerRooms = 0;
 
-
+	UPROPERTY(EditAnywhere, Category = "Start Room")
+	bool DoorToStartRoom = true;
 	
 #pragma endregion
 
@@ -184,7 +185,7 @@ protected:
 	ASTile* PlayerSpawnPresentTile;
 
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
-	ASTile* PlayerStartingTileBase;
+	ASTile* PlayerStartingTileBase; //TODO: difference between this and StartingTile???
 
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	TArray<FTileInfoStruct> OutskirtTiles;

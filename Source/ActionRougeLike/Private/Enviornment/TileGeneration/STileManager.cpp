@@ -441,7 +441,7 @@ void ASTileManager::GeneratePath()
 	if (DebugPrints)
 		UE_LOG(LogTemp, Log, TEXT("=================== Finished Random Rooms - Adding Spawn Room =============================="));
 
-	
+
 
 	AddSingleRooms();
 
@@ -905,20 +905,26 @@ void ASTileManager::CreateSpawnRoom()
 		PlayerStartingTileBase->UpNeighbor = StartingTile;
 		PlayerSpawnPresentTile->SetActorRotation(FRotator(PlayerSpawnPresentTile->GetActorRotation().Euler().X, 180.0f, PlayerSpawnPresentTile->GetActorRotation().Euler().Z));
 
-		//Set up door - rn defaulted to 3 TODO: do i really need to even choose other sides to start on? is the player even gunna notice? perspective of player always starts the same
-		//should always be having the same rotation right? therefore the door should always be up while everyone else's has different orientations
-		const FString TileUpDoorName = "TileDoorConnecting_StartingRoom_to_" + FString::FromInt(PlayerStartingTileBase->UpNeighbor->XIndex) + "_" + FString::FromInt(PlayerStartingTileBase->UpNeighbor->ZIndex);
-		const FVector UpDoorSpawnLocation = PlayerStartingTileBase->DownDoorSpawnPoint.GetLocation() + PlayerStartingTileBase->GetActorLocation();
-		const FTransform Spawm = FTransform(PlayerStartingTileBase->UpDoorSpawnPoint.GetRotation(), UpDoorSpawnLocation);
-		PlayerStartingTileBase->UpDoor = GetWorld()->SpawnActor<ASTileDoor>(TileDoor, Spawm, SpawnParams);
-		DoorArray.Add(PlayerStartingTileBase->UpDoor);
-		PlayerStartingTileBase->UpDoor->SetActorLabel(TileUpDoorName);
-		PlayerStartingTileBase->UpDoor->SetOwner(StartingTile);
+		if (DoorToStartRoom)
+		{
+			//Set up door - rn defaulted to 3 TODO: do i really need to even choose other sides to start on? is the player even gunna notice? perspective of player always starts the same
+			//should always be having the same rotation right? therefore the door should always be up while everyone else's has different orientations
+			const FString TileUpDoorName = "TileDoorConnecting_StartingRoom_to_" + FString::FromInt(PlayerStartingTileBase->UpNeighbor->XIndex) + "_" + FString::FromInt(PlayerStartingTileBase->UpNeighbor->ZIndex);
+			const FVector UpDoorSpawnLocation = PlayerStartingTileBase->UpDoorSpawnPoint.GetLocation() + PlayerStartingTileBase->GetActorLocation();
+			const FTransform Spawm = FTransform(PlayerStartingTileBase->UpDoorSpawnPoint.GetRotation(), UpDoorSpawnLocation);
+			PlayerStartingTileBase->UpDoor = GetWorld()->SpawnActor<ASTileDoor>(TileDoor, Spawm, SpawnParams);
+			DoorArray.Add(PlayerStartingTileBase->UpDoor);
+			PlayerStartingTileBase->UpDoor->SetActorLabel(TileUpDoorName);
+			PlayerStartingTileBase->UpDoor->SetOwner(StartingTile);
+			
 #if WITH_EDITOR
-		PlayerStartingTileBase->UpDoor->SetFolderPath(DoorSubFolderName);
+			PlayerStartingTileBase->UpDoor->SetFolderPath(DoorSubFolderName);
 #endif
-		StartingTile->DownDoor = PlayerStartingTileBase->UpDoor;
-		PlayerStartingTileBase->ActivateUpDoor();
+			StartingTile->DownDoor = PlayerStartingTileBase->UpDoor;
+			//PlayerStartingTileBase->ActivateUpDoor();
+
+			StartingTile->ConnectDownDoor();
+		}
 		break;
 	}
 
@@ -1177,7 +1183,7 @@ void ASTileManager::CheckBranchTile(ASTile* TileToAdd, TArray<ASTile*>& CurrentP
 			Length = 0;
 
 			//TODO: Should there be a possibility of this end of branch connecting else where? or should it be purely linear?
-		
+
 			ConnectDoorBranch(TileToAdd, prevDirection);
 
 			return;  //exit branch
@@ -1233,7 +1239,7 @@ void ASTileManager::CheckBranchTile(ASTile* TileToAdd, TArray<ASTile*>& CurrentP
 			}
 		}
 	}
-	
+
 	return;
 }
 
@@ -1420,7 +1426,7 @@ void ASTileManager::DeactiveInactiveRooms()
 				//Destroy(tile);
 				tile->Destroy();
 			}
-			//turn on walls at borders of path handled in levelassetspawn
+			//TODO: turn on walls at borders of path handled in levelassetspawn
 		}
 
 	}
@@ -1478,13 +1484,13 @@ void ASTileManager::LinkTile(ASTile* ThisTile, FMultiTileStruct Col)
 		//if doors are active, spawn a door at the tile placeholder
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		
+
 		//if our lower neighbor doesn't already have a door connecting up
 		//TODO: may need work here
 		if (!UpNeighbor->DownDoor)
 		{
-			const FString TileUpDoorName = "TileDoorConnecting_" + FString::FromInt(ThisTile->XIndex) + "_" + FString::FromInt(ThisTile->ZIndex) + "_to_" + 
-			FString::FromInt(UpNeighbor->XIndex) + "_" + FString::FromInt(UpNeighbor->ZIndex);
+			const FString TileUpDoorName = "TileDoorConnecting_" + FString::FromInt(ThisTile->XIndex) + "_" + FString::FromInt(ThisTile->ZIndex) + "_to_" +
+				FString::FromInt(UpNeighbor->XIndex) + "_" + FString::FromInt(UpNeighbor->ZIndex);
 
 			const FVector UpDoorSpawnLocation = ThisTile->UpDoorSpawnPoint.GetLocation() + ThisTile->GetActorLocation();
 			const FTransform Spawm = FTransform(ThisTile->UpDoorSpawnPoint.GetRotation(), UpDoorSpawnLocation);
@@ -1511,8 +1517,8 @@ void ASTileManager::LinkTile(ASTile* ThisTile, FMultiTileStruct Col)
 		//if our lower neighbor doesn't already have a door connecting up
 		if (!LeftNeighbor->RightDoor)
 		{
-			FString TileLeftDoorName = "TileDoorConnecting_" + FString::FromInt(ThisTile->XIndex) + "_" + FString::FromInt(ThisTile->ZIndex) + "_to_" + 
-			FString::FromInt(LeftNeighbor->XIndex) + "_" + FString::FromInt(LeftNeighbor->ZIndex);
+			FString TileLeftDoorName = "TileDoorConnecting_" + FString::FromInt(ThisTile->XIndex) + "_" + FString::FromInt(ThisTile->ZIndex) + "_to_" +
+				FString::FromInt(LeftNeighbor->XIndex) + "_" + FString::FromInt(LeftNeighbor->ZIndex);
 
 			//add LeftDoorSpawnPoint location to ThisTiles location to give world location
 			FVector LeftDoorSpawnLocation = ThisTile->LeftDoorSpawnPoint.GetLocation() + ThisTile->GetActorLocation();
