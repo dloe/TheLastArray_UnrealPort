@@ -18,6 +18,8 @@ ASTileManager::ASTileManager()
 
 }
 
+
+
 void ASTileManager::SeedSetup()
 {
 	if (GameSeed == 0)
@@ -88,11 +90,9 @@ void ASTileManager::Create2DTileArray()
 
 	for (int32 XIndex = 0; XIndex < LevelWidth; XIndex++)
 	{
-		//UE_LOG(LogTemp, Log, TEXT("Column Number: %f"), XIndex);
 		//for each row, make each column
 		FMultiTileStruct* Col = new FMultiTileStruct();
 
-		//const FTransform SpawnTM = FTransform(this->GetActorRotation(), this->GetActorLocation());
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
@@ -101,13 +101,7 @@ void ASTileManager::Create2DTileArray()
 		for (int32 ZIndex = 0; ZIndex < LevelHeight; ZIndex++)
 		{
 			//spawn in a Tile
-			//UE_LOG(LogTemp, Log, TEXT("--Tile: %f, %f"), XIndex, ZIndex);
 			FString TileName = "Tile_Row" + FString::FromInt(XIndex) + "_Col" + FString::FromInt(ZIndex);
-
-			//if (DebugPrints)
-				//UE_LOG(LogTemp, Log, TEXT("--Tile: %s"), *TileName);
-			//UE_LOG(LogTemp, Log, TEXT("--Tile: %f, %f"), XIndex, ZIndex);
-			//FVector NewLocal = FVector((this->GetActorLocation().X + (T->TileLength* 100 * XIndex)), (this->GetActorLocation().Z + (T->TileLength * 100 * ZIndex)), this->GetActorLocation().Y);
 			ASTile* T = GetWorld()->SpawnActor<ASTile>(TileBase, FVector((this->GetActorLocation().X + (tileLength * XIndex)), (this->GetActorLocation().Y + (tileLength * ZIndex)), this->GetActorLocation().Z), this->GetActorRotation(), SpawnParams);
 			T->SetActorLabel(TileName);
 			T->SetOwner(this);
@@ -120,11 +114,9 @@ void ASTileManager::Create2DTileArray()
 
 			//add tile to array
 			Col->TileColumn.Add(T);
-			//T->SetUpDoorTransforms();
 			LinkTile(T, *Col);
 			T->ShadeNull();
 		}
-
 
 		Grid2DArray.Add(Col);
 	}
@@ -585,7 +577,6 @@ void ASTileManager::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& CurrentPath)
 				if (CurrentTile->HasValidUpNeighbor() && !CurrentTile->UpNeighbor->CheckForPath && !CurrentTile->UpNeighbor->IsStartingTile())
 				{
 					//add this tile to path, go to up neighbor
-					//UE_LOG(LogTemp, Log, TEXT("Up Neighbor Valid: %d,%d - going there"), CurrentTile->UpNeighbor->XIndex, CurrentTile->UpNeighbor->ZIndex);
 					CurrentTile->ActivateUpDoor();
 					CurrentTile->UpNeighbor->PreviousTile = CurrentTile;
 					AddTileToPath(CurrentTile);
@@ -600,7 +591,6 @@ void ASTileManager::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& CurrentPath)
 				//DOWN
 				if (CurrentTile->HasValidDownNeighbor() && !CurrentTile->DownNeighbor->CheckForPath && !CurrentTile->DownNeighbor->IsStartingTile())
 				{
-					//UE_LOG(LogTemp, Log, TEXT("Down Neighbor Valid: %d,%d - going there"), CurrentTile->DownNeighbor->XIndex, CurrentTile->DownNeighbor->ZIndex);
 					CurrentTile->ActivateDownDoor();
 					CurrentTile->DownNeighbor->PreviousTile = CurrentTile;
 					AddTileToPath(CurrentTile);
@@ -614,7 +604,6 @@ void ASTileManager::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& CurrentPath)
 				//LEFT
 				if (CurrentTile->HasValidLeftNeighbor() && !CurrentTile->LeftNeighbor->CheckForPath && !CurrentTile->LeftNeighbor->IsStartingTile())
 				{
-					//UE_LOG(LogTemp, Log, TEXT("Left Neighbor Valid: %d,%d - going there"), CurrentTile->LeftNeighbor->XIndex, CurrentTile->LeftNeighbor->ZIndex);
 					CurrentTile->ActivateLeftDoor();
 					CurrentTile->LeftNeighbor->PreviousTile = CurrentTile;
 					AddTileToPath(CurrentTile);
@@ -627,7 +616,6 @@ void ASTileManager::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& CurrentPath)
 				//RIGHT
 				if (CurrentTile->HasValidRightNeighbor() && !CurrentTile->RightNeighbor->CheckForPath && !CurrentTile->RightNeighbor->IsStartingTile())
 				{
-					//UE_LOG(LogTemp, Log, TEXT("Right Neighbor Valid: %d,%d - going there"), CurrentTile->RightNeighbor->XIndex, CurrentTile->RightNeighbor->ZIndex);
 					CurrentTile->ActivateRightDoor();
 					CurrentTile->RightNeighbor->PreviousTile = CurrentTile;
 					AddTileToPath(CurrentTile);
@@ -668,21 +656,33 @@ void ASTileManager::RandomRoomsAndBranchesAdditions()
 
 	MakeAvailableTiles();
 
-	//pick random index that isn't boss tile
-	//pick a valid neighbor that isn't part of path or outside grid, thats not a boss tile
-	//this tile is now the start of a branch
+	//TODO: how long will branches be? Get better way to find this
+	//Ideas/Research: 
+	// - Adaptive Branch grown: iteratively grow branches based on available space, after/during each branch, check if we can still make more to a certain amount
+	// - Controlled Density approach: define the number of branches based on total maze size and expected complexity
+	//Controlled Density approach
+	int TotalBranchesMax1 = FMath::RoundToInt(LevelWidth * LevelHeight * BranchDensityFactor_DynamicMainPathLength());
+	//Dependency On maze size approach
+	int TotalBranchesMax2 = FMath::RoundToInt(LevelWidth * LevelHeight * BranchDensityFactor_DependencyOnMazeSize());
+	// - Directional Bias Control: weighted probability function, where branch creation probability decreases as the main path progresses
 
-	//TODO: how long will branches be?
-	int BranchCount = GameStream.RandRange(1, (LevelWidth - LevelPath.Num() / LevelWidth) + 1);
+	int oldWay = (LevelWidth - LevelPath.Num() / LevelWidth) + 1;
+	//for some randomness
+	int TotalBranchesMax = GameStream.RandRange(1, TotalBranchesMax1);
+
 	if (DebugPrints)
-		UE_LOG(LogTemp, Log, TEXT("Total amount of branches to create: %d"), BranchCount);
+		UE_LOG(LogTemp, Log, TEXT("Total amount of branches to create: %d"), TotalBranchesMax);
 
-	for (int Branch = 0; Branch < BranchCount && AvailableTiles.Num() > 1; Branch++)
+	for (int CurrentBranch = 0; CurrentBranch < TotalBranchesMax && AvailableTiles.Num() > 1; CurrentBranch++)
 	{
 		//for now using length of level, might change this later, not sure how else but not a super important detail
 		int BranchLength = GameStream.RandRange(1, LevelWidth);
 		if (DebugPrints)
-			UE_LOG(LogTemp, Log, TEXT("Making Branch: %d with length %d"), Branch, BranchLength);
+			UE_LOG(LogTemp, Log, TEXT("Making Branch: %d with length %d"), CurrentBranch, BranchLength);
+
+		//pick random index that isn't boss tile
+		//pick a valid neighbor that isn't part of path or outside grid, thats not a boss tile
+		//this tile is now the start of a branch
 
 		//starting tile for branch
 		int indexChoosen = GameStream.RandRange(0, AvailableTiles.Num() - 1);
@@ -695,7 +695,7 @@ void ASTileManager::RandomRoomsAndBranchesAdditions()
 
 		//added StartingBranchTile to branch array for debug purposes
 		int branchDoorConnectorSideCheck = CheckPathSide(StartingBranchTile);
-		UE_LOG(LogTemp, Log, TEXT("Check start branch %d: %d,%d on side %d"), Branch, StartingBranchTile->XIndex, StartingBranchTile->ZIndex, branchDoorConnectorSideCheck);
+		//UE_LOG(LogTemp, Log, TEXT("Check start branch %d: %d,%d on side %d"), CurrentBranch, StartingBranchTile->XIndex, StartingBranchTile->ZIndex, branchDoorConnectorSideCheck);
 		//TODO: print out which tile and which side we went with
 
 		CheckBranchTile(StartingBranchTile, BranchArray, BranchLength, branchDoorConnectorSideCheck);
@@ -703,7 +703,7 @@ void ASTileManager::RandomRoomsAndBranchesAdditions()
 		//run through branch
 		for (int BranchIndex = 0; BranchIndex < BranchArray.Num(); BranchIndex++)
 		{
-			BranchArray[BranchIndex]->TileDescription += "Branch_" + FString::FromInt(Branch) + "";
+			BranchArray[BranchIndex]->TileDescription += "Branch_" + FString::FromInt(CurrentBranch) + "";
 			BranchArray[BranchIndex]->PathNumber = BranchIndex;
 
 			if (!AllActiveTiles.Contains(BranchArray[BranchIndex]))
@@ -1050,8 +1050,6 @@ void ASTileManager::CreateSecretRoom()
 	switch (selected.neighborArray[loc])
 	{
 	case 1:
-		UE_LOG(LogTemp, Log, TEXT("up neighbor"));
-
 		//TODO: may need to fix rotation? 
 		if (selected.tile->UpNeighbor == NULL)
 		{
@@ -1074,7 +1072,6 @@ void ASTileManager::CreateSecretRoom()
 		break;
 	case 2:
 		//down
-		UE_LOG(LogTemp, Log, TEXT("down neighbor"));
 
 		//TODO: may need to fix rotation? 
 		if (selected.tile->DownNeighbor == NULL)
@@ -1098,7 +1095,6 @@ void ASTileManager::CreateSecretRoom()
 		break;
 	case 3:
 		//right
-		UE_LOG(LogTemp, Log, TEXT("left neighbor"));
 
 		//TODO: may need to fix rotation? 
 		if (selected.tile->LeftNeighbor == NULL)
@@ -1122,7 +1118,6 @@ void ASTileManager::CreateSecretRoom()
 		break;
 	case 4:
 		//left
-		UE_LOG(LogTemp, Log, TEXT("right neighbor"));
 
 		//TODO: may need to fix rotation? 
 		if (selected.tile->RightNeighbor == NULL)
@@ -1585,8 +1580,6 @@ void ASTileManager::SpawnDoor(ASTile* tile, ETileSide SideToSpawnDoor, FString N
 
 void ASTileManager::SetupDoor(ASTile* tile, ETileSide SideToSpawnDoor, FString NameOfTileToConnect, ASTileDoor* door)
 {
-
-	//door = GetWorld()->SpawnActor<ASTileDoor>(TileDoor, Spawm, SpawnParams);
 	const FString TileDoorName = "TileDoorConnecting_" + FString::FromInt(tile->XIndex) + "_" + FString::FromInt(tile->ZIndex) + "_to_SecretRoom";
 
 	door->DoorActive = true;
@@ -1614,5 +1607,39 @@ void ASTileManager::SetupDoor(ASTile* tile, ETileSide SideToSpawnDoor, FString N
 	default:
 		break;
 	}
+}
+
+/// <summary>
+/// scales the density factor based on total area. TODO: Maybe this can scale with Difficulty?
+/// 
+/// Sparse Maze: 0.05f;
+/// Moderate Complexity: 0.15f;
+/// Highly Branched Maze: 0.25f or higher
+/// </summary>
+/// <returns></returns>
+float ASTileManager::BranchDensityFactor_DependencyOnMazeSize()
+{
+	if(LevelWidth <= 0 && LevelHeight <= 0)
+		UE_LOG(LogTemp, Error, TEXT("Error: No valid grid width and height to determine branch density"));
+	float branchDensityFactor = FMath::Clamp(0.1f + (LevelWidth * LevelHeight /60.0f), 0.05f, 0.2f); //(LevelWidth * LevelHeight /x.0f) where x is some arbituary scaling factor (magic number) i need to adjust
+
+	return branchDensityFactor;
+}
+
+/// <summary>
+///  ensures that as the path expands, the branch factor scales to avoid excessive isolation.
+/// </summary>
+/// <returns></returns>
+float ASTileManager::BranchDensityFactor_DynamicMainPathLength()
+{
+	if (LevelWidth <= 0 && LevelHeight <= 0)
+		UE_LOG(LogTemp, Error, TEXT("Error: No valid grid width and height to determine branch density"));
+
+	//how much density is left after path?
+	//float remainingGridDensity = 1.0f - ((float)LevelPath.Num() / ((float)LevelWidth * (float)LevelHeight));
+	//UE_LOG(LogTemp, Log, TEXT("Choice 1.5: %f"), remainingGridDensity);
+	float branchDensityFactor = FMath::Clamp((LevelPath.Num() / (float)LevelWidth), 0.05f, 0.2f);
+
+	return branchDensityFactor;
 }
 

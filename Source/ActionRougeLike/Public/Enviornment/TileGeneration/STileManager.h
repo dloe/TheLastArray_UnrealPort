@@ -93,6 +93,16 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	float gridDensity = 0.5;
 
+	/// <summary>
+	/// 
+	/// </summary>
+	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
+	float BranchDensityFactor_DynamicMainPathLength();
+	//float BranchDensityFactor = FMath::Clamp(0.1f + (LevelWidth * LevelHeight / 5000.0f), 0.05f, 0.3f);
+
+	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
+	float BranchDensityFactor_DependencyOnMazeSize();
+
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	int totalGridTilesAvailable = -1;
 
