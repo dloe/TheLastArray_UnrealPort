@@ -1132,7 +1132,7 @@ void ASTileManager::CreateSecretRoom()
 		//TODO: may need to fix rotation? 
 		if (selected.tile->LeftNeighbor == NULL)
 		{
-			SpawnPos = FVector(selected.tile->GetActorLocation().X - (selected.tile->TileLength), selected.tile->GetActorLocation().Y, selected.tile->GetActorLocation().Z + 240);
+			SpawnPos = FVector(selected.tile->GetActorLocation().X - (selected.tile->TileLength), selected.tile->GetActorLocation().Y, selected.tile->GetActorLocation().Z); //+ 240;
 			//UE_LOG(LogTemp, Log, TEXT("SpawnPas: %s"), *SpawnPos.ToString());
 			SpawnRot = FRotator(PlayerSpawnPresentTile->GetActorRotation().Euler().X, 90.0f, PlayerSpawnPresentTile->GetActorRotation().Euler().Z);
 			SecretRoom = GetWorld()->SpawnActor<ASTile>(TileBase, SpawnPos, SpawnRot, SpawnParams);
