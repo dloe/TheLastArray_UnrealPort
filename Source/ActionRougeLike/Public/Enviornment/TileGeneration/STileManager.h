@@ -53,7 +53,7 @@ class ACTIONROUGELIKE_API ASTileManager : public AActor
 	/// Dylan Loe
 	/// 
 	/// Notes:
-	/// - Main Manager for Map creation and Tiles
+	/// - Main Manager for Map creation and Tiles, more monolithic in nature
 	/// - Holds all linked tiles in 2d array
 	/// - Runs the initial random tile generation implementation
 	/// - Receives info for map size and criteria from Scriptable objects

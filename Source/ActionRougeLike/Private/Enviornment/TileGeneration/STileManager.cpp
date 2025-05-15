@@ -505,8 +505,21 @@ void ASTileManager::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& CurrentPath)
 
 	//first check if all neighbors are unavailable
 	//if so, make this one as checked and call on previous tiles
-	if ((!CurrentTile->UpNeighbor || CurrentTile->UpNeighbor->CheckForPath) && (!CurrentTile->DownNeighbor || CurrentTile->DownNeighbor->CheckForPath)
-		&& (!CurrentTile->RightNeighbor || CurrentTile->RightNeighbor->CheckForPath) && (!CurrentTile->LeftNeighbor || CurrentTile->LeftNeighbor->CheckForPath))
+
+	//check all neighbors
+	ASTile* neighbors[] = { CurrentTile->UpNeighbor, CurrentTile->DownNeighbor, CurrentTile->RightNeighbor, CurrentTile->LeftNeighbor }; //could be local param but we dont use this very much
+	bool allNeighborsInvalid = true;
+	for (ASTile* n : neighbors)
+	{
+		//check if invalid or not part of path
+		if (n && !n->CheckForPath)
+		{
+			allNeighborsInvalid = false;
+			break;
+		}
+	}
+
+	if (allNeighborsInvalid)
 	{
 		UE_LOG(LogTemp, Log, TEXT("Dead end found at %d,%d"), CurrentTile->XIndex, CurrentTile->ZIndex);
 		CurrentTile->CheckForPath = true;
@@ -778,10 +791,6 @@ void ASTileManager::AddSingleRooms()
 				//Remake new available list (with this currents neighbors now added
 				//TO DO - Size small: Optimize the remake so that we only add the new tiles rooms instead of having to go through entire list
 
-				if (DoorsActive)
-				{
-					/*Current->ActivateDoorsRandom();*/
-				}
 				MakeAvailableTiles();
 			}
 		}
@@ -1635,7 +1644,7 @@ float ASTileManager::BranchDensityFactor_DynamicMainPathLength()
 	if (LevelWidth <= 0 && LevelHeight <= 0)
 		UE_LOG(LogTemp, Error, TEXT("Error: No valid grid width and height to determine branch density"));
 
-	//how much density is left after path?
+	//Keep this for now, may be useful: how much density is left after path?
 	//float remainingGridDensity = 1.0f - ((float)LevelPath.Num() / ((float)LevelWidth * (float)LevelHeight));
 	//UE_LOG(LogTemp, Log, TEXT("Choice 1.5: %f"), remainingGridDensity);
 	float branchDensityFactor = FMath::Clamp((LevelPath.Num() / (float)LevelWidth), 0.05f, 0.2f);
