@@ -9,6 +9,8 @@
 #include "Engine/World.h"
 #include "STileManager.generated.h"
 
+//forward declaring
+class UTilePathSetupComp;
 
 USTRUCT()
 struct FMultiTileStruct
@@ -85,10 +87,15 @@ public:
 	TSubclassOf<ASTile> TileBase;
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	TSubclassOf<ASTileDoor> TileDoor;
-	UPROPERTY(EditAnywhere, Category = "Tile Generation")
-	int LevelHeight = 5;
-	UPROPERTY(EditAnywhere, Category = "Tile Generation")
-	int LevelWidth = 5;
+	
+
+	UFUNCTION()
+	int GetLevelHeight() { return LevelHeight; };
+	
+
+	UFUNCTION()
+	int GetLevelWidth() { return LevelWidth; };
+
 	//density of grid - percentage of non-main path tiles compared to total tiles while still not overcrowding
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	float gridDensity = 0.5;
@@ -102,6 +109,14 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
 	float BranchDensityFactor_DependencyOnMazeSize();
+
+	UFUNCTION()
+	ASTile* GetGridTile(int32 X, int32 Y);
+
+	//UFUNCTION()
+	//TArray <FMultiTileStruct> GetGrid() {return Grid2DArray; };
+	//2D array to hold all tiles
+	TArray <FMultiTileStruct*> Grid2DArray;
 
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	int totalGridTilesAvailable = -1;
@@ -147,6 +162,13 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	TArray<ASTile*> PossibleStartingTiles;
 
+	UFUNCTION()
+	TArray<ASTile*> GetPossibleStartingTiles() const {return PossibleStartingTiles;};
+
+	UFUNCTION()
+	void SetPossibleStartingTiles(TArray<ASTile*> NewArray) { PossibleStartingTiles  = NewArray;};
+	
+
 	//list of possible starting tiles - DO DO: PROTECT THIS LATER
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	TArray<ASTile*> LevelPath;
@@ -187,8 +209,17 @@ protected:
 
 
 #pragma region Tile Generation
-	//2D array to hold all tiles
-	TArray <FMultiTileStruct*> Grid2DArray;
+	
+
+	UPROPERTY(EditAnywhere, Category = "Tile Generation")
+	int LevelHeight = 5;
+
+	UPROPERTY(EditAnywhere, Category = "Tile Generation")
+	int LevelWidth = 5;
+
+	UPROPERTY()
+    UTilePathSetupComp* TilePathComponent;
+
 
 	//Spawned in from LocalLevel
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
@@ -206,8 +237,11 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	FTransform doorTransform;
 
+	UFUNCTION()
+	void OnTilePathGeneration();
+
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
-	void TileGeneration();
+	void TileMapSetup();
 
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
 	void SeedSetup();

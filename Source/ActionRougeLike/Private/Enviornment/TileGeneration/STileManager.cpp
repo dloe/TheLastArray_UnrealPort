@@ -3,6 +3,7 @@
 
 #include "Enviornment/TileGeneration/STileManager.h"
 #include "SLocalLevel.h"
+#include "UTilePathSetupComp.h"
 #include <string>
 #include <Math/UnrealMathUtility.h>
 #include <Kismet/KismetMathLibrary.h>
@@ -16,6 +17,10 @@ ASTileManager::ASTileManager()
 	TilesRoot = CreateDefaultSubobject<USceneComponent>(TEXT("TilesRoot"));
 	RootComponent = TilesRoot;
 
+	TilePathComponent = CreateDefaultSubobject<UTilePathSetupComp>(TEXT("TilePathSetupComponent"));
+	//bind to generation event
+	TilePathComponent->OnPathGeneratedEvent.AddDynamic(this, &ASTileManager::OnTilePathGeneration);
+	//TilePathComponent->Tile
 }
 
 
@@ -57,7 +62,26 @@ void ASTileManager::BeginPlay()
 		UE_LOG(LogTemp, Log, TEXT("==========================================================="));
 	}
 	SeedSetup();
-	TileGeneration();
+
+	//create and link tiles into grid
+	//this includes establishment of doors if we need them
+	Create2DTileArray();
+
+	TilePathComponent->TilePathGeneration();
+
+	TileMapSetup();
+}
+
+/// <summary>
+/// Finished Path Generation
+/// 
+/// Next is Branches and Random rooms
+/// </summary>
+void ASTileManager::OnTilePathGeneration()
+{
+	//finished the main path creation, create spawn room and 
+
+
 }
 
 /// <summary>
@@ -65,14 +89,14 @@ void ASTileManager::BeginPlay()
 /// 
 /// - Create Tile map structure and run procedure to create gameplay path and populate the map
 /// </summary>
-void ASTileManager::TileGeneration()
+void ASTileManager::TileMapSetup() //will remove
 {
-	//create and link tiles into grid
-	//this includes establishment of doors if we need them
-	Create2DTileArray();
+	
 
-	//once tiles are established, we now pick the starting tile
+	//once tiles are established, branches and random room additions
 	ChooseStartEndRooms();
+
+
 
 }
 
@@ -1633,6 +1657,17 @@ float ASTileManager::BranchDensityFactor_DependencyOnMazeSize()
 	float branchDensityFactor = FMath::Clamp(0.1f + (LevelWidth * LevelHeight /60.0f), 0.05f, 0.2f); //(LevelWidth * LevelHeight /x.0f) where x is some arbituary scaling factor (magic number) i need to adjust
 
 	return branchDensityFactor;
+}
+
+/// <summary>
+/// Get Specific Tile in Grid
+/// </summary>
+/// <param name="X"></param>
+/// <param name="Y"></param>
+/// <returns></returns>
+ASTile* ASTileManager::GetGridTile(int32 Y, int32 X)
+{
+	return Grid2DArray[Y]->TileColumn[X];
 }
 
 /// <summary>
