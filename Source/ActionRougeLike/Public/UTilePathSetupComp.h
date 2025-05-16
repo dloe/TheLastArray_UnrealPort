@@ -39,7 +39,6 @@ protected:
 	UPROPERTY(EditAnywhere)
 	ASTileManager* TileManagerRef;
 
-
 	//starting tile reference
 	UPROPERTY(EditAnywhere, Category = "Tile Path Generation")
 	ASTile* StartingTile;
@@ -48,10 +47,43 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	ASTile* EndTile;
 
+	UPROPERTY(EditAnywhere, Category = "Tile Generation")
+	int FailsafeCount = 0;
+
+	//list of possible starting tiles - DO DO: PROTECT THIS LATER
+	UPROPERTY(EditAnywhere, Category = "Tile Generation")
+	TArray<ASTile*> BackTrackHistory;
+
+	UPROPERTY(EditAnywhere, Category = "Tile Generation")
+	FTransform doorTransform;
+
+	UPROPERTY(EditAnywhere, Category = "Tile Generation")
+	ASTile* PlayerStartingTileBase;
+
+	//Spawned in from LocalLevel
+	UPROPERTY(EditAnywhere, Category = "Tile Generation")
+	ASTile* PlayerStartingTile_SpawnedPreset;
+
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
 	void ChooseStartEndRooms();
+
+	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
+	void GeneratePath();
+
+	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
+	void CreateSpawnRoom();
+
+	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
+	void CheckTile(ASTile* TileToAdd, TArray<ASTile*>& CurrentPath);
+
+	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
+	bool AddTileToPath(ASTile* TileToAdd);
+
+	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
+	TArray <int> Reshuffle2(TArray <int> ar);
 
 public:	
 	

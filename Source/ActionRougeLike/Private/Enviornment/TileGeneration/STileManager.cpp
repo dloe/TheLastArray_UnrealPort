@@ -69,7 +69,7 @@ void ASTileManager::BeginPlay()
 
 	TilePathComponent->TilePathGeneration();
 
-	TileMapSetup();
+	//TileMapSetup();
 }
 
 /// <summary>
@@ -1090,7 +1090,7 @@ void ASTileManager::CreateSecretRoom()
 			//UE_LOG(LogTemp, Log, TEXT("SpawnPas: %s"), *SpawnPos.ToString());
 			//SpawnRot = FRotator(selected.tile->GetActorRotation().Euler().X, 180.0f, selected.tile->GetActorRotation().Euler().Z);
 			SecretRoom = GetWorld()->SpawnActor<ASTile>(TileBase, SpawnPos, SpawnRot, SpawnParams);
-			SpawnDoor(SecretRoom, ETileSide::ETile_Down, "SecretRoom", doorTransform);
+			SpawnDoor(SecretRoom, ETileSide::ETile_Down, "SecretRoom");
 		}
 		else if (selected.tile->UpNeighbor->TileStatus == ETileStatus::ETile_NULLROOM) { //confirmed this works now get other wey of working
 			//rotate tile? may need tile to be setup for easier testing of rotation
@@ -1113,7 +1113,7 @@ void ASTileManager::CreateSecretRoom()
 			//UE_LOG(LogTemp, Log, TEXT("SpawnPas: %s"), *SpawnPos.ToString());
 			SpawnRot = FRotator(selected.tile->GetActorRotation().Euler().X, 180.0f, selected.tile->GetActorRotation().Euler().Z);
 			SecretRoom = GetWorld()->SpawnActor<ASTile>(TileBase, SpawnPos, SpawnRot, SpawnParams);
-			SpawnDoor(SecretRoom, ETileSide::ETile_Up, "SecretRoom", doorTransform);
+			SpawnDoor(SecretRoom, ETileSide::ETile_Up, "SecretRoom");
 		}
 		else if (selected.tile->DownNeighbor->TileStatus == ETileStatus::ETile_NULLROOM) { //confirmed this works now get other wey of working
 			//rotate tile? may need tile to be setup for easier testing of rotation
@@ -1136,7 +1136,7 @@ void ASTileManager::CreateSecretRoom()
 			//UE_LOG(LogTemp, Log, TEXT("SpawnPas: %s"), *SpawnPos.ToString());
 			SpawnRot = FRotator(PlayerSpawnPresentTile->GetActorRotation().Euler().X, 90.0f, PlayerSpawnPresentTile->GetActorRotation().Euler().Z);
 			SecretRoom = GetWorld()->SpawnActor<ASTile>(TileBase, SpawnPos, SpawnRot, SpawnParams);
-			SpawnDoor(SecretRoom, ETileSide::ETile_Right, "SecretRoom", doorTransform);
+			SpawnDoor(SecretRoom, ETileSide::ETile_Right, "SecretRoom");
 		}
 		else if (selected.tile->LeftNeighbor->TileStatus == ETileStatus::ETile_NULLROOM) { //confirmed this works now get other wey of working
 			//rotate tile? may need tile to be setup for easier testing of rotation
@@ -1159,7 +1159,7 @@ void ASTileManager::CreateSecretRoom()
 			//UE_LOG(LogTemp, Log, TEXT("SpawnPas: %s"), *SpawnPos.ToString());
 			SpawnRot = FRotator(PlayerSpawnPresentTile->GetActorRotation().Euler().X, -90.0f, PlayerSpawnPresentTile->GetActorRotation().Euler().Z);
 			SecretRoom = GetWorld()->SpawnActor<ASTile>(TileBase, SpawnPos, SpawnRot, SpawnParams);
-			SpawnDoor(SecretRoom, ETileSide::ETile_Left, "SecretRoom", doorTransform);
+			SpawnDoor(SecretRoom, ETileSide::ETile_Left, "SecretRoom");
 		}
 		else if (selected.tile->RightNeighbor->TileStatus == ETileStatus::ETile_NULLROOM) { //confirmed this works now get other wey of working
 			//rotate tile? may need tile to be setup for easier testing of rotation
@@ -1573,7 +1573,7 @@ void ASTileManager::Tick(float DeltaTime)
 }
 
 //For Spawning doors to attach to tiles
-void ASTileManager::SpawnDoor(ASTile* tile, ETileSide SideToSpawnDoor, FString NameOfTileToConnect, FTransform doorAdjustment)
+void ASTileManager::SpawnDoor(ASTile* tile, ETileSide SideToSpawnDoor, FString NameOfTileToConnect)
 {
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;

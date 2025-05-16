@@ -301,7 +301,7 @@ protected:
 	void DeactiveInactiveRooms();
 
 	UFUNCTION(Category = "Door Setup")
-	void SpawnDoor(ASTile* tile, ETileSide SideToSpawnDoor, FString NameOfTileToConnect, FTransform doorAdjustment);
+	void SpawnDoor(ASTile* tile, ETileSide SideToSpawnDoor, FString NameOfTileToConnect);
 
 	UFUNCTION(Category = "Door Setup")
 	void SetupDoor(ASTile* tile, ETileSide SideToSpawnDoor, FString NameOfTileToConnect, ASTileDoor* door);
