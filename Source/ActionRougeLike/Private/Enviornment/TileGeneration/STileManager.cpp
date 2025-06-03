@@ -4,6 +4,7 @@
 #include "Enviornment/TileGeneration/STileManager.h"
 #include "SLocalLevel.h"
 #include "UTilePathSetupComp.h"
+#include "UTileGridBranchComponent.h"
 #include <string>
 #include <Math/UnrealMathUtility.h>
 #include <Kismet/KismetMathLibrary.h>
@@ -21,6 +22,9 @@ ASTileManager::ASTileManager()
 	//bind to generation event
 	TilePathComponent->OnPathGeneratedEvent.AddDynamic(this, &ASTileManager::OnTilePathGeneration);
 	//TilePathComponent->Tile
+
+	GridBranchSetupComponent = CreateDefaultSubobject<UTileGridBranchComponent>(TEXT("BranchSetupComponent"));
+	GridBranchSetupComponent->OnGridAdditionalSetupCompletedEvent.AddDynamic(this, &ASTileManager::OnBranchFillGeneration);
 }
 
 
@@ -79,8 +83,13 @@ void ASTileManager::BeginPlay()
 /// </summary>
 void ASTileManager::OnTilePathGeneration()
 {
-	//finished the main path creation, create spawn room and 
+	//finished the main path creation, now do branch, random rooms and secret room setup
 
+	GridBranchSetupComponent->GameMapAdditionalSetup();
+}
+
+void ASTileManager::OnBranchFillGeneration()
+{
 
 }
 

@@ -11,6 +11,7 @@
 
 //forward declaring
 class UTilePathSetupComp;
+class UTileGridBranchComponent;
 
 USTRUCT()
 struct FMultiTileStruct
@@ -220,6 +221,9 @@ protected:
 	UPROPERTY()
     UTilePathSetupComp* TilePathComponent;
 
+	UPROPERTY()
+	UTileGridBranchComponent* GridBranchSetupComponent;
+
 
 	//Spawned in from LocalLevel
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
@@ -239,6 +243,9 @@ protected:
 
 	UFUNCTION()
 	void OnTilePathGeneration();
+
+	UFUNCTION()
+	void OnBranchFillGeneration();
 
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
 	void TileMapSetup();

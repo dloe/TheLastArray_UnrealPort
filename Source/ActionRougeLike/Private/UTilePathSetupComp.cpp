@@ -22,8 +22,9 @@ void UTilePathSetupComp::TilePathGeneration()
 {
 	//get ref to manager
 	TileManagerRef = Cast<ASTileManager>(GetOwner());
-	UE_LOG(LogTemp, Log, TEXT("==========================================================="));
+	UE_LOG(LogTemp, Log, TEXT("-----------------------------------------------------------"));
 	UE_LOG(LogTemp, Log, TEXT("================= PATH GENERATION ========================="));
+	UE_LOG(LogTemp, Log, TEXT("-----------------------------------------------------------"));
 	
 	//once tiles are established, branches and random room additions
 	ChooseStartEndRooms();

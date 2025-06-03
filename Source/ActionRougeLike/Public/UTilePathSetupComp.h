@@ -11,6 +11,14 @@ class ASTile;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPathGenerated);
 
+/// <summary>
+/// Handles Main path includes setup for
+/// 
+/// - Choosing start and end rooms
+/// - generate main path
+/// - create spawn room
+/// - 
+/// </summary>
 UCLASS( ClassGroup = (Custom), meta = (BlueprintSpawnableComponent) )
 class ACTIONROUGELIKE_API UTilePathSetupComp : public UActorComponent
 {
