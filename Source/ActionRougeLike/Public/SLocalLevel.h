@@ -52,6 +52,18 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Tile Stats")
 	ELevelTier CurrentLevelTier;
 
+	//reference level asset data and presets
+
+	//player data?
+
+	//objective
+
+	//reference to player
+
+	//presets for each level tier (move this to new location for storage)
+
+
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -61,5 +73,8 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	TSubclassOf<ASTile> GetPresetStartingTile();
+
+	UFUNCTION(BlueprintCallable, Category = "Level Objective")
+	void ChooseObjective();
 
 };

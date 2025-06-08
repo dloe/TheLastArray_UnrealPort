@@ -731,6 +731,10 @@ void UTileGridBranchComponent::SpawnDoor(ASTile* tile, ETileSide SideToSpawnDoor
 
 /// <summary>
 /// 
+/// TO DO: Doors should have some link to the corresponding wall, these walls must be special so the door can fit.
+/// 
+/// If doors are disabled, then remove those walls also?
+/// 
 /// </summary>
 /// <param name="tile"></param>
 /// <param name="SideToSpawnDoor"></param>

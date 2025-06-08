@@ -12,6 +12,7 @@
 //forward declaring
 class UTilePathSetupComp;
 class UTileGridBranchComponent;
+class ULevelAssetSetupComponent;
 
 USTRUCT()
 struct FMultiTileStruct
@@ -238,9 +239,8 @@ protected:
 	UPROPERTY()
 	UTileGridBranchComponent* GridBranchSetupComponent;
 
-	/// <summary>
-	/// Handles 4 x 4 tile selection
-	/// </summary>
+	UPROPERTY()
+	ULevelAssetSetupComponent* LevelAssetSetupComponent;
 
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	ASTile* PlayerStartingTileBase; //TODO: difference between this and StartingTile???

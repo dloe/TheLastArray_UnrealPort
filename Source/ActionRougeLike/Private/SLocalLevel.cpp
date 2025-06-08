@@ -30,4 +30,13 @@ TSubclassOf<ASTile> ALocalLevel::GetPresetStartingTile()
 	return PresetStartingTile;
 }
 
+/// <summary>
+/// - list of objectives
+/// - remove previous obj from list
+/// - pick randomly from updated list
+/// </summary>
+void ALocalLevel::ChooseObjective()
+{
+
+}
 
