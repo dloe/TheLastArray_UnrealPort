@@ -48,12 +48,12 @@ protected:
 	ASTileManager* TileManagerRef;
 
 	//starting tile reference
-	UPROPERTY(EditAnywhere, Category = "Tile Path Generation")
-	ASTile* StartingTile;
+	//PROPERTY(EditAnywhere, Category = "Tile Path Generation")
+	//ASTile* StartingTile;
 
 	//starting tile reference - TO DO: PROTECT THIS LATER
-	UPROPERTY(EditAnywhere, Category = "Tile Generation")
-	ASTile* EndTile;
+	//UPROPERTY(EditAnywhere, Category = "Tile Generation")
+	//ASTile* EndTile;
 
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	int FailsafeCount = 0;
@@ -69,8 +69,8 @@ protected:
 	ASTile* PlayerStartingTileBase;
 
 	//Spawned in from LocalLevel
-	UPROPERTY(EditAnywhere, Category = "Tile Generation")
-	ASTile* PlayerStartingTile_SpawnedPreset;
+	//UPROPERTY(EditAnywhere, Category = "Tile Generation")
+	//ASTile* PlayerStartingTile_SpawnedPreset;
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

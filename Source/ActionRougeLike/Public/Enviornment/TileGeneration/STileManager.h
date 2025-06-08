@@ -79,7 +79,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	bool DebugPrints = false;
 
-	//attempt at managing random numbers and seeds
+	//managing random numbers and seeds
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	FRandomStream GameStream;
 
@@ -88,6 +88,9 @@ public:
 	TSubclassOf<ASTile> TileBase;
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	TSubclassOf<ASTileDoor> TileDoor;
+
+	UPROPERTY(EditAnywhere, Category = "Tile Generation")
+	TArray<FTileInfoStruct> OutskirtTiles;
 	
 
 	UFUNCTION()
@@ -110,6 +113,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
 	float BranchDensityFactor_DependencyOnMazeSize();
+	
 
 	UFUNCTION()
 	ASTile* GetGridTile(int32 X, int32 Y);
@@ -194,6 +198,10 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	TArray<ASTile*>	AvailableTiles;
 
+	//Spawned in from LocalLevel
+	UPROPERTY(EditAnywhere, Category = "Tile Generation")
+	ASTile* PlayerSpawnPresentTile;
+
 	//single rooms
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	int FillerRooms = 0;
@@ -218,22 +226,24 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	int LevelWidth = 5;
 
+	/// <summary>
+	/// Handles creation of main path and key rooms
+	/// </summary>
 	UPROPERTY()
     UTilePathSetupComp* TilePathComponent;
 
+	/// <summary>
+	/// Handles rest of map setup after key rooms
+	/// </summary>
 	UPROPERTY()
 	UTileGridBranchComponent* GridBranchSetupComponent;
 
-
-	//Spawned in from LocalLevel
-	UPROPERTY(EditAnywhere, Category = "Tile Generation")
-	ASTile* PlayerSpawnPresentTile;
+	/// <summary>
+	/// Handles 4 x 4 tile selection
+	/// </summary>
 
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	ASTile* PlayerStartingTileBase; //TODO: difference between this and StartingTile???
-
-	UPROPERTY(EditAnywhere, Category = "Tile Generation")
-	TArray<FTileInfoStruct> OutskirtTiles;
 
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	int FailsafeCount = 0;
@@ -247,8 +257,8 @@ protected:
 	UFUNCTION()
 	void OnBranchFillGeneration();
 
-	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
-	void TileMapSetup();
+	//UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
+	//void TileMapSetup();
 
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
 	void SeedSetup();
@@ -259,11 +269,11 @@ protected:
 	UFUNCTION(Category = "ArrayCreation")
 	void LinkTile(ASTile* ThisTile, FMultiTileStruct Col);
 
-	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
-	void ChooseStartEndRooms();
+	//UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
+	//void ChooseStartEndRooms();
 
-	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
-	void GeneratePath();
+	//UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
+	//void GeneratePath();
 
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
 	bool AddTileToPath(ASTile* TileToAdd);
@@ -274,20 +284,20 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
 	void ClearHistory();
 
-	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
-	void RandomRoomsAndBranchesAdditions();
+	//UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
+	//void RandomRoomsAndBranchesAdditions();
 
-	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
-	void AddSingleRooms();
+	//UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
+	//void AddSingleRooms();
 
-	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
-	void SingleRoomsDoorSetup(ASTile* CurrentTile);
+	//UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
+	//void SingleRoomsDoorSetup(ASTile* CurrentTile);
 
-	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
-	void CreateSpawnRoom();
+	//UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
+	//void CreateSpawnRoom();
 
-	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
-	void CreateSecretRoom();
+	//UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
+	//void CreateSecretRoom();
 
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
 	void CheckBranchTile(ASTile* TileToAdd, TArray<ASTile*>& CurrentPath, int Length, int prevDirection);
@@ -298,26 +308,17 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
 	int CheckPathSide(ASTile* TileToAdd);
 
-	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
-	void MakeAvailableTiles();
+	//UFUNCTION(BlueprintCallable, Category = "Door Setup")
+	//void FinalDoorSetupDoors();
 
-	UFUNCTION(BlueprintCallable, Category = "Door Setup")
-	void FinalDoorSetupDoors();
-
-	UFUNCTION(BlueprintCallable, Category = "Door Setup")
-	void DeactiveInactiveRooms();
+	//UFUNCTION(BlueprintCallable, Category = "Door Setup")
+	//void DeactiveInactiveRooms();
 
 	UFUNCTION(Category = "Door Setup")
 	void SpawnDoor(ASTile* tile, ETileSide SideToSpawnDoor, FString NameOfTileToConnect);
 
-	UFUNCTION(Category = "Door Setup")
-	void SetupDoor(ASTile* tile, ETileSide SideToSpawnDoor, FString NameOfTileToConnect, ASTileDoor* door);
-
-	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
-	TArray <int> Reshuffle2(TArray <int> ar);
-
-	UFUNCTION(BlueprintCallable, Category = "Tile Generation")
-	float GetCurrentGridDensity();
+	//UFUNCTION(Category = "Door Setup")
+	//void SetupDoor(ASTile* tile, ETileSide SideToSpawnDoor, FString NameOfTileToConnect, ASTileDoor* door);
 
 	//For debug if we want to hard code a specific side to test, we set to 0 -3 otherwise it will get overridden
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
@@ -328,5 +329,14 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
+	void MakeAvailableTiles();
+
+	UFUNCTION(BlueprintCallable, Category = "Tile Generation")
+	float GetCurrentGridDensity();
+
+	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
+	TArray <int> Reshuffle2(TArray <int> ar);
 
 };

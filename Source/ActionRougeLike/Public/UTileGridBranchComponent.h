@@ -38,9 +38,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
 	void GameMapAdditionalSetup();
 
+	UFUNCTION(Category = "Door Setup")
+	void SetupDoor(ASTile* tile, ETileSide SideToSpawnDoor, FString NameOfTileToConnect, ASTileDoor* door);
+
 protected:
-	// Called when the game starts
-	virtual void BeginPlay() override;
 
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
 	void RandomRoomsAndBranchesAdditions();
@@ -63,6 +64,30 @@ protected:
 
 	UPROPERTY(EditAnywhere)
 	ALocalLevel* LocalLevelRef;
+
+	//single rooms
+	UPROPERTY(EditAnywhere, Category = "Tile Generation")
+	int FillerRooms = 0;
+
+	UPROPERTY(EditAnywhere, Category = "Tile Generation")
+	ASTile* choosen;
+
+	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
+	void CheckBranchTile(ASTile* TileToAdd, TArray<ASTile*>& CurrentPath, int Length, int prevDirection);
+
+	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
+	int CheckPathSide(ASTile* TileToAdd);
+
+	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
+	void SingleRoomsDoorSetup(ASTile* CurrentTile);
+
+	UFUNCTION(Category = "Door Setup")
+	void SpawnDoor(ASTile* tile, ETileSide SideToSpawnDoor, FString NameOfTileToConnect);
+
+	
+
+	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
+	void ConnectDoorBranch(ASTile* TileToAdd, int prevDirection);
 public:	
 	
 		
