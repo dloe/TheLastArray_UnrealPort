@@ -56,7 +56,8 @@ bool ASTile::IsNotSpecialTile()
 	{
 		//UE_LOG(LogTemp, Log, TEXT("Check12"));
 		return true;
-	} else 
+	}
+	else
 		return false;
 }
 
@@ -182,7 +183,7 @@ bool ASTile::HasValidUpNeighbor()
 bool ASTile::HasConnectedRightNeighbor()
 {
 	bool result = false;
-	
+
 	if (RightNeighbor != NULL && (RightNeighbor->TileStatus == ETileStatus::ETile_PATH || RightNeighbor->TileStatus == ETileStatus::ETile_ROOM))
 	{
 		result = true;
@@ -230,13 +231,13 @@ bool ASTile::HasConnectedDownNeighbor()
 
 void ASTile::TurnAllDoorsInactive()
 {
-	if(HasValidDownNeighbor())
-		DownDoor->DoorActive =false;
-	if(HasValidUpNeighbor())
+	if (HasValidDownNeighbor())
+		DownDoor->DoorActive = false;
+	if (HasValidUpNeighbor())
 		UpDoor->DoorActive = false;
-	if(HasValidRightNeighbor())
-		RightDoor =false;
-	if(HasValidLeftNeighbor())
+	if (HasValidRightNeighbor())
+		RightDoor = false;
+	if (HasValidLeftNeighbor())
 		LeftDoor = false;
 }
 
@@ -244,45 +245,86 @@ void ASTile::TurnAllDoorsInactive()
 void ASTile::ConnectUpDoor()
 {
 	UpDoor->DoorActive = true;
+	RemovePlaceholderWall(ETileSide::ETile_Up);
 }
 
 void ASTile::ConnectDownDoor()
 {
 	DownDoor->DoorActive = true;
+	RemovePlaceholderWall(ETileSide::ETile_Down);
 }
 
 void ASTile::ConnectLeftDoor()
 {
 	LeftDoor->DoorActive = true;
+	RemovePlaceholderWall(ETileSide::ETile_Left);
 }
 
 void ASTile::ConnectRightDoor()
 {
 	RightDoor->DoorActive = true;
+	RemovePlaceholderWall(ETileSide::ETile_Right);
 }
 
 void ASTile::ActivateUpDoor()
 {
-	if (HasValidUpNeighbor())
+	if (HasValidUpNeighbor()) {
 		UpDoor->DoorActive = true;
+		RemovePlaceholderWall(ETileSide::ETile_Up);
+		//
+		UpNeighbor->RemovePlaceholderWall(ETileSide::ETile_Down);
+	}
 }
 
 void ASTile::ActivateDownDoor()
 {
-	if (HasValidDownNeighbor())
+	if (HasValidDownNeighbor()) {
 		DownDoor->DoorActive = true;
+		RemovePlaceholderWall(ETileSide::ETile_Down);
+	}
 }
 
 void ASTile::ActivateRightDoor()
 {
-	if (HasValidRightNeighbor())
+	if (HasValidRightNeighbor()) {
 		RightDoor->DoorActive = true;
+		RemovePlaceholderWall(ETileSide::ETile_Right);
+	}
 }
 
 void ASTile::ActivateLeftDoor()
 {
-	if (HasValidLeftNeighbor())
+	if (HasValidLeftNeighbor()) {
 		LeftDoor->DoorActive = true;
+		RemovePlaceholderWall(ETileSide::ETile_Left);
+	}
+}
+
+void ASTile::RemovePlaceholderWall(ETileSide side)
+{
+	//UStaticMeshComponent* wall;
+	switch (side)
+	{
+	case ETileSide::ETile_Up:
+		//wall = SM_UpWallSpawnPoint;
+		break;
+	case ETileSide::ETile_Down:
+		//wall = SM_DownWallSpawnPoint;
+		break;
+	case ETileSide::ETile_Left:
+		//wall = SM_LeftWallSpawnPoint;
+		break;
+	case ETileSide::ETile_Right:
+		//wall = SM_RightWallSpawnPoint;
+		break;
+	default:
+		//wall = SM_UpWallSpawnPoint;
+		UE_LOG(LogTemp, Error, TEXT("Default param for RemovePlaceholderWall"));
+		break;
+
+	}
+	//wall->SetVisibility(false);
+	//wall->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 #pragma endregion

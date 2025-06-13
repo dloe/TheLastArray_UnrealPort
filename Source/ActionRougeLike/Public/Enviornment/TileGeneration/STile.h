@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Enviornment/TileGeneration/STileDoor.h"
+#include "ASTileWall.h"
 #include "STile.generated.h"
 
 UENUM(BlueprintType)
@@ -89,22 +90,6 @@ public:
 
 #pragma endregion
 
-#pragma region Tile Doors
-
-	UFUNCTION(BlueprintCallable, Category = "Tile Components - Doors")
-	void ActivateDoorToPath();
-
-	UFUNCTION(BlueprintCallable, Category = "Tile Components - Doors")
-	void ActivateDoorsBranch();
-
-	UFUNCTION(BlueprintCallable, Category = "Tile Components - Doors")
-	void ActivateDoorsRandom();
-
-	UFUNCTION(BlueprintCallable, Category = "Tile Components - Doors")
-	void SyncDoors();
-
-#pragma endregion
-
 #pragma region Tile Path
 
 	UPROPERTY(EditAnywhere, Category = "Tile Components - Path")
@@ -168,23 +153,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Tile Components - Neighbors")
 	ASTile* RightNeighbor;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Components - Neighbors")
-	ASTileDoor* UpDoor;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite,Category = "Tile Components - Neighbors")
-	ASTileDoor* DownDoor;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Components - Neighbors")
-	ASTileDoor* LeftDoor;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Components - Neighbors")
-	ASTileDoor* RightDoor;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Components - Neighbors")
-	FTransform UpDoorSpawnPoint;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Components - Neighbors")
-	FTransform DownDoorSpawnPoint;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Components - Neighbors")
-	FTransform LeftDoorSpawnPoint;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Components - Neighbors")
-	FTransform RightDoorSpawnPoint;
 
 	UFUNCTION(Category = "Tile Components - Neighbors")
 	bool HasValidRightNeighbor();
@@ -211,7 +180,68 @@ public:
 	UFUNCTION(Category = "Tile Components - Neighbors")
 	bool HasConnectedDownNeighbor();
 
-	UFUNCTION(Category = "Tile Components - Doors")
+
+
+#pragma endregion
+
+
+#pragma region Doors and Walls
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Components - Neighbors")
+	ASTileDoor* UpDoor;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite,Category = "Tile Components - Neighbors")
+	ASTileDoor* DownDoor;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Components - Neighbors")
+	ASTileDoor* LeftDoor;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Components - Neighbors")
+	ASTileDoor* RightDoor;
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Components - Neighbors")
+	FTransform UpDoorSpawnPoint;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Components - Neighbors")
+	FTransform DownDoorSpawnPoint;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Components - Neighbors")
+	FTransform LeftDoorSpawnPoint;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Components - Neighbors")
+	FTransform RightDoorSpawnPoint;
+
+	//turn these off when our door is active
+	//TODO: if a door is activated, we need to remove the wall placeholder, and instead spawn in a proper door and wall
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Walls")
+	FTransform SM_UpWallSpawnPoint;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Walls")
+	FTransform SM_DownWallSpawnPoint;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Walls")
+	FTransform SM_LeftWallSpawnPoint;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Walls")
+	FTransform SM_RightWallSpawnPoint;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Walls")
+	UStaticMeshComponent* Test;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Walls")
+	ASTileWall* UpWall;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Walls")
+	ASTileWall* DownWall;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Walls")
+	ASTileWall* LeftWall;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Walls")
+	ASTileWall* RightWall;
+
+	
+	UFUNCTION(BlueprintCallable, Category = "Tile Components - Doors")
+	void ActivateDoorToPath();
+
+	UFUNCTION(BlueprintCallable, Category = "Tile Components - Doors")
+	void ActivateDoorsBranch();
+
+	UFUNCTION(BlueprintCallable, Category = "Tile Components - Doors")
+	void ActivateDoorsRandom();
+
+	UFUNCTION(BlueprintCallable, Category = "Tile Components - Doors")
+	void SyncDoors();
+
+		UFUNCTION(Category = "Tile Components - Doors")
 	void TurnAllDoorsInactive();
 
 	//connect tile door to path (so not a valid tile that could be placed but a tile that already exists there)
@@ -235,6 +265,9 @@ public:
 
 	UFUNCTION(Category = "Tile Components - Doors")
 	void ActivateLeftDoor();
+
+	UFUNCTION(Category = "Tile Components - Walls")
+	void RemovePlaceholderWall(ETileSide side);
 
 #pragma endregion
 

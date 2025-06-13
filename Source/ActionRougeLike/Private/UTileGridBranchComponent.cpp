@@ -745,6 +745,7 @@ void UTileGridBranchComponent::SetupDoor(ASTile* tile, ETileSide SideToSpawnDoor
 	const FString TileDoorName = "TileDoorConnecting_" + FString::FromInt(tile->XIndex) + "_" + FString::FromInt(tile->ZIndex) + "_to_SecretRoom";
 
 	door->DoorActive = true;
+	tile->RemovePlaceholderWall(SideToSpawnDoor);
 	TileManagerRef->DoorArray.Add(door);
 	door->SetActorLabel(TileDoorName);
 	door->SetOwner(TileManagerRef);
@@ -773,7 +774,7 @@ void UTileGridBranchComponent::SetupDoor(ASTile* tile, ETileSide SideToSpawnDoor
 
 /// <summary>
 /// When going through the branch tiles to add, we need to activate the door of the previous tile visited.
-/// (Passed in via prevDirection where 1 = Up, 2 = down, 3 = left, 4 = right
+/// (Passed in via prevDirection where 1 = Up, 2 = down, 3 = left, 4 = right)
 /// </summary>
 /// <param name="TileToAdd"></param>
 /// <param name="prevDirection"></param>

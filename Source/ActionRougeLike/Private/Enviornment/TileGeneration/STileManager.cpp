@@ -111,6 +111,11 @@ void ASTileManager::Create2DTileArray()
 	if (DebugPrints)
 		UE_LOG(LogTemp, Log, TEXT("=================== Creating 2D array! =============================="));
 
+	int floatingWallBuffer = ChoosenWallAsset->GetDefaultObject<ASTileWall>()->WallsBuffer;
+	int distanceToNextTile = floatingWallBuffer * 2;
+
+	int tileLength = TileBase->GetDefaultObject<ASTile>()->TileLength + distanceToNextTile;
+	
 	for (int32 XIndex = 0; XIndex < LevelWidth; XIndex++)
 	{
 		//for each row, make each column
@@ -119,13 +124,17 @@ void ASTileManager::Create2DTileArray()
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-		int tileLength = TileBase->GetDefaultObject<ASTile>()->TileLength;
 		//Populate TileColumn array with Tiles for Height size
 		for (int32 ZIndex = 0; ZIndex < LevelHeight; ZIndex++)
 		{
 			//spawn in a Tile
 			FString TileName = "Tile_Row" + FString::FromInt(XIndex) + "_Col" + FString::FromInt(ZIndex);
-			ASTile* T = GetWorld()->SpawnActor<ASTile>(TileBase, FVector((this->GetActorLocation().X + (tileLength * XIndex)), (this->GetActorLocation().Y + (tileLength * ZIndex)), this->GetActorLocation().Z), this->GetActorRotation(), SpawnParams);
+			FVector ORLocal((this->GetActorLocation().X + (tileLength * XIndex)), (this->GetActorLocation().Y + (tileLength * ZIndex)), this->GetActorLocation().Z);
+			FVector TileSpawnLocation((this->GetActorLocation().X + (tileLength * XIndex)), (this->GetActorLocation().Y + (tileLength * ZIndex)), this->GetActorLocation().Z);
+			
+			ASTile* T = GetWorld()->SpawnActor<ASTile>(TileBase, TileSpawnLocation, this->GetActorRotation(), SpawnParams);
+			UE_LOG(LogTemp, Log, TEXT("TileName %s, OG: %s, New: %s"), *TileName, *ORLocal.ToString(), *TileSpawnLocation.ToString());
+
 			T->SetActorLabel(TileName);
 			T->SetOwner(this);
 #if WITH_EDITOR
@@ -641,9 +650,9 @@ void ASTileManager::LinkTile(ASTile* ThisTile, FMultiTileStruct Col)
 				FString::FromInt(UpNeighbor->XIndex) + "_" + FString::FromInt(UpNeighbor->ZIndex);
 
 			const FVector UpDoorSpawnLocation = ThisTile->UpDoorSpawnPoint.GetLocation() + ThisTile->GetActorLocation();
-			const FTransform Spawm = FTransform(ThisTile->UpDoorSpawnPoint.GetRotation(), UpDoorSpawnLocation);
-
-			ThisTile->UpDoor = GetWorld()->SpawnActor<ASTileDoor>(TileDoor, Spawm, SpawnParams);
+			const FTransform SpawmTrans = FTransform(ThisTile->UpDoorSpawnPoint.GetRotation(), UpDoorSpawnLocation);
+			//UE_LOG(LogTemp, Log, TEXT("UpDoorSpawnLocation: %s"), *UpDoorSpawnLocation.ToString());
+			ThisTile->UpDoor = GetWorld()->SpawnActor<ASTileDoor>(TileDoor, SpawmTrans, SpawnParams);
 			DoorArray.Add(ThisTile->UpDoor);
 			ThisTile->UpDoor->SetActorLabel(TileUpDoorName);
 			ThisTile->UpDoor->SetOwner(ThisTile);
@@ -651,6 +660,25 @@ void ASTileManager::LinkTile(ASTile* ThisTile, FMultiTileStruct Col)
 			ThisTile->UpDoor->SetFolderPath(DoorSubFolderName);
 #endif
 			UpNeighbor->DownDoor = ThisTile->UpDoor;
+
+			//set up wall
+			
+			//spawn 1 ASTileWall object & set it to be this tiles upwall
+			const FVector UpWallLocation = ThisTile->SM_UpWallSpawnPoint.GetLocation() + ThisTile->GetActorLocation();
+			const FTransform WallSpawnTrans = FTransform(ThisTile->SM_UpWallSpawnPoint.GetRotation(), UpWallLocation);
+			ThisTile->UpWall = GetWorld()->SpawnActor<ASTileWall>(ChoosenWallAsset, WallSpawnTrans, SpawnParams);
+			//UE_LOG(LogTemp, Log, TEXT("UpWallSpawnLocation: %s"), *UpWallLocation.ToString());
+			//set it to be UpNeighbor's down wall
+			UpNeighbor->DownWall = ThisTile->UpWall;
+			//on the ASTileWall, set Inner to be this tile
+			ThisTile->UpWall->InnerTile = ThisTile;
+			//set outer to ThisTiles->upniehgbor
+			ThisTile->UpWall->OuterTile = UpNeighbor;
+			ThisTile->UpWall->SetOwner(ThisTile);
+#if WITH_EDITOR
+			ThisTile->UpWall->SetFolderPath(WallsSubFolderName);
+#endif
+
 		}
 	}
 	if (ThisTile->XIndex > 0)
@@ -677,10 +705,30 @@ void ASTileManager::LinkTile(ASTile* ThisTile, FMultiTileStruct Col)
 			DoorArray.Add(ThisTile->LeftDoor);
 			ThisTile->LeftDoor->SetActorLabel(TileLeftDoorName);
 			ThisTile->LeftDoor->SetOwner(ThisTile);
+
 #if WITH_EDITOR
 			ThisTile->LeftDoor->SetFolderPath(DoorSubFolderName);
 #endif
 			LeftNeighbor->RightDoor = ThisTile->LeftDoor;
+
+
+			//set up wall
+
+			//spawn 1 ASTileWall object & set it to be this tiles upwall
+			const FVector LeftWallLocation = ThisTile->SM_LeftWallSpawnPoint.GetLocation() + ThisTile->GetActorLocation();
+			const FTransform WallSpawnTrans = FTransform(ThisTile->SM_LeftWallSpawnPoint.GetRotation(), LeftWallLocation);
+			ThisTile->LeftWall = GetWorld()->SpawnActor<ASTileWall>(ChoosenWallAsset, WallSpawnTrans, SpawnParams);
+
+			//set it to be UpNeighbor's down wall
+			LeftNeighbor->RightWall = ThisTile->LeftWall;
+			//on the ASTileWall, set Inner to be this tile
+			ThisTile->LeftWall->InnerTile = ThisTile;
+			//set outer to ThisTiles->upniehgbor
+			ThisTile->LeftWall->OuterTile = LeftNeighbor;
+			ThisTile->LeftWall->SetOwner(ThisTile);
+#if WITH_EDITOR
+			ThisTile->LeftWall->SetFolderPath(WallsSubFolderName);
+#endif
 		}
 	}
 }

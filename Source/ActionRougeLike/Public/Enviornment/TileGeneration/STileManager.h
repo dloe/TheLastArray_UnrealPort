@@ -92,7 +92,10 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	TArray<FTileInfoStruct> OutskirtTiles;
-	
+
+	//this will be assigned from the locallevel object. But it spawns in between the tiles
+	UPROPERTY(EditAnywhere, Category = "Tile Generation")
+	TSubclassOf<ASTileWall> ChoosenWallAsset;
 
 	UFUNCTION()
 	int GetLevelHeight() { return LevelHeight; };
@@ -149,6 +152,9 @@ public:
 	//folder name for where doors are placed when spawned
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	FName TileGenRootFolder;
+
+	UPROPERTY(EditAnywhere, Category = "Tile Generation")
+	FName WallsSubFolderName;
 
 	//starting tile reference - TO DO: PROTECT THIS LATER
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
