@@ -97,6 +97,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	TSubclassOf<ASTileWall> ChoosenWallAsset;
 
+	UPROPERTY(EditAnywhere, Category = "Tile Generation")
+	TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset;
+
 	UFUNCTION()
 	int GetLevelHeight() { return LevelHeight; };
 	
@@ -263,23 +266,20 @@ protected:
 	UFUNCTION()
 	void OnBranchFillGeneration();
 
-	//UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
-	//void TileMapSetup();
-
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
 	void SeedSetup();
 
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
 	void Create2DTileArray();
 
+	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
+	void AddWallToPerimeter(ETileSide side, ASTile* ThisTile);
+
+	//UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
+	//void SpawnDoorConnector(ETileSide side, ASTile* ThisTile);
+
 	UFUNCTION(Category = "ArrayCreation")
 	void LinkTile(ASTile* ThisTile, FMultiTileStruct Col);
-
-	//UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
-	//void ChooseStartEndRooms();
-
-	//UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
-	//void GeneratePath();
 
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
 	bool AddTileToPath(ASTile* TileToAdd);
@@ -290,21 +290,6 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
 	void ClearHistory();
 
-	//UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
-	//void RandomRoomsAndBranchesAdditions();
-
-	//UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
-	//void AddSingleRooms();
-
-	//UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
-	//void SingleRoomsDoorSetup(ASTile* CurrentTile);
-
-	//UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
-	//void CreateSpawnRoom();
-
-	//UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
-	//void CreateSecretRoom();
-
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
 	void CheckBranchTile(ASTile* TileToAdd, TArray<ASTile*>& CurrentPath, int Length, int prevDirection);
 
@@ -314,17 +299,8 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
 	int CheckPathSide(ASTile* TileToAdd);
 
-	//UFUNCTION(BlueprintCallable, Category = "Door Setup")
-	//void FinalDoorSetupDoors();
-
-	//UFUNCTION(BlueprintCallable, Category = "Door Setup")
-	//void DeactiveInactiveRooms();
-
 	UFUNCTION(Category = "Door Setup")
 	void SpawnDoor(ASTile* tile, ETileSide SideToSpawnDoor, FString NameOfTileToConnect);
-
-	//UFUNCTION(Category = "Door Setup")
-	//void SetupDoor(ASTile* tile, ETileSide SideToSpawnDoor, FString NameOfTileToConnect, ASTileDoor* door);
 
 	//For debug if we want to hard code a specific side to test, we set to 0 -3 otherwise it will get overridden
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")

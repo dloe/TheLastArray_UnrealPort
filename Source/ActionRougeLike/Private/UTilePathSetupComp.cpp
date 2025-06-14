@@ -369,6 +369,9 @@ void UTilePathSetupComp::CreateSpawnRoom()
 	ALocalLevel* MyLocalLevelRef = TileManagerRef->MyLocalLevel;
 	ASTile* StartingTileRef = TileManagerRef->StartingTile;
 
+	TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAssetRef = TileManagerRef->ChoosenDoorwayAsset;
+	FName WallsSubFolderNameRef = TileManagerRef->WallsSubFolderName;
+
 	//There are going to be 2 tiles basically spawned, one is the base, the base structure of the tile
 	// The other tile (which i don't think needs to be a tile at all), is the environment to be populated on the tile
 	// Since the environment will be rotated, its neighbors will be changed theretofore for now it will be faster to have its own base that stays static)
@@ -433,7 +436,7 @@ void UTilePathSetupComp::CreateSpawnRoom()
 			StartingTileRef->DownDoor = PlayerStartingTileBase->UpDoor;
 			//PlayerStartingTileBase->ActivateUpDoor();
 
-			StartingTileRef->ConnectDownDoor();
+			StartingTileRef->ConnectDownDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef);
 		}
 		break;
 	}
@@ -468,6 +471,8 @@ void UTilePathSetupComp::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& Current
 
 	int levelWidthRef = TileManagerRef->GetLevelWidth();
 	int levelHeightRef = TileManagerRef->GetLevelHeight();
+	TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAssetRef = TileManagerRef->ChoosenDoorwayAsset;
+	FName WallsSubFolderNameRef = TileManagerRef->WallsSubFolderName;
 
 	// For Debug Check, for now will be off since this check is no longer critical
 	if (CurrentTile) {
@@ -526,7 +531,7 @@ void UTilePathSetupComp::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& Current
 		AddTileToPath(CurrentTile);
 		AddTileToPath(CurrentTile->UpNeighbor);
 
-		CurrentTile->ConnectUpDoor();
+		CurrentTile->ConnectUpDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef);
 		doorTransform = CurrentTile->UpDoor->GetTransform();
 	}
 	else if ((CurrentTile->DownNeighbor && CurrentTile->DownNeighbor->IsBossTile()))
@@ -535,7 +540,7 @@ void UTilePathSetupComp::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& Current
 		CurrentTile->CheckForPath = true;
 		AddTileToPath(CurrentTile);
 		AddTileToPath(CurrentTile->DownNeighbor);
-		CurrentTile->ConnectDownDoor();
+		CurrentTile->ConnectDownDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef);
 		doorTransform = CurrentTile->DownDoor->GetTransform();
 	}
 	else if ((CurrentTile->RightNeighbor && CurrentTile->RightNeighbor->IsBossTile()))
@@ -544,7 +549,7 @@ void UTilePathSetupComp::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& Current
 		CurrentTile->CheckForPath = true;
 		AddTileToPath(CurrentTile);
 		AddTileToPath(CurrentTile->RightNeighbor);
-		CurrentTile->ConnectRightDoor();
+		CurrentTile->ConnectRightDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef);
 		doorTransform = CurrentTile->RightDoor->GetTransform();
 	}
 	else if ((CurrentTile->LeftNeighbor && CurrentTile->LeftNeighbor->IsBossTile()))
@@ -553,7 +558,7 @@ void UTilePathSetupComp::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& Current
 		CurrentTile->CheckForPath = true;
 		AddTileToPath(CurrentTile);
 		AddTileToPath(CurrentTile->LeftNeighbor);
-		CurrentTile->ConnectLeftDoor();
+		CurrentTile->ConnectLeftDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef);
 		doorTransform = CurrentTile->LeftDoor->GetTransform();
 	}
 	else {
@@ -575,7 +580,7 @@ void UTilePathSetupComp::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& Current
 				if (CurrentTile->HasValidUpNeighbor() && !CurrentTile->UpNeighbor->CheckForPath && !CurrentTile->UpNeighbor->IsStartingTile())
 				{
 					//add this tile to path, go to up neighbor
-					CurrentTile->ActivateUpDoor();
+					CurrentTile->ActivateUpDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef);
 					CurrentTile->UpNeighbor->PreviousTile = CurrentTile;
 					AddTileToPath(CurrentTile);
 					//no need to keep going through other directions directions
@@ -589,7 +594,7 @@ void UTilePathSetupComp::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& Current
 				//DOWN
 				if (CurrentTile->HasValidDownNeighbor() && !CurrentTile->DownNeighbor->CheckForPath && !CurrentTile->DownNeighbor->IsStartingTile())
 				{
-					CurrentTile->ActivateDownDoor();
+					CurrentTile->ActivateDownDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef);
 					CurrentTile->DownNeighbor->PreviousTile = CurrentTile;
 					AddTileToPath(CurrentTile);
 					DirectionCount = 5;
@@ -602,7 +607,7 @@ void UTilePathSetupComp::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& Current
 				//LEFT
 				if (CurrentTile->HasValidLeftNeighbor() && !CurrentTile->LeftNeighbor->CheckForPath && !CurrentTile->LeftNeighbor->IsStartingTile())
 				{
-					CurrentTile->ActivateLeftDoor();
+					CurrentTile->ActivateLeftDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef);
 					CurrentTile->LeftNeighbor->PreviousTile = CurrentTile;
 					AddTileToPath(CurrentTile);
 					DirectionCount = 5;
@@ -614,7 +619,7 @@ void UTilePathSetupComp::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& Current
 				//RIGHT
 				if (CurrentTile->HasValidRightNeighbor() && !CurrentTile->RightNeighbor->CheckForPath && !CurrentTile->RightNeighbor->IsStartingTile())
 				{
-					CurrentTile->ActivateRightDoor();
+					CurrentTile->ActivateRightDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef);
 					CurrentTile->RightNeighbor->PreviousTile = CurrentTile;
 					AddTileToPath(CurrentTile);
 					DirectionCount = 5;

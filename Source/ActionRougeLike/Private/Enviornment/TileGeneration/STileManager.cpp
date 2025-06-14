@@ -148,15 +148,115 @@ void ASTileManager::Create2DTileArray()
 			Col->TileColumn.Add(T);
 			LinkTile(T, *Col);
 			T->ShadeNull();
+
+			////if top row or bottom row add walls
+			//if (ZIndex == 0) //nothing to left so add wall
+			//{
+
+			//}
+			//else if (ZIndex == LevelHeight - 1)
+			//{
+			//	//nothing to right so add wall
+			//}
+			//else if (XIndex == 0)
+			//{
+			//	//nothing below so add wall
+			//}
+			//else if (XIndex == LevelWidth - 1)
+			//{
+			//	//nothing above so add wall
+			//}
+
 		}
 
 		Grid2DArray.Add(Col);
 	}
 	totalGridTilesAvailable = (LevelHeight * LevelWidth) * gridDensity;
+
+	//add walls to perimeter
+
+
 	if (DebugPrints)
 		UE_LOG(LogTemp, Log, TEXT("=================== 2D array CREATED! =============================="));
 }
 
+/// <summary>
+/// Add walls to perimeter
+/// Always runs regardless of if inner walls are implemented
+/// </summary>
+void ASTileManager::AddWallToPerimeter(ETileSide side, ASTile* ThisTile)
+{
+	FVector WallLocation;
+	FTransform WallSpawnTrans;
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	
+	switch (side)
+	{
+	case ETileSide::ETile_Up:
+		WallLocation = ThisTile->SM_UpWallSpawnPoint.GetLocation() + ThisTile->GetActorLocation();
+		WallSpawnTrans = FTransform(ThisTile->SM_UpWallSpawnPoint.GetRotation(), WallLocation);
+		ThisTile->UpWall = GetWorld()->SpawnActor<ASTileWall>(ChoosenWallAsset, WallSpawnTrans, SpawnParams);
+		ThisTile->UpWall->InnerTile = ThisTile;
+		ThisTile->UpWall->RemoveOuter();
+
+		ThisTile->UpWall->SetOwner(ThisTile);
+#if WITH_EDITOR
+		ThisTile->UpWall->SetFolderPath(WallsSubFolderName);
+#endif
+		break;
+	case ETileSide::ETile_Down:
+		WallLocation = ThisTile->SM_DownWallSpawnPoint.GetLocation() + ThisTile->GetActorLocation();
+		WallSpawnTrans = FTransform(ThisTile->SM_DownWallSpawnPoint.GetRotation(), WallLocation);
+		ThisTile->DownWall = GetWorld()->SpawnActor<ASTileWall>(ChoosenWallAsset, WallSpawnTrans, SpawnParams);
+		ThisTile->DownWall->InnerTile = ThisTile;
+		ThisTile->DownWall->RemoveOuter();
+
+		ThisTile->DownWall->SetOwner(ThisTile);
+#if WITH_EDITOR
+		ThisTile->DownWall->SetFolderPath(WallsSubFolderName);
+#endif
+		break;
+	case ETileSide::ETile_Left:
+		WallLocation = ThisTile->SM_LeftWallSpawnPoint.GetLocation() + ThisTile->GetActorLocation();
+		WallSpawnTrans = FTransform(ThisTile->SM_LeftWallSpawnPoint.GetRotation(), WallLocation);
+		ThisTile->LeftWall = GetWorld()->SpawnActor<ASTileWall>(ChoosenWallAsset, WallSpawnTrans, SpawnParams);
+		ThisTile->LeftWall->InnerTile = ThisTile;
+		ThisTile->LeftWall->RemoveOuter();
+
+		ThisTile->LeftWall->SetOwner(ThisTile);
+#if WITH_EDITOR
+		ThisTile->LeftWall->SetFolderPath(WallsSubFolderName);
+#endif
+		break;
+	case ETileSide::ETile_Right:
+		WallLocation = ThisTile->SM_RightWallSpawnPoint.GetLocation() + ThisTile->GetActorLocation();
+		WallSpawnTrans = FTransform(ThisTile->SM_RightWallSpawnPoint.GetRotation(), WallLocation);
+		ThisTile->RightWall = GetWorld()->SpawnActor<ASTileWall>(ChoosenWallAsset, WallSpawnTrans, SpawnParams);
+		ThisTile->RightWall->InnerTile = ThisTile;
+		ThisTile->RightWall->RemoveOuter();
+
+		ThisTile->RightWall->SetOwner(ThisTile);
+#if WITH_EDITOR
+		ThisTile->RightWall->SetFolderPath(WallsSubFolderName);
+#endif
+		break;
+	default:
+		WallLocation = ThisTile->SM_RightWallSpawnPoint.GetLocation() + ThisTile->GetActorLocation();
+		WallSpawnTrans = FTransform(ThisTile->SM_RightWallSpawnPoint.GetRotation(), WallLocation);
+		ThisTile->RightWall = GetWorld()->SpawnActor<ASTileWall>(ChoosenWallAsset, WallSpawnTrans, SpawnParams);
+		ThisTile->RightWall->InnerTile = ThisTile;
+		ThisTile->RightWall->RemoveOuter();
+
+		ThisTile->RightWall->SetOwner(ThisTile);
+#if WITH_EDITOR
+		ThisTile->RightWall->SetFolderPath(WallsSubFolderName);
+#endif
+		UE_LOG(LogTemp, Error, TEXT("Default param for RemovePlaceholderWall"));
+		break;
+
+	}
+}
 
 bool ASTileManager::AddTileToPath(ASTile* TileToAdd)
 {
@@ -238,7 +338,7 @@ void ASTileManager::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& CurrentPath)
 		AddTileToPath(CurrentTile);
 		AddTileToPath(CurrentTile->UpNeighbor);
 
-		CurrentTile->ConnectUpDoor();
+		CurrentTile->ConnectUpDoor(ChoosenDoorwayAsset, WallsSubFolderName);
 		doorTransform = CurrentTile->UpDoor->GetTransform();
 	}
 	else if ((CurrentTile->DownNeighbor && CurrentTile->DownNeighbor->IsBossTile()))
@@ -247,7 +347,7 @@ void ASTileManager::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& CurrentPath)
 		CurrentTile->CheckForPath = true;
 		AddTileToPath(CurrentTile);
 		AddTileToPath(CurrentTile->DownNeighbor);
-		CurrentTile->ConnectDownDoor();
+		CurrentTile->ConnectDownDoor(ChoosenDoorwayAsset, WallsSubFolderName);
 		doorTransform = CurrentTile->DownDoor->GetTransform();
 	}
 	else if ((CurrentTile->RightNeighbor && CurrentTile->RightNeighbor->IsBossTile()))
@@ -256,7 +356,7 @@ void ASTileManager::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& CurrentPath)
 		CurrentTile->CheckForPath = true;
 		AddTileToPath(CurrentTile);
 		AddTileToPath(CurrentTile->RightNeighbor);
-		CurrentTile->ConnectRightDoor();
+		CurrentTile->ConnectRightDoor(ChoosenDoorwayAsset, WallsSubFolderName);
 		doorTransform = CurrentTile->RightDoor->GetTransform();
 	}
 	else if ((CurrentTile->LeftNeighbor && CurrentTile->LeftNeighbor->IsBossTile()))
@@ -265,7 +365,7 @@ void ASTileManager::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& CurrentPath)
 		CurrentTile->CheckForPath = true;
 		AddTileToPath(CurrentTile);
 		AddTileToPath(CurrentTile->LeftNeighbor);
-		CurrentTile->ConnectLeftDoor();
+		CurrentTile->ConnectLeftDoor(ChoosenDoorwayAsset, WallsSubFolderName);
 		doorTransform = CurrentTile->LeftDoor->GetTransform();
 	}
 	else {
@@ -287,7 +387,7 @@ void ASTileManager::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& CurrentPath)
 				if (CurrentTile->HasValidUpNeighbor() && !CurrentTile->UpNeighbor->CheckForPath && !CurrentTile->UpNeighbor->IsStartingTile())
 				{
 					//add this tile to path, go to up neighbor
-					CurrentTile->ActivateUpDoor();
+					CurrentTile->ActivateUpDoor(ChoosenDoorwayAsset, WallsSubFolderName);
 					CurrentTile->UpNeighbor->PreviousTile = CurrentTile;
 					AddTileToPath(CurrentTile);
 					//no need to keep going through other directions directions
@@ -301,7 +401,7 @@ void ASTileManager::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& CurrentPath)
 				//DOWN
 				if (CurrentTile->HasValidDownNeighbor() && !CurrentTile->DownNeighbor->CheckForPath && !CurrentTile->DownNeighbor->IsStartingTile())
 				{
-					CurrentTile->ActivateDownDoor();
+					CurrentTile->ActivateDownDoor(ChoosenDoorwayAsset, WallsSubFolderName);
 					CurrentTile->DownNeighbor->PreviousTile = CurrentTile;
 					AddTileToPath(CurrentTile);
 					DirectionCount = 5;
@@ -314,7 +414,7 @@ void ASTileManager::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& CurrentPath)
 				//LEFT
 				if (CurrentTile->HasValidLeftNeighbor() && !CurrentTile->LeftNeighbor->CheckForPath && !CurrentTile->LeftNeighbor->IsStartingTile())
 				{
-					CurrentTile->ActivateLeftDoor();
+					CurrentTile->ActivateLeftDoor(ChoosenDoorwayAsset, WallsSubFolderName);
 					CurrentTile->LeftNeighbor->PreviousTile = CurrentTile;
 					AddTileToPath(CurrentTile);
 					DirectionCount = 5;
@@ -326,7 +426,7 @@ void ASTileManager::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& CurrentPath)
 				//RIGHT
 				if (CurrentTile->HasValidRightNeighbor() && !CurrentTile->RightNeighbor->CheckForPath && !CurrentTile->RightNeighbor->IsStartingTile())
 				{
-					CurrentTile->ActivateRightDoor();
+					CurrentTile->ActivateRightDoor(ChoosenDoorwayAsset, WallsSubFolderName);
 					CurrentTile->RightNeighbor->PreviousTile = CurrentTile;
 					AddTileToPath(CurrentTile);
 					DirectionCount = 5;
@@ -453,16 +553,17 @@ void ASTileManager::ConnectDoorBranch(ASTile* TileToAdd, int prevDirection)
 	switch (prevDirection) {
 	case 1: //prev was up
 		//prev tile was up direction to get here, therefore this tile's down neighbor was the up neighbor of the prev tile
-		TileToAdd->ConnectDownDoor();
+		TileToAdd->ConnectDownDoor(ChoosenDoorwayAsset, WallsSubFolderName);
 		break;
 	case 2: //prev was down
-		TileToAdd->ConnectUpDoor();
+		TileToAdd->ConnectUpDoor(ChoosenDoorwayAsset, WallsSubFolderName);
+	
 		break;
 	case 3: //prev was left
-		TileToAdd->ConnectRightDoor();
+		TileToAdd->ConnectRightDoor(ChoosenDoorwayAsset, WallsSubFolderName);
 		break;
 	case 4: //prev was right
-		TileToAdd->ConnectLeftDoor();
+		TileToAdd->ConnectLeftDoor(ChoosenDoorwayAsset, WallsSubFolderName);
 		break;
 	}
 }
@@ -730,6 +831,29 @@ void ASTileManager::LinkTile(ASTile* ThisTile, FMultiTileStruct Col)
 			ThisTile->LeftWall->SetFolderPath(WallsSubFolderName);
 #endif
 		}
+	}
+
+	UE_LOG(LogTemp, Log, TEXT("hi"));
+	//add outer walls
+	if (ThisTile->ZIndex == 0) //no up or down neighbor
+	{
+		UE_LOG(LogTemp, Log, TEXT("hi"));
+		AddWallToPerimeter(ETileSide::ETile_Up, ThisTile);
+	}
+	if (ThisTile->ZIndex == LevelWidth - 1)
+	{
+		UE_LOG(LogTemp, Log, TEXT("hi"));
+		AddWallToPerimeter(ETileSide::ETile_Down, ThisTile);
+	}
+	if (ThisTile->XIndex == 0) //no right nor left neighbor
+	{
+		UE_LOG(LogTemp, Log, TEXT("hi"));
+		AddWallToPerimeter(ETileSide::ETile_Left, ThisTile);
+	}
+	if (ThisTile->XIndex == LevelHeight - 1)
+	{
+		UE_LOG(LogTemp, Log, TEXT("hi"));
+		AddWallToPerimeter(ETileSide::ETile_Right, ThisTile);
 	}
 }
 

@@ -26,6 +26,8 @@ UENUM(BlueprintType)
 		ETile_Right UMETA(DisplayName = "Right"),
 	};
 
+	class ASTileDoorWallConnection;
+
 UCLASS()
 class ACTIONROUGELIKE_API ASTile : public AActor
 {
@@ -246,28 +248,31 @@ public:
 
 	//connect tile door to path (so not a valid tile that could be placed but a tile that already exists there)
 	UFUNCTION(Category = "Tile Components - Doors")
-	void ConnectUpDoor();
+	void ConnectUpDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName);
 	UFUNCTION(Category = "Tile Components - Doors")
-	void ConnectDownDoor();
+	void ConnectDownDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName);
 	UFUNCTION(Category = "Tile Components - Doors")
-	void ConnectLeftDoor();
+	void ConnectLeftDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName);
 	UFUNCTION(Category = "Tile Components - Doors")
-	void ConnectRightDoor();
+	void ConnectRightDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName);
 
 	UFUNCTION(Category = "Tile Components - Doors")
-	void ActivateUpDoor();
+	void ActivateUpDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName);
 
 	UFUNCTION(Category = "Tile Components - Doors")
-	void ActivateDownDoor();
+	void ActivateDownDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName);
 
 	UFUNCTION(Category = "Tile Components - Doors")
-	void ActivateRightDoor();
+	void ActivateRightDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName);
 
 	UFUNCTION(Category = "Tile Components - Doors")
-	void ActivateLeftDoor();
+	void ActivateLeftDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName);
 
 	UFUNCTION(Category = "Tile Components - Walls")
-	void RemovePlaceholderWall(ETileSide side);
+	void RemoveCurrentWall(ETileSide side);
+
+	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
+	void SpawnDoorConnector(ETileSide side, TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName);
 
 #pragma endregion
 

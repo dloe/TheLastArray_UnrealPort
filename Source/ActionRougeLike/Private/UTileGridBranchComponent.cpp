@@ -643,6 +643,8 @@ int UTileGridBranchComponent::CheckPathSide(ASTile* TileToCheck)
 /// <param name="CurrentTile"></param>
 void UTileGridBranchComponent::SingleRoomsDoorSetup(ASTile* CurrentTile)
 {
+	TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAssetRef = TileManagerRef->ChoosenDoorwayAsset;
+	FName WallsSubFolderNameRef = TileManagerRef->WallsSubFolderName;
 	TArray <int> DirectionsToCheck = { 1, 2, 3, 4 };
 	DirectionsToCheck = TileManagerRef->Reshuffle2(DirectionsToCheck);
 
@@ -656,7 +658,7 @@ void UTileGridBranchComponent::SingleRoomsDoorSetup(ASTile* CurrentTile)
 			//check up side
 			if (CurrentTile->HasConnectedUpNeighbor())
 			{
-				CurrentTile->ConnectUpDoor();
+				CurrentTile->ConnectUpDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef);
 				return;
 			}
 			break;
@@ -664,21 +666,21 @@ void UTileGridBranchComponent::SingleRoomsDoorSetup(ASTile* CurrentTile)
 		case 2:
 			if (CurrentTile->HasConnectedDownNeighbor())
 			{
-				CurrentTile->ConnectDownDoor();
+				CurrentTile->ConnectDownDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef);
 				return;
 			}
 			break;
 		case 3:
 			if (CurrentTile->HasConnectedLeftNeighbor())
 			{
-				CurrentTile->ConnectLeftDoor();
+				CurrentTile->ConnectLeftDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef);
 				return;
 			}
 			break;
 		case 4:
 			if (CurrentTile->HasConnectedRightNeighbor())
 			{
-				CurrentTile->ConnectRightDoor();
+				CurrentTile->ConnectRightDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef);
 				return;
 			}
 			break;
@@ -745,7 +747,7 @@ void UTileGridBranchComponent::SetupDoor(ASTile* tile, ETileSide SideToSpawnDoor
 	const FString TileDoorName = "TileDoorConnecting_" + FString::FromInt(tile->XIndex) + "_" + FString::FromInt(tile->ZIndex) + "_to_SecretRoom";
 
 	door->DoorActive = true;
-	tile->RemovePlaceholderWall(SideToSpawnDoor);
+	tile->RemoveCurrentWall(SideToSpawnDoor);
 	TileManagerRef->DoorArray.Add(door);
 	door->SetActorLabel(TileDoorName);
 	door->SetOwner(TileManagerRef);
@@ -780,19 +782,21 @@ void UTileGridBranchComponent::SetupDoor(ASTile* tile, ETileSide SideToSpawnDoor
 /// <param name="prevDirection"></param>
 void UTileGridBranchComponent::ConnectDoorBranch(ASTile* TileToAdd, int prevDirection)
 {
+	TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAssetRef = TileManagerRef->ChoosenDoorwayAsset;
+	FName WallsSubFolderNameRef = TileManagerRef->WallsSubFolderName;
 	switch (prevDirection) {
 	case 1: //prev was up
 		//prev tile was up direction to get here, therefore this tile's down neighbor was the up neighbor of the prev tile
-		TileToAdd->ConnectDownDoor();
+		TileToAdd->ConnectDownDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef);
 		break;
 	case 2: //prev was down
-		TileToAdd->ConnectUpDoor();
+		TileToAdd->ConnectUpDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef);
 		break;
 	case 3: //prev was left
-		TileToAdd->ConnectRightDoor();
+		TileToAdd->ConnectRightDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef);
 		break;
 	case 4: //prev was right
-		TileToAdd->ConnectLeftDoor();
+		TileToAdd->ConnectLeftDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef);
 		break;
 	}
 }
