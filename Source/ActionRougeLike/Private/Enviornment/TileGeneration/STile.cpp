@@ -281,7 +281,7 @@ void ASTile::ActivateUpDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorway
 		RemoveCurrentWall(ETileSide::ETile_Up);
 		//
 		//UpNeighbor->RemoveCurrentWall(ETileSide::ETile_Up);
-		SpawnDoorConnector(ETileSide::ETile_Down, ChoosenDoorwayAsset, WallsSubFolderName);
+		SpawnDoorConnector(ETileSide::ETile_Up, ChoosenDoorwayAsset, WallsSubFolderName);
 	}
 }
 
