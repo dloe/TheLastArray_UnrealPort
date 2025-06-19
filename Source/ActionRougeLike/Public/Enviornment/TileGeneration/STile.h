@@ -61,7 +61,7 @@ public:
 	USceneComponent* DoorsRoot;
 
 	UFUNCTION(BlueprintCallable, Category = "Tile Components - Walls")
-	void ActivateWalls();
+	void ActivateWalls(TSubclassOf<ASTileWall> ChoosenWallAsset, FName WallsSubFolderName, TArray<ASTileWall*>& AllSpawnedWalls);
 
 #pragma region Tile Stats
 	UPROPERTY(EditDefaultsOnly, Category = "Tile Stats")
@@ -243,36 +243,39 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Tile Components - Doors")
 	void SyncDoors();
 
-		UFUNCTION(Category = "Tile Components - Doors")
+	UFUNCTION(Category = "Tile Components - Doors")
 	void TurnAllDoorsInactive();
 
 	//connect tile door to path (so not a valid tile that could be placed but a tile that already exists there)
 	UFUNCTION(Category = "Tile Components - Doors")
-	void ConnectUpDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName);
+	void ConnectUpDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName, TArray<ASTileWall*>& AllSpawnedWalls);
 	UFUNCTION(Category = "Tile Components - Doors")
-	void ConnectDownDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName);
+	void ConnectDownDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName, TArray<ASTileWall*>& AllSpawnedWalls);
 	UFUNCTION(Category = "Tile Components - Doors")
-	void ConnectLeftDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName);
+	void ConnectLeftDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName, TArray<ASTileWall*>& AllSpawnedWalls);
 	UFUNCTION(Category = "Tile Components - Doors")
-	void ConnectRightDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName);
+	void ConnectRightDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName, TArray<ASTileWall*>& AllSpawnedWalls);
 
 	UFUNCTION(Category = "Tile Components - Doors")
-	void ActivateUpDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName);
+	void ActivateUpDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName,TArray<ASTileWall*>& AllSpawnedWalls);
 
 	UFUNCTION(Category = "Tile Components - Doors")
-	void ActivateDownDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName);
+	void ActivateDownDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName, TArray<ASTileWall*>& AllSpawnedWalls);
 
 	UFUNCTION(Category = "Tile Components - Doors")
-	void ActivateRightDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName);
+	void ActivateRightDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName, TArray<ASTileWall*>& AllSpawnedWalls);
 
 	UFUNCTION(Category = "Tile Components - Doors")
-	void ActivateLeftDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName);
+	void ActivateLeftDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName, TArray<ASTileWall*>& AllSpawnedWalls);
 
 	UFUNCTION(Category = "Tile Components - Walls")
 	void RemoveCurrentWall(ETileSide side);
 
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
-	void SpawnDoorConnector(ETileSide side, TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName);
+	void SpawnDoorConnector(ETileSide side, TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName, TArray<ASTileWall*>& AllSpawnedWalls);
+
+	UFUNCTION(Category = "Tile Components - Setup")
+	void SetupSecretRoomDoorWalls(ETileSide side, TSubclassOf<ASTileWall> ChoosenWallAsset, FName WallsSubFolderName, TArray<ASTileWall*>& AllSpawnedWalls);
 
 #pragma endregion
 

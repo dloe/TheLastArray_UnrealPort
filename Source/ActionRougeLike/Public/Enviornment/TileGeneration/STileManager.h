@@ -160,8 +160,12 @@ public:
 	FName WallsSubFolderName;
 
 	//starting tile reference - TO DO: PROTECT THIS LATER
+	//this is the start of the grid path, not to be confused with the Tile the player spawns on
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
-	ASTile* StartingTile;
+	ASTile* StartingGridTile;
+
+	UPROPERTY(EditAnywhere, Category = "Tile Generation")
+	ASTile* PlayerStartingTile_SpawnTile; //TODO: difference between this and StartingTile???
 
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	ASTile* choosen;
@@ -176,6 +180,9 @@ public:
 	//list of possible starting tiles - DO DO: PROTECT THIS LATER
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	TArray<ASTile*> PossibleStartingTiles;
+
+	UPROPERTY(EditAnywhere, Category = "Tile Generation")
+	TArray<ASTileWall*> AllSpawnedWalls;
 
 	UFUNCTION()
 	TArray<ASTile*> GetPossibleStartingTiles() const {return PossibleStartingTiles;};
@@ -208,7 +215,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	TArray<ASTile*>	AvailableTiles;
 
-	//Spawned in from LocalLevel
+	//Assigned and brought in from local level
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	ASTile* PlayerSpawnPresentTile;
 
@@ -251,8 +258,7 @@ protected:
 	UPROPERTY()
 	ULevelAssetSetupComponent* LevelAssetSetupComponent;
 
-	UPROPERTY(EditAnywhere, Category = "Tile Generation")
-	ASTile* PlayerStartingTileBase; //TODO: difference between this and StartingTile???
+	
 
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	int FailsafeCount = 0;
@@ -301,6 +307,9 @@ protected:
 
 	UFUNCTION(Category = "Door Setup")
 	void SpawnDoor(ASTile* tile, ETileSide SideToSpawnDoor, FString NameOfTileToConnect);
+
+	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
+	void RemoveUnusedOuters();
 
 	//For debug if we want to hard code a specific side to test, we set to 0 -3 otherwise it will get overridden
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")

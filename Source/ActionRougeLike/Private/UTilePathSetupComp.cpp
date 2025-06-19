@@ -315,8 +315,8 @@ void UTilePathSetupComp::ChooseStartEndRooms()
 	if (TileManagerRef->DebugPrints)
 		UE_LOG(LogTemp, Log, TEXT("Starting Tile is designated as [%d,%d]"), startY, startX);
 
-	TileManagerRef->StartingTile = TileManagerRef->GetGridTile(startY, startX);//Grid2DArray[startY]->TileColumn[startX];
-	TileManagerRef->StartingTile->ShadeStartingRoom();
+	TileManagerRef->StartingGridTile = TileManagerRef->GetGridTile(startY, startX);//Grid2DArray[startY]->TileColumn[startX];
+	TileManagerRef->StartingGridTile->ShadeStartingRoom();
 
 	//end room is picked randomly from array of possible rooms
 	TArray<ASTile*> availableTiles = TileManagerRef->GetPossibleStartingTiles();
@@ -337,7 +337,7 @@ void UTilePathSetupComp::GeneratePath()
 	//refs from manager
 	//TArray<ASTile*> LevelPathRef = TileManagerRef->LevelPath;
 
-	CheckTile(TileManagerRef->StartingTile, TileManagerRef->LevelPath);
+	CheckTile(TileManagerRef->StartingGridTile, TileManagerRef->LevelPath);
 
 	if (TileManagerRef->DebugPrints) {
 		//draw lines through path
@@ -367,7 +367,7 @@ void UTilePathSetupComp::CreateSpawnRoom()
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
 	ALocalLevel* MyLocalLevelRef = TileManagerRef->MyLocalLevel;
-	ASTile* StartingTileRef = TileManagerRef->StartingTile;
+	ASTile* StartingGridTileRef = TileManagerRef->StartingGridTile;
 
 	TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAssetRef = TileManagerRef->ChoosenDoorwayAsset;
 	FName WallsSubFolderNameRef = TileManagerRef->WallsSubFolderName;
@@ -379,84 +379,81 @@ void UTilePathSetupComp::CreateSpawnRoom()
 	{
 	case 0:
 		//RIGHT
-		SpawnPos = FVector(StartingTileRef->GetActorLocation().X - (StartingTileRef->TileLength), StartingTileRef->GetActorLocation().Y, StartingTileRef->GetActorLocation().Z);
-		PlayerStartingTileBase = GetWorld()->SpawnActor<ASTile>(TileManagerRef->TileBase, SpawnPos, StartingTileRef->GetActorRotation(), SpawnParams);
-		TileManagerRef->PlayerSpawnPresentTile = GetWorld()->SpawnActor<ASTile>(MyLocalLevelRef->PresetStartingTile, SpawnPos, StartingTileRef->GetActorRotation(), SpawnParams); //rotate -90
-		StartingTileRef->LeftNeighbor = PlayerStartingTileBase;
-		PlayerStartingTileBase->RightNeighbor = StartingTileRef;
+		SpawnPos = FVector(StartingGridTileRef->GetActorLocation().X - (StartingGridTileRef->TileLength), StartingGridTileRef->GetActorLocation().Y, StartingGridTileRef->GetActorLocation().Z);
+		TileManagerRef->PlayerStartingTile_SpawnTile = GetWorld()->SpawnActor<ASTile>(TileManagerRef->TileBase, SpawnPos, StartingGridTileRef->GetActorRotation(), SpawnParams);
+		TileManagerRef->PlayerSpawnPresentTile = GetWorld()->SpawnActor<ASTile>(MyLocalLevelRef->PresetStartingTile, SpawnPos, StartingGridTileRef->GetActorRotation(), SpawnParams); //rotate -90
+		StartingGridTileRef->LeftNeighbor = TileManagerRef->PlayerStartingTile_SpawnTile;
+		TileManagerRef->PlayerStartingTile_SpawnTile->RightNeighbor = StartingGridTileRef;
 		TileManagerRef->PlayerSpawnPresentTile->SetActorRotation(FRotator(TileManagerRef->PlayerSpawnPresentTile->GetActorRotation().Euler().X, -90.0f, TileManagerRef->PlayerSpawnPresentTile->GetActorRotation().Euler().Z));
-		UE_LOG(LogTemp, Log, TEXT("No door spawned in start room, add code if we use this route..."));
 
 		break;
 	case 1:
 		//UP
-		SpawnPos = FVector(StartingTileRef->GetActorLocation().X, StartingTileRef->GetActorLocation().Y - (StartingTileRef->TileLength), StartingTileRef->GetActorLocation().Z);
-		PlayerStartingTileBase = GetWorld()->SpawnActor<ASTile>(TileManagerRef->TileBase, SpawnPos, StartingTileRef->GetActorRotation(), SpawnParams);
-		TileManagerRef->PlayerSpawnPresentTile = GetWorld()->SpawnActor<ASTile>(MyLocalLevelRef->PresetStartingTile, SpawnPos, StartingTileRef->GetActorRotation(), SpawnParams);
-		StartingTileRef->UpNeighbor = PlayerStartingTileBase;
-		PlayerStartingTileBase->DownNeighbor = StartingTileRef;
-		UE_LOG(LogTemp, Log, TEXT("No door spawned in start room, add code if we use this route..."));
+		SpawnPos = FVector(StartingGridTileRef->GetActorLocation().X, StartingGridTileRef->GetActorLocation().Y - (StartingGridTileRef->TileLength), StartingGridTileRef->GetActorLocation().Z);
+		TileManagerRef->PlayerStartingTile_SpawnTile = GetWorld()->SpawnActor<ASTile>(TileManagerRef->TileBase, SpawnPos, StartingGridTileRef->GetActorRotation(), SpawnParams);
+		TileManagerRef->PlayerSpawnPresentTile = GetWorld()->SpawnActor<ASTile>(MyLocalLevelRef->PresetStartingTile, SpawnPos, StartingGridTileRef->GetActorRotation(), SpawnParams);
+		StartingGridTileRef->UpNeighbor = TileManagerRef->PlayerStartingTile_SpawnTile;
+		TileManagerRef->PlayerStartingTile_SpawnTile->DownNeighbor = StartingGridTileRef;
 
 		break;
 	case 2:
 		//LEFT
-		SpawnPos = FVector(StartingTileRef->GetActorLocation().X + (StartingTileRef->TileLength), StartingTileRef->GetActorLocation().Y, StartingTileRef->GetActorLocation().Z);
-		PlayerStartingTileBase = GetWorld()->SpawnActor<ASTile>(TileManagerRef->TileBase, SpawnPos, StartingTileRef->GetActorRotation(), SpawnParams);
-		TileManagerRef->PlayerSpawnPresentTile = GetWorld()->SpawnActor<ASTile>(MyLocalLevelRef->PresetStartingTile, SpawnPos, StartingTileRef->GetActorRotation(), SpawnParams); //rotate 90
-		StartingTileRef->RightNeighbor = PlayerStartingTileBase;
-		PlayerStartingTileBase->LeftNeighbor = StartingTileRef;
+		SpawnPos = FVector(StartingGridTileRef->GetActorLocation().X + (StartingGridTileRef->TileLength), StartingGridTileRef->GetActorLocation().Y, StartingGridTileRef->GetActorLocation().Z);
+		TileManagerRef->PlayerStartingTile_SpawnTile = GetWorld()->SpawnActor<ASTile>(TileManagerRef->TileBase, SpawnPos, StartingGridTileRef->GetActorRotation(), SpawnParams);
+		TileManagerRef->PlayerSpawnPresentTile = GetWorld()->SpawnActor<ASTile>(MyLocalLevelRef->PresetStartingTile, SpawnPos, StartingGridTileRef->GetActorRotation(), SpawnParams); //rotate 90
+		StartingGridTileRef->RightNeighbor = TileManagerRef->PlayerStartingTile_SpawnTile;
+		TileManagerRef->PlayerStartingTile_SpawnTile->LeftNeighbor = StartingGridTileRef;
 		TileManagerRef->PlayerSpawnPresentTile->SetActorRotation(FRotator(TileManagerRef->PlayerSpawnPresentTile->GetActorRotation().Euler().X, 90, TileManagerRef->PlayerSpawnPresentTile->GetActorRotation().Euler().Z));
-		UE_LOG(LogTemp, Log, TEXT("No door spawned in start room, add code if we use this route..."));
 
 		break;
 	case 3:
 		//DOWN
-		SpawnPos = FVector(StartingTileRef->GetActorLocation().X, StartingTileRef->GetActorLocation().Y + (StartingTileRef->TileLength), StartingTileRef->GetActorLocation().Z);
-		PlayerStartingTileBase = GetWorld()->SpawnActor<ASTile>(TileManagerRef->TileBase, SpawnPos, StartingTileRef->GetActorRotation(), SpawnParams); //rotate 180
-		TileManagerRef->PlayerSpawnPresentTile = GetWorld()->SpawnActor<ASTile>(MyLocalLevelRef->PresetStartingTile, SpawnPos, StartingTileRef->GetActorRotation(), SpawnParams);
-		StartingTileRef->DownNeighbor = PlayerStartingTileBase;
-		PlayerStartingTileBase->UpNeighbor = StartingTileRef;
+		SpawnPos = FVector(StartingGridTileRef->GetActorLocation().X, StartingGridTileRef->GetActorLocation().Y + (StartingGridTileRef->TileLength), StartingGridTileRef->GetActorLocation().Z);
+		TileManagerRef->PlayerStartingTile_SpawnTile = GetWorld()->SpawnActor<ASTile>(TileManagerRef->TileBase, SpawnPos, StartingGridTileRef->GetActorRotation(), SpawnParams); //rotate 180
+		TileManagerRef->PlayerSpawnPresentTile = GetWorld()->SpawnActor<ASTile>(MyLocalLevelRef->PresetStartingTile, SpawnPos, StartingGridTileRef->GetActorRotation(), SpawnParams);
+		StartingGridTileRef->DownNeighbor = TileManagerRef->PlayerStartingTile_SpawnTile;
+		TileManagerRef->PlayerStartingTile_SpawnTile->UpNeighbor = StartingGridTileRef;
 		TileManagerRef->PlayerSpawnPresentTile->SetActorRotation(FRotator(TileManagerRef->PlayerSpawnPresentTile->GetActorRotation().Euler().X, 180.0f, TileManagerRef->PlayerSpawnPresentTile->GetActorRotation().Euler().Z));
 
 		if (TileManagerRef->DoorToStartRoom)
 		{
 			//Set up door - rn defaulted to 3 TODO: do i really need to even choose other sides to start on? is the player even gunna notice? perspective of player always starts the same
 			//should always be having the same rotation right? therefore the door should always be up while everyone else's has different orientations
-			const FString TileUpDoorName = "TileDoorConnecting_StartingRoom_to_" + FString::FromInt(PlayerStartingTileBase->UpNeighbor->XIndex) + "_" + FString::FromInt(PlayerStartingTileBase->UpNeighbor->ZIndex);
-			const FVector UpDoorSpawnLocation = PlayerStartingTileBase->UpDoorSpawnPoint.GetLocation() + PlayerStartingTileBase->GetActorLocation();
-			const FTransform Spawm = FTransform(PlayerStartingTileBase->UpDoorSpawnPoint.GetRotation(), UpDoorSpawnLocation);
-			PlayerStartingTileBase->UpDoor = GetWorld()->SpawnActor<ASTileDoor>(TileManagerRef->TileDoor, Spawm, SpawnParams);
-			TileManagerRef->DoorArray.Add(PlayerStartingTileBase->UpDoor);
-			PlayerStartingTileBase->UpDoor->SetActorLabel(TileUpDoorName);
-			PlayerStartingTileBase->UpDoor->SetOwner(StartingTileRef);
+			const FString TileUpDoorName = "TileDoorConnecting_StartingRoom_to_" + FString::FromInt(TileManagerRef->PlayerStartingTile_SpawnTile->UpNeighbor->XIndex) + "_" + FString::FromInt(TileManagerRef->PlayerStartingTile_SpawnTile->UpNeighbor->ZIndex);
+			const FVector UpDoorSpawnLocation = TileManagerRef->PlayerStartingTile_SpawnTile->UpDoorSpawnPoint.GetLocation() + TileManagerRef->PlayerStartingTile_SpawnTile->GetActorLocation();
+			const FTransform Spawm = FTransform(TileManagerRef->PlayerStartingTile_SpawnTile->UpDoorSpawnPoint.GetRotation(), UpDoorSpawnLocation);
+			TileManagerRef->PlayerStartingTile_SpawnTile->UpDoor = GetWorld()->SpawnActor<ASTileDoor>(TileManagerRef->TileDoor, Spawm, SpawnParams);
+			TileManagerRef->DoorArray.Add(TileManagerRef->PlayerStartingTile_SpawnTile->UpDoor);
+			TileManagerRef->PlayerStartingTile_SpawnTile->UpDoor->SetActorLabel(TileUpDoorName);
+			TileManagerRef->PlayerStartingTile_SpawnTile->UpDoor->SetOwner(StartingGridTileRef);
 
 #if WITH_EDITOR
-			PlayerStartingTileBase->UpDoor->SetFolderPath(TileManagerRef->DoorSubFolderName);
+			TileManagerRef->PlayerStartingTile_SpawnTile->UpDoor->SetFolderPath(TileManagerRef->DoorSubFolderName);
 #endif
-			StartingTileRef->DownDoor = PlayerStartingTileBase->UpDoor;
+			StartingGridTileRef->DownDoor = TileManagerRef->PlayerStartingTile_SpawnTile->UpDoor;
 			//PlayerStartingTileBase->ActivateUpDoor();
 
-			StartingTileRef->ConnectDownDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef);
+			StartingGridTileRef->ConnectDownDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, TileManagerRef->AllSpawnedWalls);
 		}
 		break;
 	}
 
 	//label
-	PlayerStartingTileBase->SetActorLabel("StartingTile_Base");
+	TileManagerRef->PlayerStartingTile_SpawnTile->SetActorLabel("StartingTile_Base");
 	TileManagerRef->PlayerSpawnPresentTile->SetActorLabel("StartingTile_Populate");
 #if WITH_EDITOR
-	PlayerStartingTileBase->SetFolderPath(TileManagerRef->TileGenRootFolder);
+	TileManagerRef->PlayerStartingTile_SpawnTile->SetFolderPath(TileManagerRef->TileGenRootFolder);
 	TileManagerRef->PlayerSpawnPresentTile->SetFolderPath(TileManagerRef->TileGenRootFolder);
 #endif
 	//Set the Preset ref to the SpawnPresetTile obj
-	PlayerStartingTileBase->PresetTile = TileManagerRef->PlayerSpawnPresentTile;
+	TileManagerRef->PlayerStartingTile_SpawnTile->PresetTile = TileManagerRef->PlayerSpawnPresentTile;
 
 	//Spawn stats from StartingTile to PlayerStartingTileBase, then we will reassign the StartingTile
-	TileManagerRef->StartingTile->ShadePath();
-	TileManagerRef->LevelPath.Insert(PlayerStartingTileBase, 0);
-	TileManagerRef->AllActiveTiles.Insert(PlayerStartingTileBase, 0);
-	PlayerStartingTileBase->ShadeStartingRoom();
-	TileManagerRef->StartingTile = PlayerStartingTileBase;
+	TileManagerRef->StartingGridTile->ShadePath();
+	TileManagerRef->LevelPath.Insert(TileManagerRef->PlayerStartingTile_SpawnTile, 0);
+	TileManagerRef->AllActiveTiles.Insert(TileManagerRef->PlayerStartingTile_SpawnTile, 0);
+	TileManagerRef->PlayerStartingTile_SpawnTile->ShadeStartingRoom();
+	TileManagerRef->StartingGridTile = TileManagerRef->PlayerStartingTile_SpawnTile;
 }
 
 /// <summary>
@@ -531,7 +528,7 @@ void UTilePathSetupComp::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& Current
 		AddTileToPath(CurrentTile);
 		AddTileToPath(CurrentTile->UpNeighbor);
 
-		CurrentTile->ConnectUpDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef);
+		CurrentTile->ConnectUpDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, TileManagerRef->AllSpawnedWalls);
 		doorTransform = CurrentTile->UpDoor->GetTransform();
 	}
 	else if ((CurrentTile->DownNeighbor && CurrentTile->DownNeighbor->IsBossTile()))
@@ -540,7 +537,7 @@ void UTilePathSetupComp::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& Current
 		CurrentTile->CheckForPath = true;
 		AddTileToPath(CurrentTile);
 		AddTileToPath(CurrentTile->DownNeighbor);
-		CurrentTile->ConnectDownDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef);
+		CurrentTile->ConnectDownDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, TileManagerRef->AllSpawnedWalls);
 		doorTransform = CurrentTile->DownDoor->GetTransform();
 	}
 	else if ((CurrentTile->RightNeighbor && CurrentTile->RightNeighbor->IsBossTile()))
@@ -549,7 +546,7 @@ void UTilePathSetupComp::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& Current
 		CurrentTile->CheckForPath = true;
 		AddTileToPath(CurrentTile);
 		AddTileToPath(CurrentTile->RightNeighbor);
-		CurrentTile->ConnectRightDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef);
+		CurrentTile->ConnectRightDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, TileManagerRef->AllSpawnedWalls);
 		doorTransform = CurrentTile->RightDoor->GetTransform();
 	}
 	else if ((CurrentTile->LeftNeighbor && CurrentTile->LeftNeighbor->IsBossTile()))
@@ -558,7 +555,7 @@ void UTilePathSetupComp::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& Current
 		CurrentTile->CheckForPath = true;
 		AddTileToPath(CurrentTile);
 		AddTileToPath(CurrentTile->LeftNeighbor);
-		CurrentTile->ConnectLeftDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef);
+		CurrentTile->ConnectLeftDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, TileManagerRef->AllSpawnedWalls);
 		doorTransform = CurrentTile->LeftDoor->GetTransform();
 	}
 	else {
@@ -580,7 +577,7 @@ void UTilePathSetupComp::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& Current
 				if (CurrentTile->HasValidUpNeighbor() && !CurrentTile->UpNeighbor->CheckForPath && !CurrentTile->UpNeighbor->IsStartingTile())
 				{
 					//add this tile to path, go to up neighbor
-					CurrentTile->ActivateUpDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef);
+					CurrentTile->ActivateUpDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, TileManagerRef->AllSpawnedWalls);
 					CurrentTile->UpNeighbor->PreviousTile = CurrentTile;
 					AddTileToPath(CurrentTile);
 					//no need to keep going through other directions directions
@@ -594,7 +591,7 @@ void UTilePathSetupComp::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& Current
 				//DOWN
 				if (CurrentTile->HasValidDownNeighbor() && !CurrentTile->DownNeighbor->CheckForPath && !CurrentTile->DownNeighbor->IsStartingTile())
 				{
-					CurrentTile->ActivateDownDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef);
+					CurrentTile->ActivateDownDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, TileManagerRef->AllSpawnedWalls);
 					CurrentTile->DownNeighbor->PreviousTile = CurrentTile;
 					AddTileToPath(CurrentTile);
 					DirectionCount = 5;
@@ -607,7 +604,7 @@ void UTilePathSetupComp::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& Current
 				//LEFT
 				if (CurrentTile->HasValidLeftNeighbor() && !CurrentTile->LeftNeighbor->CheckForPath && !CurrentTile->LeftNeighbor->IsStartingTile())
 				{
-					CurrentTile->ActivateLeftDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef);
+					CurrentTile->ActivateLeftDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, TileManagerRef->AllSpawnedWalls);
 					CurrentTile->LeftNeighbor->PreviousTile = CurrentTile;
 					AddTileToPath(CurrentTile);
 					DirectionCount = 5;
@@ -619,7 +616,7 @@ void UTilePathSetupComp::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& Current
 				//RIGHT
 				if (CurrentTile->HasValidRightNeighbor() && !CurrentTile->RightNeighbor->CheckForPath && !CurrentTile->RightNeighbor->IsStartingTile())
 				{
-					CurrentTile->ActivateRightDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef);
+					CurrentTile->ActivateRightDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, TileManagerRef->AllSpawnedWalls);
 					CurrentTile->RightNeighbor->PreviousTile = CurrentTile;
 					AddTileToPath(CurrentTile);
 					DirectionCount = 5;

@@ -42,6 +42,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Walls")
 	ASTile* OuterTile;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Walls")
+	bool WillRemoveOuter;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Walls")
+	bool WillRemoveInner;
+
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
 	void RemoveOuter();
 

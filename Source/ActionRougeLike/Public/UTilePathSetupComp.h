@@ -47,14 +47,6 @@ protected:
 	UPROPERTY(EditAnywhere)
 	ASTileManager* TileManagerRef;
 
-	//starting tile reference
-	//PROPERTY(EditAnywhere, Category = "Tile Path Generation")
-	//ASTile* StartingTile;
-
-	//starting tile reference - TO DO: PROTECT THIS LATER
-	//UPROPERTY(EditAnywhere, Category = "Tile Generation")
-	//ASTile* EndTile;
-
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	int FailsafeCount = 0;
 
@@ -65,8 +57,8 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	FTransform doorTransform;
 
-	UPROPERTY(EditAnywhere, Category = "Tile Generation")
-	ASTile* PlayerStartingTileBase;
+	//UPROPERTY(EditAnywhere, Category = "Tile Generation")
+	//ASTile* PlayerStartingTileBase;
 
 	//Spawned in from LocalLevel
 	//UPROPERTY(EditAnywhere, Category = "Tile Generation")

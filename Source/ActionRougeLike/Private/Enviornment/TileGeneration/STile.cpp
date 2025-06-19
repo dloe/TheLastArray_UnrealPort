@@ -35,9 +35,92 @@ void ASTile::SetUpDoorTransforms_Implementation()
 }
 
 
-//if neighbor is null, add a wall - specifically for tiles next to null spaces
-void ASTile::ActivateWalls()
+///if neighbor is null, add a wall - specifically for tiles next to null space
+void ASTile::ActivateWalls(TSubclassOf<ASTileWall> ChoosenWallAsset, FName WallsSubFolderName, TArray<ASTileWall*>& AllSpawnedWalls)
 {
+	FVector WallLocation;
+	FTransform WallSpawnTrans;
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	//if down neighbor is null and down wall null 
+	if (DownNeighbor == NULL && DownWall == NULL)
+	{
+		WallLocation = SM_DownWallSpawnPoint.GetLocation() + GetActorLocation();
+		WallSpawnTrans = FTransform(SM_DownWallSpawnPoint.GetRotation(), WallLocation);
+		DownWall = GetWorld()->SpawnActor<ASTileWall>(ChoosenWallAsset, WallSpawnTrans, SpawnParams);
+		DownWall->InnerTile = this;
+		DownWall->RemoveOuter();
+		AllSpawnedWalls.Add(DownWall);
+
+		DownWall->SetOwner(this);
+#if WITH_EDITOR
+		DownWall->SetFolderPath(WallsSubFolderName);
+#endif
+	}
+	else if (DownNeighbor != NULL && DownWall == NULL)
+	{
+		DownWall = DownNeighbor->UpWall;
+	}
+
+	//Up wall
+	if (UpNeighbor == NULL && UpWall == NULL)
+	{
+		WallLocation = SM_UpWallSpawnPoint.GetLocation() + GetActorLocation();
+		WallSpawnTrans = FTransform(SM_UpWallSpawnPoint.GetRotation(), WallLocation);
+		UpWall = GetWorld()->SpawnActor<ASTileWall>(ChoosenWallAsset, WallSpawnTrans, SpawnParams);
+		UpWall->InnerTile = this;
+		UpWall->RemoveOuter();
+		AllSpawnedWalls.Add(UpWall);
+
+		UpWall->SetOwner(this);
+#if WITH_EDITOR
+		UpWall->SetFolderPath(WallsSubFolderName);
+#endif
+	}
+	else if (UpNeighbor != NULL && UpWall == NULL)
+	{
+		UpWall = UpNeighbor->DownWall;
+	}
+
+	//left wall
+	if (LeftNeighbor == NULL && LeftWall == NULL)
+	{
+		WallLocation = SM_LeftWallSpawnPoint.GetLocation() + GetActorLocation();
+		WallSpawnTrans = FTransform(SM_LeftWallSpawnPoint.GetRotation(), WallLocation);
+		LeftWall = GetWorld()->SpawnActor<ASTileWall>(ChoosenWallAsset, WallSpawnTrans, SpawnParams);
+		LeftWall->InnerTile = this;
+		LeftWall->RemoveOuter();
+		AllSpawnedWalls.Add(LeftWall);
+
+		LeftWall->SetOwner(this);
+#if WITH_EDITOR
+		LeftWall->SetFolderPath(WallsSubFolderName);
+#endif
+	}
+	else if (LeftNeighbor != NULL && LeftWall == NULL)
+	{
+		LeftWall = LeftNeighbor->RightWall;
+	}
+
+	//right wall
+	if (RightNeighbor == NULL && RightWall == NULL)
+	{
+		WallLocation = SM_RightWallSpawnPoint.GetLocation() + GetActorLocation();
+		WallSpawnTrans = FTransform(SM_RightWallSpawnPoint.GetRotation(), WallLocation);
+		RightWall = GetWorld()->SpawnActor<ASTileWall>(ChoosenWallAsset, WallSpawnTrans, SpawnParams);
+		RightWall->InnerTile = this;
+		RightWall->RemoveOuter();
+		AllSpawnedWalls.Add(RightWall);
+
+		RightWall->SetOwner(this);
+#if WITH_EDITOR
+		RightWall->SetFolderPath(WallsSubFolderName);
+#endif
+	}
+	else if (RightNeighbor != NULL && RightWall == NULL)
+	{
+		RightWall = RightNeighbor->LeftWall;
+	}
 
 }
 
@@ -244,71 +327,71 @@ void ASTile::TurnAllDoorsInactive()
 }
 
 //should i have more checks in here?
-void ASTile::ConnectUpDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName)
+void ASTile::ConnectUpDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName, TArray<ASTileWall*>& AllSpawnedWalls)
 {
 	UpDoor->DoorActive = true;
 	RemoveCurrentWall(ETileSide::ETile_Up);
 	//spawn door wall asset
-	SpawnDoorConnector(ETileSide::ETile_Up, ChoosenDoorwayAsset, WallsSubFolderName);
+	SpawnDoorConnector(ETileSide::ETile_Up, ChoosenDoorwayAsset, WallsSubFolderName, AllSpawnedWalls);
 
 }
 
-void ASTile::ConnectDownDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName)
+void ASTile::ConnectDownDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName, TArray<ASTileWall*>& AllSpawnedWalls)
 {
 	DownDoor->DoorActive = true;
 	RemoveCurrentWall(ETileSide::ETile_Down);
-	SpawnDoorConnector(ETileSide::ETile_Down, ChoosenDoorwayAsset, WallsSubFolderName);
+	SpawnDoorConnector(ETileSide::ETile_Down, ChoosenDoorwayAsset, WallsSubFolderName, AllSpawnedWalls);
 }
 
-void ASTile::ConnectLeftDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName)
+void ASTile::ConnectLeftDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName, TArray<ASTileWall*>& AllSpawnedWalls)
 {
 	LeftDoor->DoorActive = true;
 	RemoveCurrentWall(ETileSide::ETile_Left);
-	SpawnDoorConnector(ETileSide::ETile_Left, ChoosenDoorwayAsset, WallsSubFolderName);
+	SpawnDoorConnector(ETileSide::ETile_Left, ChoosenDoorwayAsset, WallsSubFolderName, AllSpawnedWalls);
 }
 
-void ASTile::ConnectRightDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName)
+void ASTile::ConnectRightDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName, TArray<ASTileWall*>& AllSpawnedWalls)
 {
 	RightDoor->DoorActive = true;
 	RemoveCurrentWall(ETileSide::ETile_Right);
-	SpawnDoorConnector(ETileSide::ETile_Right, ChoosenDoorwayAsset, WallsSubFolderName);
+	SpawnDoorConnector(ETileSide::ETile_Right, ChoosenDoorwayAsset, WallsSubFolderName, AllSpawnedWalls);
 }
 
-void ASTile::ActivateUpDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName)
+void ASTile::ActivateUpDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName, TArray<ASTileWall*>& AllSpawnedWalls)
 {
 	if (HasValidUpNeighbor()) {
 		UpDoor->DoorActive = true;
 		RemoveCurrentWall(ETileSide::ETile_Up);
 		//
 		//UpNeighbor->RemoveCurrentWall(ETileSide::ETile_Up);
-		SpawnDoorConnector(ETileSide::ETile_Up, ChoosenDoorwayAsset, WallsSubFolderName);
+		SpawnDoorConnector(ETileSide::ETile_Up, ChoosenDoorwayAsset, WallsSubFolderName, AllSpawnedWalls);
 	}
 }
 
-void ASTile::ActivateDownDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName)
+void ASTile::ActivateDownDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName, TArray<ASTileWall*>& AllSpawnedWalls)
 {
 	if (HasValidDownNeighbor()) {
 		DownDoor->DoorActive = true;
 		RemoveCurrentWall(ETileSide::ETile_Down);
-		SpawnDoorConnector(ETileSide::ETile_Down, ChoosenDoorwayAsset, WallsSubFolderName);
+		SpawnDoorConnector(ETileSide::ETile_Down, ChoosenDoorwayAsset, WallsSubFolderName, AllSpawnedWalls);
 	}
 }
 
-void ASTile::ActivateRightDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName)
+void ASTile::ActivateRightDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName, TArray<ASTileWall*>& AllSpawnedWalls)
 {
 	if (HasValidRightNeighbor()) {
 		RightDoor->DoorActive = true;
 		RemoveCurrentWall(ETileSide::ETile_Right);
-		SpawnDoorConnector(ETileSide::ETile_Right, ChoosenDoorwayAsset, WallsSubFolderName);
+		SpawnDoorConnector(ETileSide::ETile_Right, ChoosenDoorwayAsset, WallsSubFolderName, AllSpawnedWalls);
 	}
 }
 
-void ASTile::ActivateLeftDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName)
+void ASTile::ActivateLeftDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName, TArray<ASTileWall*>& AllSpawnedWalls)
 {
 	if (HasValidLeftNeighbor()) {
 		LeftDoor->DoorActive = true;
 		RemoveCurrentWall(ETileSide::ETile_Left);
-		SpawnDoorConnector(ETileSide::ETile_Left, ChoosenDoorwayAsset, WallsSubFolderName);
+		SpawnDoorConnector(ETileSide::ETile_Left, ChoosenDoorwayAsset, WallsSubFolderName, AllSpawnedWalls);
 	}
 }
 
@@ -349,7 +432,7 @@ void ASTile::RemoveCurrentWall(ETileSide side)
 /// <param name="side"></param>
 /// <param name="ThisTile"></param>
 /// <param name="ChoosenDoorwayAsset"></param>
-void ASTile::SpawnDoorConnector(ETileSide side, TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName)
+void ASTile::SpawnDoorConnector(ETileSide side, TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName, TArray<ASTileWall*>& AllSpawnedWalls)
 {
 	FVector WallLocation;
 	FTransform WallSpawnTrans;
@@ -364,6 +447,7 @@ void ASTile::SpawnDoorConnector(ETileSide side, TSubclassOf<ASTileDoorWallConnec
 		UpWall = GetWorld()->SpawnActor<ASTileWall>(ChoosenDoorwayAsset, WallSpawnTrans, SpawnParams);
 		UpWall->InnerTile = this;
 		UpWall->OuterTile = UpNeighbor;
+		AllSpawnedWalls.Add(UpWall);
 
 		UpWall->SetOwner(this);
 #if WITH_EDITOR
@@ -376,6 +460,7 @@ void ASTile::SpawnDoorConnector(ETileSide side, TSubclassOf<ASTileDoorWallConnec
 		DownWall = GetWorld()->SpawnActor<ASTileWall>(ChoosenDoorwayAsset, WallSpawnTrans, SpawnParams);
 		DownWall->InnerTile = this;
 		DownWall->OuterTile = DownNeighbor;
+		AllSpawnedWalls.Add(DownWall);
 
 		DownWall->SetOwner(this);
 #if WITH_EDITOR
@@ -388,6 +473,7 @@ void ASTile::SpawnDoorConnector(ETileSide side, TSubclassOf<ASTileDoorWallConnec
 		LeftWall = GetWorld()->SpawnActor<ASTileWall>(ChoosenDoorwayAsset, WallSpawnTrans, SpawnParams);
 		LeftWall->InnerTile = this;
 		LeftWall->OuterTile = LeftNeighbor;
+		AllSpawnedWalls.Add(LeftWall);
 
 		LeftWall->SetOwner(this);
 #if WITH_EDITOR
@@ -400,6 +486,7 @@ void ASTile::SpawnDoorConnector(ETileSide side, TSubclassOf<ASTileDoorWallConnec
 		RightWall = GetWorld()->SpawnActor<ASTileWall>(ChoosenDoorwayAsset, WallSpawnTrans, SpawnParams);
 		RightWall->InnerTile = this;
 		RightWall->OuterTile = RightNeighbor;
+		AllSpawnedWalls.Add(RightWall);
 
 		RightWall->SetOwner(this);
 #if WITH_EDITOR
@@ -412,6 +499,7 @@ void ASTile::SpawnDoorConnector(ETileSide side, TSubclassOf<ASTileDoorWallConnec
 		UpWall = GetWorld()->SpawnActor<ASTileWall>(ChoosenDoorwayAsset, WallSpawnTrans, SpawnParams);
 		UpWall->InnerTile = this;
 		UpWall->OuterTile = UpNeighbor;
+		AllSpawnedWalls.Add(UpWall);
 
 		UpWall->SetOwner(this);
 #if WITH_EDITOR
@@ -419,11 +507,93 @@ void ASTile::SpawnDoorConnector(ETileSide side, TSubclassOf<ASTileDoorWallConnec
 #endif
 		UE_LOG(LogTemp, Error, TEXT("Default param for RemovePlaceholderWall"));
 		break;
-
 	}
+}
 
+/// <summary>
+/// setup for secret room
+/// </summary>
+/// <param name="side"></param>
+/// <param name="SecretRoomAsset"></param>
+/// <param name="ChoosenWallAsset"></param>
+/// <param name="WallsSubFolderName"></param>
+/// <param name="AllSpawnedWalls"></param>
+void ASTile::SetupSecretRoomDoorWalls(ETileSide side, TSubclassOf<ASTileWall> ChoosenWallAsset, FName WallsSubFolderName, TArray<ASTileWall*>& AllSpawnedWalls)
+{
+	FTransform WallSpawnTrans;
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
+	for (int index = 0; index < 4; index++)
+	{
+		FVector WallLocation;
+		ASTileWall* currentWall = nullptr;
+		ASTile* Neighbor = nullptr;
+		if (side != ETileSide::ETile_Up)
+		{
+			if (UpNeighbor)
+			{
+				UpWall = UpNeighbor->DownWall;
+			}
+			else {
+				WallLocation = SM_UpWallSpawnPoint.GetLocation() + GetActorLocation();
+				WallSpawnTrans = FTransform(SM_UpWallSpawnPoint.GetRotation(), WallLocation);
+				currentWall = UpWall;
+				Neighbor = UpNeighbor;
+			}
+		}
+		else if (side != ETileSide::ETile_Down)
+		{
+			if (DownNeighbor)
+			{
+				DownWall = DownNeighbor->UpWall;
+			}
+			else {
+				WallLocation = SM_DownWallSpawnPoint.GetLocation() + GetActorLocation();
+				WallSpawnTrans = FTransform(SM_DownWallSpawnPoint.GetRotation(), WallLocation);
+				currentWall = DownWall;
+				Neighbor = DownNeighbor;
+			}
+		}
+		else if (side != ETileSide::ETile_Left)
+		{
+			if (LeftNeighbor)
+			{
+				LeftWall = LeftNeighbor->RightWall;
+			}
+			else {
+				WallLocation = SM_LeftWallSpawnPoint.GetLocation() + GetActorLocation();
+				WallSpawnTrans = FTransform(SM_LeftWallSpawnPoint.GetRotation(), WallLocation);
+				currentWall = LeftWall;
+				Neighbor = LeftNeighbor;
+			}
+		}
+		else if (side != ETileSide::ETile_Right)
+		{
+			if (RightNeighbor)
+			{
+				RightWall = RightNeighbor->RightWall;
+			}
+			else {
+				WallLocation = SM_RightWallSpawnPoint.GetLocation() + GetActorLocation();
+				WallSpawnTrans = FTransform(SM_RightWallSpawnPoint.GetRotation(), WallLocation);
+				currentWall = RightWall;
+				Neighbor = RightNeighbor;
+			}
+		}
 
+		if (IsValid(currentWall) && !WallSpawnTrans.Equals(FTransform::Identity) && !WallLocation.ContainsNaN()) {
+			currentWall = GetWorld()->SpawnActor<ASTileWall>(ChoosenWallAsset, WallSpawnTrans, SpawnParams);
+			currentWall->InnerTile = this;
+			currentWall->OuterTile = Neighbor;
+			AllSpawnedWalls.Add(currentWall);
+
+			currentWall->SetOwner(this);
+#if WITH_EDITOR
+			currentWall->SetFolderPath(WallsSubFolderName);
+#endif
+		}
+	}
 }
 
 #pragma endregion

@@ -43,6 +43,7 @@ public:
 	// Sets default values for this actor's properties
 	ALocalLevel();
 
+	//this is assigned via LocalLevel
 	UPROPERTY(EditAnywhere, Category = "Tile Configuration")
 	TSubclassOf<ASTile> PresetStartingTile;
 

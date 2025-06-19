@@ -27,7 +27,8 @@ void ASTileWall::Tick(float DeltaTime)
 
 void ASTileWall::RemoveOuter()
 {
-	OuterWallObject->DestroyComponent();
+	//OuterWallObject->DestroyComponent();
+	WillRemoveOuter = false;
 }
 
 void ASTileWall::RemoveInner()

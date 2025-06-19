@@ -319,23 +319,26 @@ void UTileGridBranchComponent::CreateSecretRoom()
 	{
 	case 1:
 		//TODO: may need to fix rotation? 
-		if (selected.tile->UpNeighbor == NULL)
+		if (selected.tile->UpNeighbor == NULL) //if no neighbor, we spawn a tile and add the 3 walls + door
 		{
-			SpawnPos = FVector(selected.tile->GetActorLocation().X, selected.tile->GetActorLocation().Y - (TileManagerRef->StartingTile->TileLength), selected.tile->GetActorLocation().Z); //+ 240
+			SpawnPos = FVector(selected.tile->GetActorLocation().X, selected.tile->GetActorLocation().Y - (TileManagerRef->StartingGridTile->TileLength), selected.tile->GetActorLocation().Z); //+ 240
 			//UE_LOG(LogTemp, Log, TEXT("SpawnPas: %s"), *SpawnPos.ToString());
 			//SpawnRot = FRotator(selected.tile->GetActorRotation().Euler().X, 180.0f, selected.tile->GetActorRotation().Euler().Z);
 			TileManagerRef->SecretRoom = GetWorld()->SpawnActor<ASTile>(TileManagerRef->TileBase, SpawnPos, SpawnRot, SpawnParams);
 			SpawnDoor(TileManagerRef->SecretRoom, ETileSide::ETile_Down, "SecretRoom");
+
+			
 		}
 		else if (selected.tile->UpNeighbor->TileStatus == ETileStatus::ETile_NULLROOM) { //confirmed this works now get other wey of working
 			//rotate tile? may need tile to be setup for easier testing of rotation
 			TileManagerRef->SecretRoom = selected.tile->UpNeighbor;
 			SetupDoor(TileManagerRef->SecretRoom, ETileSide::ETile_Down, "SecretRoom", selected.tile->UpDoor);
 		}
-
+		
 		TileManagerRef->SecretRoom->DownNeighbor = selected.tile;
 		selected.tile->UpDoor = TileManagerRef->SecretRoom->DownDoor;
 		selected.tile->UpNeighbor = TileManagerRef->SecretRoom;
+		TileManagerRef->SecretRoom->SpawnDoorConnector(ETileSide::ETile_Down, TileManagerRef->ChoosenDoorwayAsset, TileManagerRef->DoorSubFolderName, TileManagerRef->AllSpawnedWalls);
 
 		break;
 	case 2:
@@ -344,7 +347,7 @@ void UTileGridBranchComponent::CreateSecretRoom()
 		//TODO: may need to fix rotation? 
 		if (selected.tile->DownNeighbor == NULL)
 		{
-			SpawnPos = FVector(selected.tile->GetActorLocation().X, selected.tile->GetActorLocation().Y + (TileManagerRef->StartingTile->TileLength), selected.tile->GetActorLocation().Z);
+			SpawnPos = FVector(selected.tile->GetActorLocation().X, selected.tile->GetActorLocation().Y + (TileManagerRef->StartingGridTile->TileLength), selected.tile->GetActorLocation().Z);
 			//UE_LOG(LogTemp, Log, TEXT("SpawnPas: %s"), *SpawnPos.ToString());
 			SpawnRot = FRotator(selected.tile->GetActorRotation().Euler().X, 180.0f, selected.tile->GetActorRotation().Euler().Z);
 			TileManagerRef->SecretRoom = GetWorld()->SpawnActor<ASTile>(TileManagerRef->TileBase, SpawnPos, SpawnRot, SpawnParams);
@@ -359,7 +362,7 @@ void UTileGridBranchComponent::CreateSecretRoom()
 		TileManagerRef->SecretRoom->UpNeighbor = selected.tile;
 		selected.tile->DownDoor = TileManagerRef->SecretRoom->UpDoor;
 		selected.tile->DownNeighbor = TileManagerRef->SecretRoom;
-
+		TileManagerRef->SecretRoom->SpawnDoorConnector(ETileSide::ETile_Up, TileManagerRef->ChoosenDoorwayAsset, TileManagerRef->DoorSubFolderName, TileManagerRef->AllSpawnedWalls);
 		break;
 	case 3:
 		//right
@@ -382,7 +385,7 @@ void UTileGridBranchComponent::CreateSecretRoom()
 		TileManagerRef->SecretRoom->RightNeighbor = selected.tile;
 		selected.tile->LeftDoor = TileManagerRef->SecretRoom->RightDoor;
 		selected.tile->LeftNeighbor = TileManagerRef->SecretRoom;
-
+		TileManagerRef->SecretRoom->SpawnDoorConnector(ETileSide::ETile_Right, TileManagerRef->ChoosenDoorwayAsset, TileManagerRef->DoorSubFolderName, TileManagerRef->AllSpawnedWalls);
 		break;
 	case 4:
 		//left
@@ -405,7 +408,7 @@ void UTileGridBranchComponent::CreateSecretRoom()
 		TileManagerRef->SecretRoom->LeftNeighbor = selected.tile;
 		selected.tile->RightDoor = TileManagerRef->SecretRoom->LeftDoor;
 		selected.tile->RightNeighbor = TileManagerRef->SecretRoom;
-
+		TileManagerRef->SecretRoom->SpawnDoorConnector(ETileSide::ETile_Left, TileManagerRef->ChoosenDoorwayAsset, TileManagerRef->DoorSubFolderName, TileManagerRef->AllSpawnedWalls);
 		break;
 	}
 	// TO DO: this will need to be updated to a specific Secrete Room BP set in LocalLevel
@@ -418,7 +421,7 @@ void UTileGridBranchComponent::CreateSecretRoom()
 #endif
 
 	//ACTIVATE WALLS
-	TileManagerRef->SecretRoom->ActivateWalls();
+	TileManagerRef->SecretRoom->ActivateWalls(TileManagerRef->ChoosenWallAsset, TileManagerRef->WallsSubFolderName, TileManagerRef->AllSpawnedWalls);
 }
 
 /// <summary>
@@ -658,7 +661,7 @@ void UTileGridBranchComponent::SingleRoomsDoorSetup(ASTile* CurrentTile)
 			//check up side
 			if (CurrentTile->HasConnectedUpNeighbor())
 			{
-				CurrentTile->ConnectUpDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef);
+				CurrentTile->ConnectUpDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, TileManagerRef->AllSpawnedWalls);
 				return;
 			}
 			break;
@@ -666,21 +669,21 @@ void UTileGridBranchComponent::SingleRoomsDoorSetup(ASTile* CurrentTile)
 		case 2:
 			if (CurrentTile->HasConnectedDownNeighbor())
 			{
-				CurrentTile->ConnectDownDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef);
+				CurrentTile->ConnectDownDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, TileManagerRef->AllSpawnedWalls);
 				return;
 			}
 			break;
 		case 3:
 			if (CurrentTile->HasConnectedLeftNeighbor())
 			{
-				CurrentTile->ConnectLeftDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef);
+				CurrentTile->ConnectLeftDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, TileManagerRef->AllSpawnedWalls);
 				return;
 			}
 			break;
 		case 4:
 			if (CurrentTile->HasConnectedRightNeighbor())
 			{
-				CurrentTile->ConnectRightDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef);
+				CurrentTile->ConnectRightDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, TileManagerRef->AllSpawnedWalls);
 				return;
 			}
 			break;
@@ -787,16 +790,16 @@ void UTileGridBranchComponent::ConnectDoorBranch(ASTile* TileToAdd, int prevDire
 	switch (prevDirection) {
 	case 1: //prev was up
 		//prev tile was up direction to get here, therefore this tile's down neighbor was the up neighbor of the prev tile
-		TileToAdd->ConnectDownDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef);
+		TileToAdd->ConnectDownDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, TileManagerRef->AllSpawnedWalls);
 		break;
 	case 2: //prev was down
-		TileToAdd->ConnectUpDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef);
+		TileToAdd->ConnectUpDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, TileManagerRef->AllSpawnedWalls);
 		break;
 	case 3: //prev was left
-		TileToAdd->ConnectRightDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef);
+		TileToAdd->ConnectRightDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, TileManagerRef->AllSpawnedWalls);
 		break;
 	case 4: //prev was right
-		TileToAdd->ConnectLeftDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef);
+		TileToAdd->ConnectLeftDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, TileManagerRef->AllSpawnedWalls);
 		break;
 	}
 }
