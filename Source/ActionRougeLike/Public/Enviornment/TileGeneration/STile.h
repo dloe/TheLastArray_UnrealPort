@@ -64,7 +64,7 @@ public:
 	void ActivateWalls(TSubclassOf<ASTileWall> ChoosenWallAsset, FName WallsSubFolderName, TArray<ASTileWall*>& AllSpawnedWalls);
 
 #pragma region Tile Stats
-	UPROPERTY(EditDefaultsOnly, Category = "Tile Stats")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Tile Stats")
 	float TileLength;
 
 	//what our index is on the array
