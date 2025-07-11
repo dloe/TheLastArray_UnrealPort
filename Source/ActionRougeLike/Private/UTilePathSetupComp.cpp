@@ -33,6 +33,8 @@ void UTilePathSetupComp::TilePathGeneration()
 
 	CreateSpawnRoom();
 
+	GridScanForCustomTileSizedVariants();
+
 	//notify next component to run
 	OnPathGeneratedEvent.Broadcast();
 }
@@ -354,7 +356,7 @@ void UTilePathSetupComp::GeneratePath()
 /// <summary>
 /// Dylan Loe
 /// 
-/// - Add spawn room, connected to  the start room (this will be outside of the grid
+/// - Add spawn room, connected to  the start room (this will be outside of the grid)
 /// </summary>
 void UTilePathSetupComp::CreateSpawnRoom()
 {
@@ -567,7 +569,7 @@ void UTilePathSetupComp::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& Current
 		//direction
 		TArray <int> DirectionsToCheck = { 1, 2, 3, 4 };
 
-		DirectionsToCheck = Reshuffle2(DirectionsToCheck);
+		DirectionsToCheck = Reshuffle(DirectionsToCheck);
 
 		//pick direction and begin CheckTile
 		for (int DirectionCount = 0; DirectionCount < DirectionsToCheck.Num(); DirectionCount++)
@@ -650,7 +652,7 @@ bool UTilePathSetupComp::AddTileToPath(ASTile* TileToAdd)
 /// </summary>
 /// <param name="ar"> Array input to be reshuffles</param>
 /// <returns></returns>
-TArray <int> UTilePathSetupComp::Reshuffle2(TArray <int> ar)
+TArray <int> UTilePathSetupComp::Reshuffle(TArray <int> ar)
 {
 	// Knuth shuffle algorithm :: courtesy of Wikipedia :)
 	for (int t = 0; t < ar.Num(); t++)
@@ -659,6 +661,283 @@ TArray <int> UTilePathSetupComp::Reshuffle2(TArray <int> ar)
 		ar.Swap(t, r);
 	}
 	return ar;
+}
+
+//template be more efficient
+TArray <ASTile*> UTilePathSetupComp::ReshuffleTiles(TArray <ASTile*> ar)
+{
+	// Knuth shuffle algorithm :: courtesy of Wikipedia :)
+	for (int t = 0; t < ar.Num(); t++)
+	{
+		int r = TileManagerRef->GameStream.RandRange(t, ar.Num() - 1);
+		ar.Swap(t, r);
+	}
+	return ar;
+}
+
+/// <summary>
+/// 
+/// </summary>
+void UTilePathSetupComp::GridScanForCustomTileSizedVariants()
+{
+	if (TileManagerRef->DebugPrints)
+		UE_LOG(LogTemp, Log, TEXT("Starting Custom Sized Tile Variants"));
+	//scan through grid where abnormal tiles could potentially be placed
+	//only tiles that are off limits would be starting and end tile (TODO: maybe higher tiers of levels could have variants?)
+	TArray<ASTile*>	ActiveUnusedTiles = TileManagerRef->AllActiveTiles;
+
+
+	//TODO: Possible enhancement, maybe we could weight the tiles based on proximity to main path???
+	//these candidates will be randomized (shuffle array)
+
+	//each stage
+	for (int tileVariantTier = 0; tileVariantTier < TileManagerRef->TileVariantTiers.Num(); tileVariantTier++)
+	{
+		FTileVariantDefinitionRow tier = TileManagerRef->TileVariantTiers[tileVariantTier];
+		//each tier of variants has a certain amount
+		int VariantAmount = FMath::RandRange(tier.Min, tier.Max);
+		int VariantsPlaced = 0;
+
+		//each type (so 2x2, 4x4, etc) of variant
+		for (int tileVariantType = 0; tileVariantType < tier.Columns.Num() && VariantsPlaced < VariantAmount; tileVariantType++)
+		{
+			//check for the highest priority variant (we work down from there)
+			USFTileVariantDefinitionData* currentVariant = tier.Columns[tileVariantType];
+			
+			//each variant type has a max we can place as well
+			int LocalVariantAmount = FMath::RandRange(currentVariant->minorMin, currentVariant->minorMax);
+			int localVariantsPlaced = 0;
+
+			//shuffle AllActiveTiles
+			ActiveUnusedTiles = ReshuffleTiles(ActiveUnusedTiles);
+
+
+
+			//scan in random order
+			//for each randomly choosen candidate (a tile on the grid): 
+			for (int tileCount = 0; tileCount < ActiveUnusedTiles.Num() && VariantsPlaced < VariantAmount && localVariantsPlaced < LocalVariantAmount; tileCount++)
+			{
+				ASTile* currentTile = ActiveUnusedTiles[tileCount];
+				//candidates analysis, pass in current variant, etc
+				VariantCandidateAnalysis(currentTile, currentVariant, LocalVariantAmount, localVariantsPlaced);
+
+			}
+		}
+	}
+}
+
+/// <summary>
+/// Variant Candidate Analysis (if we can place variant and place procedure)
+/// </summary>
+/// <param name="CurrentTile"></param>
+/// <param name="CurrentVariant"></param>
+/// <param name="totalAmount"></param>
+/// <param name="placed"></param>
+void UTilePathSetupComp::VariantCandidateAnalysis(ASTile* CurrentTile, USFTileVariantDefinitionData* CurrentVariant, int& totalAmount, int& placed)
+{
+	//current tile is starting point, then we check every transform for variant to see if it fits
+
+	//check if we can place the variant based on size of variant and availability of tile
+	if (!CurrentTile->TileVariantInUse)
+	{
+		TArray<ASTileDoor*> DoorsArray;
+		TArray<ASTileWall*> WallArray;
+		int choosenSide = -1;
+
+		for (FVariantOffsetTransforms_Rotates transform : CurrentVariant->VariantPaths)
+		{
+			TArray <ASTile*> EncompassingTilesBuild;
+			//check all offsets based on this main tile starting point and populate corresponding data for setup if it fits!
+			if (PlugTile(transform, CurrentVariant, CurrentTile, choosenSide, EncompassingTilesBuild, DoorsArray, WallArray))
+			{
+				int variantIndex = TileManagerRef->GameStream.RandRange(0, CurrentVariant->TileVariantEnviornments.Num() - 1);
+				TSubclassOf<ASTileVariantEnviornment> ChoosenVariant = CurrentVariant->TileVariantEnviornments[variantIndex];
+				FVector SpawnPos;
+				FRotator SpawnRot = FRotator(0.0f, 0.0f, 0.0f);
+
+				//set rotation of TilePrefab
+				float rotationModifier = 0;
+				//start with location of currentTile, rotate based on which side choosen
+				switch (choosenSide)
+				{
+				case 1: //default?
+					rotationModifier = 0;
+					break;
+				case 2: //90 degrees
+					rotationModifier = 90;
+					SpawnRot = FRotator(0.0f, 90.0f, 0.0f);
+					break;
+				case 3: //180
+					rotationModifier = 180;
+					SpawnRot = FRotator(0.0f, 180.0f, 0.0f);
+					break;
+				case 4: //270
+					rotationModifier = 270;
+					SpawnRot = FRotator(0.0f, 270.0f, 0.0f);
+					break;
+
+				default:
+					//TODO: Throw error
+					UE_LOG(LogTemp, Error, TEXT("No val set"));
+					rotationModifier = 0;
+					break;
+				}
+
+				//physically spawn USFTileVariantDefinitionData->TilePrefab with transform, variant choosen at the 
+				//transform of the spawn point in the variant class
+				FActorSpawnParameters SpawnParams;
+				SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+				ASTileVariantEnviornment* SpawnedVariant = GetWorld()->SpawnActor<ASTileVariantEnviornment>(ChoosenVariant, CurrentTile->GetActorLocation(), CurrentTile->GetActorRotation(), SpawnParams);
+				SpawnedVariant->SetActorRotation(SpawnRot);
+
+				//an array should be passed up of all the relevant tiles, add them to the VariantEncompassingTiles
+				//EncompassingTilesBuild
+				//TODO: should also have array doors/walls we want to remove? 
+				for (ASTileDoor* doorToDestroy : DoorsArray)
+				{
+					doorToDestroy->Destroy();
+				}
+
+				for (ASTileWall* wallToDestroy : WallArray)
+				{
+					wallToDestroy->Destroy();
+				}
+
+				//if we can, great! mark those tiles with the proper enum
+				placed++;
+				totalAmount++;
+				//TODO: SEt breakpoint to see how logic exits....
+				//break;
+			}
+		}
+	}
+}
+
+/// <summary>
+/// Can place variant at given location
+/// </summary>
+/// <param name="currentVariant"></param>
+/// <param name="offsetTransforms"></param>
+/// <param name="CurrentTile"></param>
+/// <param name="directionChoosen"></param>
+/// <param name="EncompassingTilesBuild"></param>
+/// <returns></returns>
+bool UTilePathSetupComp::PlugTile(FVariantOffsetTransforms_Rotates transformRotated, USFTileVariantDefinitionData* currentVariant, ASTile* CurrentTile, int& directionChoosen, TArray <ASTile*>& EncompassingTilesBuild, TArray<ASTileDoor*>& DoorsArray, TArray<ASTileWall*>& WallArray)
+{
+	bool CantPlaceVariant = true;
+
+	//check given orientations the variant can be placed at
+	//for each in offset in array
+
+	//as we check through each one, build an array that we can send back if it can be inserted
+	//FIntPoint PrevCords = (-1,-1);
+	for (FIntPoint GivenOffset : transformRotated.Transforms_flavor)
+	{
+		//TODO: convert x,z index into FIntPoint Globally
+		FIntPoint GridCordToCheck = FIntPoint(CurrentTile->XIndex, CurrentTile->ZIndex);
+
+		if (CurrentTile->TileVariantInUse)
+		{
+			UE_LOG(LogTemp, Error, TEXT("Current Tile already marked, skipping?"));
+			CantPlaceVariant = false;
+			break;
+		}
+
+		//for each current offset flavor (aka a rotated og offset mapping)
+			//offset cords
+			FIntPoint OffsetCheck = GridCordToCheck + GivenOffset;
+
+			//check if tile is legit, not null, not starting, not boss room and isn't already marked
+			ASTile* OffsetTileToCheck = TileManagerRef->GetGridTilePair(OffsetCheck);
+			//no negatives should appear if we null check
+			if (OffsetTileToCheck == NULL && OffsetTileToCheck->TileVariantInUse && OffsetTileToCheck->TileStatus == ETileStatus::ETile_BOSSROOM && 
+			OffsetTileToCheck->TileStatus == ETileStatus::ETile_NULLROOM && OffsetTileToCheck->TileStatus == ETileStatus::ETile_SECRETROOM && OffsetTileToCheck->TileStatus == ETileStatus::ETile_STARTINGROOM)
+			{
+				CantPlaceVariant = false;
+				break;
+			}
+		
+		//if (PrevCords !=  ( -1, -1))
+		//{
+		//	//compare prev cords to these cords to determine which wall and door we need to add to array
+		//	AddDoorsAndWalls(DoorsArray, WallArray, currentVariant->SidesToCheckOffsets);
+		//}
+		//PrevCords = OffsetCheck;
+	
+	}
+
+	if (!CantPlaceVariant)
+	{
+		//clear arrays before exit
+		DoorsArray.Empty();
+		WallArray.Empty();
+	}
+	else {
+		AddDoorsAndWalls(DoorsArray, WallArray, currentVariant->SidesToCheckOffsets);
+	}
+
+	return CantPlaceVariant;
+}
+
+/// <summary>
+/// Once we know this variant can be placed, go through each of the doors
+/// </summary>
+/// <param name="Current"></param>
+/// <param name="PrevTile"></param>
+/// <param name="CurrentTile"></param>
+/// <param name="DoorsArray"></param>
+/// <param name="WallArray"></param>
+void UTilePathSetupComp::AddDoorsAndWalls(TArray<ASTileDoor*>& DoorsArray, TArray<ASTileWall*>& WallArray, TArray<FIntPointPair> SidesToCheck)
+{
+	for (FIntPointPair PairToCheck : SidesToCheck)
+	{
+		//based on the 2 sides (next to each other), determine which is the proper side
+
+		FIntPoint tile1ToCompare = PairToCheck.startCords;
+		FIntPoint tile2ToCompare = PairToCheck.endCords;
+		ASTile* Tile1 = TileManagerRef->GetGridTilePair(tile1ToCompare);
+		ASTile* Tile2 = TileManagerRef->GetGridTilePair(tile2ToCompare);
+
+		if (tile1ToCompare.X == tile2ToCompare.X)
+		{
+			//if x axis the same, and y axis is one less, then tile1ToCompare's right neighbor aka tile2toCompares's left neighbor
+		//same will walls
+			if (tile1ToCompare.Y == tile2ToCompare.Y - 1)
+			{
+				WallArray.Add(Tile1->RightWall);
+				DoorsArray.Add(Tile1->RightDoor);
+			}
+			else if(tile2ToCompare.Y == tile1ToCompare.Y - 1)
+			{
+				WallArray.Add(Tile1->LeftWall);
+				DoorsArray.Add(Tile1->LeftDoor);
+			}
+			else {
+				UE_LOG(LogTemp, Error, TEXT("investigate"));
+			}
+		}
+		else if (tile1ToCompare.Y == tile2ToCompare.Y)
+		{
+			if (tile1ToCompare.X == tile2ToCompare.X - 1)
+			{
+				WallArray.Add(Tile1->DownWall);
+				DoorsArray.Add(Tile1->DownDoor);
+			}
+			else if (tile2ToCompare.Y == tile1ToCompare.Y - 1)
+			{
+				WallArray.Add(Tile1->UpWall);
+				DoorsArray.Add(Tile1->UpDoor);
+			}
+			else {
+				UE_LOG(LogTemp, Error, TEXT("investigate 2"));
+			}
+		}
+		else {
+			UE_LOG(LogTemp, Error, TEXT("investigate 3"));
+		}
+
+	}
 }
 
 

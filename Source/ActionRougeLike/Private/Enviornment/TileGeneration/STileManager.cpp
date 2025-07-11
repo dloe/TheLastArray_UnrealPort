@@ -9,6 +9,7 @@
 #include <string>
 #include <Math/UnrealMathUtility.h>
 #include <Kismet/KismetMathLibrary.h>
+#include "SFTileVariantDefinitionData.h"
 
 // Sets default values
 ASTileManager::ASTileManager()
@@ -28,6 +29,9 @@ ASTileManager::ASTileManager()
 
 	LevelAssetSetupComponent = CreateDefaultSubobject<ULevelAssetSetupComponent>(TEXT("LevelAssetSetupComponent"));
 	LevelAssetSetupComponent->TileManagerRef = this;
+
+	//TileVariantComponent = CreateDefaultSubobject<UTileVariantComponent>(TEXT("TileVariantComponent"));
+
 
 }
 
@@ -71,11 +75,39 @@ void ASTileManager::BeginPlay()
 	}
 	SeedSetup();
 
+	SetVariables();
+
 	//create and link tiles into grid
 	//this includes establishment of doors if we need them
 	Create2DTileArray();
 
 	TilePathComponent->TilePathGeneration();
+
+}
+
+void ASTileManager::SetVariables()
+{
+//tile variants priorities are hardcoded
+	/*TileVariants = {
+		FTileVariantDefinition(ETileSizeVariant::ET1x1, FIntPoint(1,1), 1, ),
+		FTileVariantDefinition(ETileSizeVariant::ET2x1, FIntPoint(2,1), 4),
+		FTileVariantDefinition(ETileSizeVariant::ET2x2, FIntPoint(2,2), 5),
+		FTileVariantDefinition(ETileSizeVariant::ET3x1, FIntPoint(3,1), 5),
+		FTileVariantDefinition(ETileSizeVariant::ET3x2, FIntPoint(3,2), 7),
+		FTileVariantDefinition(ETileSizeVariant::ET4x2, FIntPoint(4,2), 8),
+		FTileVariantDefinition(ETileSizeVariant::ET4x3, FIntPoint(4,3), 8),
+		FTileVariantDefinition(ETileSizeVariant::ET4x4, FIntPoint(4,4), 8)
+	};*/
+
+	//shorthand sort (based on priority
+	/*TileVariants.Sort([](const FTileVariantDefinition& A, const FTileVariantDefinition& B)
+		{
+			return A.Priority < B.Priority;
+		}
+	);*/
+
+
+	TileVariantTiers = TileVariantComponent->TileVariantTiersLocal;
 
 }
 
@@ -956,6 +988,24 @@ float ASTileManager::BranchDensityFactor_DependencyOnMazeSize()
 ASTile* ASTileManager::GetGridTile(int32 Y, int32 X)
 {
 	return Grid2DArray[Y]->TileColumn[X];
+}
+
+/// <summary>
+/// Get Specific Tile in Grid (overload)
+/// TODO: Use the null logic for other overloads
+/// </summary>
+/// <param name="TileCords"></param>
+/// <returns></returns>
+ASTile* ASTileManager::GetGridTilePair(FIntPoint TileCords)
+{
+	if (TileCords.Y < LevelWidth && TileCords.Y >= 0 && TileCords.X < LevelHeight && TileCords.X >= 0)
+	{
+		return Grid2DArray[TileCords.Y]->TileColumn[TileCords.X];
+	}
+	else {
+		return NULL;
+	}
+	
 }
 
 /// <summary>

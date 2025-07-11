@@ -57,13 +57,6 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	FTransform doorTransform;
 
-	//UPROPERTY(EditAnywhere, Category = "Tile Generation")
-	//ASTile* PlayerStartingTileBase;
-
-	//Spawned in from LocalLevel
-	//UPROPERTY(EditAnywhere, Category = "Tile Generation")
-	//ASTile* PlayerStartingTile_SpawnedPreset;
-
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
@@ -83,7 +76,23 @@ protected:
 	bool AddTileToPath(ASTile* TileToAdd);
 
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
-	TArray <int> Reshuffle2(TArray <int> ar);
+	TArray <int> Reshuffle(TArray <int> ar);
+
+	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
+	TArray <ASTile*> ReshuffleTiles(TArray <ASTile*> ar);
+
+	//2x2 Tile merger
+	UFUNCTION(BlueprintCallable, Category = "Abnormal Tile Placements")
+	void GridScanForCustomTileSizedVariants();
+
+	UFUNCTION(BlueprintCallable, Category = "Abnormal Tile Placements")
+	void VariantCandidateAnalysis(ASTile* CurrentTile, USFTileVariantDefinitionData* CurrentVariant, int& totalAmount, int& placed);
+
+	UFUNCTION(Category = "Abnormal Tile Placements")
+	bool PlugTile(FVariantOffsetTransforms_Rotates transformRotated, USFTileVariantDefinitionData* currentVariant, ASTile* CurrentTile, int& directionChoosen, TArray <ASTile*>& EncompassingTilesBuild, TArray<ASTileDoor*>& DoorsArray, TArray<ASTileWall*>& WallArray);
+
+	UFUNCTION(Category = "Abnormal Tile Placements")
+	void AddDoorsAndWalls(TArray<ASTileDoor*>& DoorsArray, TArray<ASTileWall*>& WallArray, TArray<FIntPointPair> SidesToCheck);
 
 public:	
 	

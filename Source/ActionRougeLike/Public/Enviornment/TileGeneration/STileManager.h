@@ -7,6 +7,8 @@
 #include "Enviornment/TileGeneration/STile.h"
 #include "SLocalLevel.h"
 #include "Engine/World.h"
+#include "SFTileVariantDefinitionData.h"
+#include "TileVariantComponent.h"
 #include "STileManager.generated.h"
 
 //forward declaring
@@ -125,6 +127,9 @@ public:
 	UFUNCTION()
 	ASTile* GetGridTile(int32 X, int32 Y);
 
+	UFUNCTION()
+	ASTile* GetGridTilePair(FIntPoint TileCords);
+
 	//UFUNCTION()
 	//TArray <FMultiTileStruct> GetGrid() {return Grid2DArray; };
 	//2D array to hold all tiles
@@ -225,7 +230,14 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Start Room")
 	bool DoorToStartRoom = true;
-	
+
+	//tiers of different variants in 2d array
+	UPROPERTY(EditAnywhere)
+	TArray<FTileVariantDefinitionRow> TileVariantTiers;
+
+	UPROPERTY(EditAnywhere, Category = "Tile Variants")
+	UTileVariantComponent* TileVariantComponent;
+
 #pragma endregion
 
 	
@@ -234,7 +246,16 @@ protected:
 	virtual void BeginPlay() override;
 
 
+	UFUNCTION()
+	void SetVariables();
+
 #pragma region Tile Generation
+	
+	//definitions for variants, sizes and priority
+	UPROPERTY(EditAnywhere)
+	TArray<USFTileVariantDefinitionData*> TileVariants;
+
+
 	
 
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
@@ -258,6 +279,7 @@ protected:
 	UPROPERTY()
 	ULevelAssetSetupComponent* LevelAssetSetupComponent;
 
+	
 	
 
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")

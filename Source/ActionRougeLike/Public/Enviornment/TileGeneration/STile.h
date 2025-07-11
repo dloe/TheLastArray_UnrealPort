@@ -26,6 +26,7 @@ UENUM(BlueprintType)
 		ETile_Right UMETA(DisplayName = "Right"),
 	};
 
+	//class ETileSizeVariant;
 	class ASTileDoorWallConnection;
 
 UCLASS()
@@ -80,6 +81,12 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Tile Stats")
 	ETileStatus TileStatus;
+
+	UPROPERTY(EditAnywhere, Category = "Tile Variant")
+	bool TileVariantInUse = false;
+
+	//UPROPERTY(EditAnywhere, Category = "Tile Variant")
+	//ETileSizeVariant VariantType = ETileSizeVariant::ET1x1;
 
 	UFUNCTION(Category = "Tile Stats")
 	bool IsBossTile() const;

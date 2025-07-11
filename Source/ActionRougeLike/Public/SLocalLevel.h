@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Enviornment/TileGeneration/STile.h"
+#include "STileVariantEnviornment.h"
 #include "SLocalLevel.generated.h"
 
 UENUM(BlueprintType)
@@ -16,6 +16,9 @@ UENUM(BlueprintType)
 		ELevel_4 UMETA(DisplayName = "Level4"),
 		ELevel_Train UMETA(DisplayName = "TrainLevel")
 	};
+
+	class ULevelVariantPresetsData;
+	class STile;
 
 UCLASS()
 class ACTIONROUGELIKE_API ALocalLevel : public AActor
@@ -63,7 +66,61 @@ public:
 
 	//presets for each level tier (move this to new location for storage)
 
+	//reference to data object that contains all the possible variants for each level
+	//at start based on what level, we assign those variants to their corresponding TileVariantDefData data object
+	UPROPERTY(EditAnywhere, Category = "Tile Variants")
+	TArray<TSubclassOf<ASTileVariantEnviornment>> OnexOneEnvVariants_local;
 
+	UPROPERTY(EditAnywhere, Category = "Tile Variants")
+	TArray<TSubclassOf<ASTileVariantEnviornment>> TwoxOneEnvVariants_local;
+
+	UPROPERTY(EditAnywhere, Category = "Tile Variants")
+	TArray<TSubclassOf<ASTileVariantEnviornment>> TwoxTwoEnvVariants_local;
+
+	UPROPERTY(EditAnywhere, Category = "Tile Variants")
+	TArray<TSubclassOf<ASTileVariantEnviornment>> ThreexOneEnvVariants_local;
+
+	UPROPERTY(EditAnywhere, Category = "Tile Variants")
+	TArray<TSubclassOf<ASTileVariantEnviornment>> ThreexTwoEnvVariants_local;
+
+	UPROPERTY(EditAnywhere, Category = "Tile Variants")
+	TArray<TSubclassOf<ASTileVariantEnviornment>> FourxTwoEnvVariants_local;
+
+	UPROPERTY(EditAnywhere, Category = "Tile Variants")
+	TArray<TSubclassOf<ASTileVariantEnviornment>>FourxThreeEnvVariants_local;
+
+	UPROPERTY(EditAnywhere, Category = "Tile Variants")
+	TArray<TSubclassOf<ASTileVariantEnviornment>> FourxFourEnvVariants_local;
+
+	UPROPERTY(EditAnywhere, Category = "Local Level Data")
+	ULevelVariantPresetsData* LevelVariantsPresets;
+
+
+	//each variant data structure
+	//(contains the array of potential variants we assign above)
+	UPROPERTY(EditAnywhere, Category = "Local Level Data")
+	USFTileVariantDefinitionData* OnexOneDefData;
+
+	UPROPERTY(EditAnywhere, Category = "Local Level Data")
+	USFTileVariantDefinitionData* TwoxOneDefData;
+
+	UPROPERTY(EditAnywhere, Category = "Local Level Data")
+	USFTileVariantDefinitionData* TwoxTwoDefData;
+
+	UPROPERTY(EditAnywhere, Category = "Local Level Data")
+	USFTileVariantDefinitionData* ThreexOneDefData;
+
+	UPROPERTY(EditAnywhere, Category = "Local Level Data")
+	USFTileVariantDefinitionData* ThreexTwoDefData;
+
+	UPROPERTY(EditAnywhere, Category = "Local Level Data")
+	USFTileVariantDefinitionData* FourxTwoDefData;
+
+	UPROPERTY(EditAnywhere, Category = "Local Level Data")
+	USFTileVariantDefinitionData* FourxThreeDefData;
+
+	UPROPERTY(EditAnywhere, Category = "Local Level Data")
+	USFTileVariantDefinitionData* FourxFourDefData;
 
 protected:
 	// Called when the game starts or when spawned
@@ -77,5 +134,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Level Objective")
 	void ChooseObjective();
+
+
+	
 
 };
