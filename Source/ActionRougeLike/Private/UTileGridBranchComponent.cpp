@@ -749,6 +749,9 @@ void UTileGridBranchComponent::SetupDoor(ASTile* tile, ETileSide SideToSpawnDoor
 {
 	const FString TileDoorName = "TileDoorConnecting_" + FString::FromInt(tile->XIndex) + "_" + FString::FromInt(tile->ZIndex) + "_to_SecretRoom";
 
+	if(door == NULL)
+		UE_LOG(LogTemp, Log, TEXT("Array isnt empty? why this run more than once on this guy?"));
+
 	door->DoorActive = true;
 	tile->RemoveCurrentWall(SideToSpawnDoor);
 	TileManagerRef->DoorArray.Add(door);

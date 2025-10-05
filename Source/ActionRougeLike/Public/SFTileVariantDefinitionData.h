@@ -50,6 +50,9 @@ public:
 	UPROPERTY(EditAnywhere)
 	int Max;
 
+	UPROPERTY(EditAnywhere)
+	FString Note;
+
 	//Constructor 
 	FTileVariantDefinitionRow(TArray<USFTileVariantDefinitionData*> columns, int min, int max)
 	{
@@ -88,7 +91,7 @@ public:
 
 	FVariantOffsetTransforms_Rotates()
 	{
-		
+		//Transforms_flavor = {1,2,3,4};
 
 	}
 
@@ -190,6 +193,7 @@ class ACTIONROUGELIKE_API USFTileVariantDefinitionData : public UDataAsset
 
 
 	//possible variants that get choosen randomly when spawned (not spawned yet and pulled from locallevel)
+	//the prefabs themselves to spawn
 	UPROPERTY(EditAnywhere)
 	TArray<TSubclassOf<ASTileVariantEnviornment>>  TileVariantEnviornments;
 
@@ -211,5 +215,8 @@ class ACTIONROUGELIKE_API USFTileVariantDefinitionData : public UDataAsset
 
 	UFUNCTION(BlueprintCallable)
 	TArray<FIntPoint> RotateOffsets(TArray<FIntPoint> OriginalOffsets, int32 RotationStepsClockwise);
+
+	UFUNCTION(BlueprintCallable)
+	void SetVariantPaths();
 
 };

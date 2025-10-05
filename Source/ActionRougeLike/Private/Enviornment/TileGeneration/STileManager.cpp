@@ -31,7 +31,7 @@ ASTileManager::ASTileManager()
 	LevelAssetSetupComponent->TileManagerRef = this;
 
 	//TileVariantComponent = CreateDefaultSubobject<UTileVariantComponent>(TEXT("TileVariantComponent"));
-
+	
 
 }
 
@@ -68,6 +68,10 @@ void ASTileManager::SeedSetup()
 void ASTileManager::BeginPlay()
 {
 	Super::BeginPlay();
+
+	//TO DO: Make a set var function?
+	TileVariantComponent = FindComponentByClass<UTileVariantComponent>();
+
 	if (DebugPrints) {
 		UE_LOG(LogTemp, Log, TEXT("==========================================================="));
 		UE_LOG(LogTemp, Log, TEXT("================= TILE GENERATION ========================="));
@@ -107,7 +111,7 @@ void ASTileManager::SetVariables()
 	);*/
 
 
-	TileVariantTiers = TileVariantComponent->TileVariantTiersLocal;
+	//TileVariantTiers = TileVariantComponent->TileVariantTiersLocal;
 
 }
 

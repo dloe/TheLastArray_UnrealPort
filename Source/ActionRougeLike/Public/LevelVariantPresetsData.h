@@ -22,6 +22,9 @@ class ACTIONROUGELIKE_API ULevelVariantPresetsData : public UDataAsset
 	UPROPERTY(EditAnywhere, Category = "Lvl1")
 	TArray<TSubclassOf<ASTileVariantEnviornment>> OnexOneEnvVariants_lvl1;
 
+	//UPROPERTY(EditAnywhere, Category = "Lvl1")
+	//TArray<*ASTileVariantEnviornment> OnexOneEnvVariants_lvl1_TEST;
+
 	UPROPERTY(EditAnywhere, Category = "Lvl1")
 	TArray<TSubclassOf<ASTileVariantEnviornment>> TwoxOneEnvVariants_lvl1;
 

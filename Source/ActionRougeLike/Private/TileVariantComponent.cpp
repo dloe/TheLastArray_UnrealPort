@@ -10,7 +10,10 @@ UTileVariantComponent::UTileVariantComponent()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
+	UE_LOG(LogTemp, Log, TEXT("test b"));
 	// ...
+	
+	UE_LOG(LogTemp, Log, TEXT("test a"));
 }
 
 
@@ -19,13 +22,7 @@ void UTileVariantComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	TileVariantTiersLocal = {
-		FTileVariantDefinitionRow(Stage1_Highest, 0, 1),
-		FTileVariantDefinitionRow(Stage2, 0, 1),
-		FTileVariantDefinitionRow(Stage3, 1,2),
-		FTileVariantDefinitionRow(Stage4,1,2),
-		FTileVariantDefinitionRow(Stage5_Lowest, 25,25)
-	};
+	
 	
 }
 
@@ -36,5 +33,16 @@ void UTileVariantComponent::TickComponent(float DeltaTime, ELevelTick TickType, 
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	// ...
+}
+
+void UTileVariantComponent::SetVariables()
+{
+	TileVariantTiersLocal = {
+			FTileVariantDefinitionRow(Stage1_Highest, 0, 1),
+			FTileVariantDefinitionRow(Stage2, 0, 1),
+			FTileVariantDefinitionRow(Stage3, 1,2),
+			FTileVariantDefinitionRow(Stage4,1,2),
+			FTileVariantDefinitionRow(Stage5_Lowest, 25,25)
+	};
 }
 

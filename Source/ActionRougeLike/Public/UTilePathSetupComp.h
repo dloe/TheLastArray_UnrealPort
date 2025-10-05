@@ -86,7 +86,7 @@ protected:
 	void GridScanForCustomTileSizedVariants();
 
 	UFUNCTION(BlueprintCallable, Category = "Abnormal Tile Placements")
-	void VariantCandidateAnalysis(ASTile* CurrentTile, USFTileVariantDefinitionData* CurrentVariant, int& totalAmount, int& placed);
+	bool VariantCandidateAnalysis(ASTile* CurrentTile, USFTileVariantDefinitionData* CurrentVariant);
 
 	UFUNCTION(Category = "Abnormal Tile Placements")
 	bool PlugTile(FVariantOffsetTransforms_Rotates transformRotated, USFTileVariantDefinitionData* currentVariant, ASTile* CurrentTile, int& directionChoosen, TArray <ASTile*>& EncompassingTilesBuild, TArray<ASTileDoor*>& DoorsArray, TArray<ASTileWall*>& WallArray);

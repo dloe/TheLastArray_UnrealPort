@@ -45,4 +45,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Variant Data")
 	TArray <USFTileVariantDefinitionData*> Stage5_Lowest;
+
+	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
+	void SetVariables();
 };

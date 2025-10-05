@@ -71,6 +71,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Tile Variants")
 	TArray<TSubclassOf<ASTileVariantEnviornment>> OnexOneEnvVariants_local;
 
+	//UPROPERTY(EditAnywhere, Category = "Tile Variants")
+	//TArray<ASTileVariantEnviornment> OnexOneEnvVariants_local_test;
+
 	UPROPERTY(EditAnywhere, Category = "Tile Variants")
 	TArray<TSubclassOf<ASTileVariantEnviornment>> TwoxOneEnvVariants_local;
 
@@ -126,11 +129,16 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	UFUNCTION(BlueprintCallable, Category = "Level Objective")
+	TArray<TSubclassOf<ASTileVariantEnviornment>> SetVariantEnvVars(TArray<TSubclassOf<ASTileVariantEnviornment>> VariantsEnvArray);
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	TSubclassOf<ASTile> GetPresetStartingTile();
+
+	
 
 	UFUNCTION(BlueprintCallable, Category = "Level Objective")
 	void ChooseObjective();

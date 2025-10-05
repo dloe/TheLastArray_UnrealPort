@@ -686,44 +686,54 @@ void UTilePathSetupComp::GridScanForCustomTileSizedVariants()
 	//only tiles that are off limits would be starting and end tile (TODO: maybe higher tiers of levels could have variants?)
 	TArray<ASTile*>	ActiveUnusedTiles = TileManagerRef->AllActiveTiles;
 
+	TileManagerRef->TileVariantComponent->SetVariables();
 
 	//TODO: Possible enhancement, maybe we could weight the tiles based on proximity to main path???
 	//these candidates will be randomized (shuffle array)
-
+	
 	//each stage
-	for (int tileVariantTier = 0; tileVariantTier < TileManagerRef->TileVariantTiers.Num(); tileVariantTier++)
+	for (int tileVariantTier = 0; tileVariantTier < TileManagerRef->TileVariantComponent->TileVariantTiersLocal.Num(); tileVariantTier++)
 	{
-		FTileVariantDefinitionRow tier = TileManagerRef->TileVariantTiers[tileVariantTier];
+		FTileVariantDefinitionRow tier = TileManagerRef->TileVariantComponent->TileVariantTiersLocal[tileVariantTier];
+
+		if (TileManagerRef->DebugPrints)
+			UE_LOG(LogTemp, Log, TEXT("Currently on tile tier: %d - number of columns: %d"), tileVariantTier, tier.Columns.Num());
+
 		//each tier of variants has a certain amount
-		int VariantAmount = FMath::RandRange(tier.Min, tier.Max);
+		int VariantTierTotalAmountToPlace = FMath::RandRange(tier.Min, tier.Max);
 		int VariantsPlaced = 0;
 
 		//each type (so 2x2, 4x4, etc) of variant
-		for (int tileVariantType = 0; tileVariantType < tier.Columns.Num() && VariantsPlaced < VariantAmount; tileVariantType++)
+		for (int tileVariantType = 0; (tileVariantType < tier.Columns.Num() && VariantsPlaced < VariantTierTotalAmountToPlace); tileVariantType++)
 		{
 			//check for the highest priority variant (we work down from there)
 			USFTileVariantDefinitionData* currentVariant = tier.Columns[tileVariantType];
 			
 			//each variant type has a max we can place as well
-			int LocalVariantAmount = FMath::RandRange(currentVariant->minorMin, currentVariant->minorMax);
+			int LocalVariantTotalAmount = FMath::RandRange(currentVariant->minorMin, currentVariant->minorMax);
 			int localVariantsPlaced = 0;
 
 			//shuffle AllActiveTiles
 			ActiveUnusedTiles = ReshuffleTiles(ActiveUnusedTiles);
 
-
-
 			//scan in random order
 			//for each randomly choosen candidate (a tile on the grid): 
-			for (int tileCount = 0; tileCount < ActiveUnusedTiles.Num() && VariantsPlaced < VariantAmount && localVariantsPlaced < LocalVariantAmount; tileCount++)
+			for (int tileCount = 0; (tileCount < ActiveUnusedTiles.Num() && VariantsPlaced < VariantTierTotalAmountToPlace && localVariantsPlaced < LocalVariantTotalAmount); tileCount++)
 			{
 				ASTile* currentTile = ActiveUnusedTiles[tileCount];
 				//candidates analysis, pass in current variant, etc
-				VariantCandidateAnalysis(currentTile, currentVariant, LocalVariantAmount, localVariantsPlaced);
-
+				if (VariantCandidateAnalysis(currentTile, currentVariant))
+				{
+					localVariantsPlaced++;
+					LocalVariantTotalAmount++;
+					VariantsPlaced++;
+				}
 			}
 		}
 	}
+
+	if (TileManagerRef->DebugPrints)
+		UE_LOG(LogTemp, Log, TEXT("Finished Custom Sized Tile Variants"));
 }
 
 /// <summary>
@@ -733,8 +743,9 @@ void UTilePathSetupComp::GridScanForCustomTileSizedVariants()
 /// <param name="CurrentVariant"></param>
 /// <param name="totalAmount"></param>
 /// <param name="placed"></param>
-void UTilePathSetupComp::VariantCandidateAnalysis(ASTile* CurrentTile, USFTileVariantDefinitionData* CurrentVariant, int& totalAmount, int& placed)
+bool UTilePathSetupComp::VariantCandidateAnalysis(ASTile* CurrentTile, USFTileVariantDefinitionData* CurrentVariant)
 {
+	bool placedStatus = false;
 	//current tile is starting point, then we check every transform for variant to see if it fits
 
 	//check if we can place the variant based on size of variant and availability of tile
@@ -744,12 +755,14 @@ void UTilePathSetupComp::VariantCandidateAnalysis(ASTile* CurrentTile, USFTileVa
 		TArray<ASTileWall*> WallArray;
 		int choosenSide = -1;
 
+		CurrentVariant->SetVariantPaths();
 		for (FVariantOffsetTransforms_Rotates transform : CurrentVariant->VariantPaths)
 		{
 			TArray <ASTile*> EncompassingTilesBuild;
 			//check all offsets based on this main tile starting point and populate corresponding data for setup if it fits!
 			if (PlugTile(transform, CurrentVariant, CurrentTile, choosenSide, EncompassingTilesBuild, DoorsArray, WallArray))
 			{
+				//which type of abnormal tile variant are we going to place? (like the preset, which preset?)
 				int variantIndex = TileManagerRef->GameStream.RandRange(0, CurrentVariant->TileVariantEnviornments.Num() - 1);
 				TSubclassOf<ASTileVariantEnviornment> ChoosenVariant = CurrentVariant->TileVariantEnviornments[variantIndex];
 				FVector SpawnPos;
@@ -796,7 +809,7 @@ void UTilePathSetupComp::VariantCandidateAnalysis(ASTile* CurrentTile, USFTileVa
 				//TODO: should also have array doors/walls we want to remove? 
 				for (ASTileDoor* doorToDestroy : DoorsArray)
 				{
-					doorToDestroy->Destroy();
+					doorToDestroy->DoorActive = false;
 				}
 
 				for (ASTileWall* wallToDestroy : WallArray)
@@ -805,13 +818,16 @@ void UTilePathSetupComp::VariantCandidateAnalysis(ASTile* CurrentTile, USFTileVa
 				}
 
 				//if we can, great! mark those tiles with the proper enum
-				placed++;
-				totalAmount++;
+				//placed++;
+				//localTotalAmount++; //TODO: Why do i increment this?
+				placedStatus = true;
 				//TODO: SEt breakpoint to see how logic exits....
-				//break;
+				break;
 			}
 		}
 	}
+
+	return placedStatus;
 }
 
 /// <summary>
@@ -832,7 +848,14 @@ bool UTilePathSetupComp::PlugTile(FVariantOffsetTransforms_Rotates transformRota
 
 	//as we check through each one, build an array that we can send back if it can be inserted
 	//FIntPoint PrevCords = (-1,-1);
-	for (FIntPoint GivenOffset : transformRotated.Transforms_flavor)
+	//TODO: Transforms_flavor is currently empty when we regularly get here. Investigate (related to USFTileVariantDefinitionData?)
+	//the issue stems from the offsets not being set at runtime. First idea was to have this run in a constructor but the values cant be read until after constructor
+	// maybe have it set those offsets in the SLocalLevel?
+
+	//calculate the transform flavors now?
+
+
+	for (FIntPoint GivenOffset : transformRotated.Transforms_flavor) //each index of variant paths is passed in via transformRotated, and then each of those indexs has the transform flavors array to index through
 	{
 		//TODO: convert x,z index into FIntPoint Globally
 		FIntPoint GridCordToCheck = FIntPoint(CurrentTile->XIndex, CurrentTile->ZIndex);
@@ -869,7 +892,7 @@ bool UTilePathSetupComp::PlugTile(FVariantOffsetTransforms_Rotates transformRota
 
 	if (!CantPlaceVariant)
 	{
-		//clear arrays before exit
+		//clear arrays before exit (prep vars)
 		DoorsArray.Empty();
 		WallArray.Empty();
 	}

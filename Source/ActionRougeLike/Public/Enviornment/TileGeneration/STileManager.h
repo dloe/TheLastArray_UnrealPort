@@ -232,8 +232,8 @@ public:
 	bool DoorToStartRoom = true;
 
 	//tiers of different variants in 2d array
-	UPROPERTY(EditAnywhere)
-	TArray<FTileVariantDefinitionRow> TileVariantTiers;
+	//UPROPERTY(EditAnywhere)
+	//TArray<FTileVariantDefinitionRow> TileVariantTiers;
 
 	UPROPERTY(EditAnywhere, Category = "Tile Variants")
 	UTileVariantComponent* TileVariantComponent;

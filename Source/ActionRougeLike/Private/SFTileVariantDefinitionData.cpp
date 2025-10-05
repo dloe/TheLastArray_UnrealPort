@@ -8,24 +8,7 @@ USFTileVariantDefinitionData::USFTileVariantDefinitionData()
 {
 	
 	minorMax = 1;
-	
-
-	VariantPaths.Add(FVariantOffsetTransforms_Rotates(Offsets, 0));
-
-	if (Variant != ETileSizeVariant::ET1x1) {
-		for (int dir = 1; dir < 4; dir++)
-		{
-			TArray<FIntPoint> Rotated = RotateOffsets(Offsets, dir);
-
-			//get rotated sides to check also
-
-
-			FVariantOffsetTransforms_Rotates offset = FVariantOffsetTransforms_Rotates(Rotated, dir);
-			VariantPaths.Add(offset);
-		}
-	}
-	
-
+	//SetVariantPaths();
 }
 
 /// <summary>
@@ -58,3 +41,27 @@ TArray<FIntPoint> USFTileVariantDefinitionData::RotateOffsets(TArray<FIntPoint> 
 	}
 	return Rotated;
 }
+
+void USFTileVariantDefinitionData::SetVariantPaths()
+{
+	if(!VariantPaths.IsEmpty()) {
+		UE_LOG(LogTemp, Error, TEXT("Array isnt empty? why this run more than once on this guy?"));
+		return;
+	}
+		
+	VariantPaths.Add(FVariantOffsetTransforms_Rotates(Offsets, 0)); //offets is empty at constructors
+
+	if (Variant != ETileSizeVariant::ET1x1) {
+		for (int dir = 1; dir < 4; dir++)
+		{
+			TArray<FIntPoint> Rotated = RotateOffsets(Offsets, dir);
+
+			//get rotated sides to check also
+
+
+			FVariantOffsetTransforms_Rotates offset = FVariantOffsetTransforms_Rotates(Rotated, dir);
+			VariantPaths.Add(offset);
+		}
+	}
+}
+
