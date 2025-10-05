@@ -23,7 +23,6 @@ void ALocalLevel::BeginPlay()
 	//assign data for variants (using lvl 1 for now every time)
 	//TODO: use other levels based on level choosen (using lvl 2 for secret room addtions for now)
 	OnexOneEnvVariants_local = LevelVariantsPresets->OnexOneEnvVariants_lvl1;
-
 	TwoxOneEnvVariants_local = LevelVariantsPresets->TwoxOneEnvVariants_lvl1;
 	TwoxTwoEnvVariants_local = LevelVariantsPresets->TwoxTwoEnvVariants_lvl1;
 	ThreexOneEnvVariants_local = LevelVariantsPresets->ThreexOneEnvVariants_lvl1;

@@ -164,6 +164,10 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	FName WallsSubFolderName;
 
+	//folder name for where variant tile maps are placed when spawned
+	UPROPERTY(EditAnywhere, Category = "Tile Generation")
+	FName VariantTileMapSubFolderName;
+
 	//starting tile reference - TO DO: PROTECT THIS LATER
 	//this is the start of the grid path, not to be confused with the Tile the player spawns on
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")

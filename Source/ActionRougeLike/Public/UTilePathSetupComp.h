@@ -81,19 +81,6 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
 	TArray <ASTile*> ReshuffleTiles(TArray <ASTile*> ar);
 
-	//2x2 Tile merger
-	UFUNCTION(BlueprintCallable, Category = "Abnormal Tile Placements")
-	void GridScanForCustomTileSizedVariants();
-
-	UFUNCTION(BlueprintCallable, Category = "Abnormal Tile Placements")
-	bool VariantCandidateAnalysis(ASTile* CurrentTile, USFTileVariantDefinitionData* CurrentVariant);
-
-	UFUNCTION(Category = "Abnormal Tile Placements")
-	bool PlugTile(FVariantOffsetTransforms_Rotates transformRotated, USFTileVariantDefinitionData* currentVariant, ASTile* CurrentTile, int& directionChoosen, TArray <ASTile*>& EncompassingTilesBuild, TArray<ASTileDoor*>& DoorsArray, TArray<ASTileWall*>& WallArray);
-
-	UFUNCTION(Category = "Abnormal Tile Placements")
-	void AddDoorsAndWalls(TArray<ASTileDoor*>& DoorsArray, TArray<ASTileWall*>& WallArray, TArray<FIntPointPair> SidesToCheck);
-
 public:	
 	
 

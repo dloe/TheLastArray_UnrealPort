@@ -129,8 +129,8 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	UFUNCTION(BlueprintCallable, Category = "Level Objective")
-	TArray<TSubclassOf<ASTileVariantEnviornment>> SetVariantEnvVars(TArray<TSubclassOf<ASTileVariantEnviornment>> VariantsEnvArray);
+	//UFUNCTION(BlueprintCallable, Category = "Level Objective")
+	//TArray<TSubclassOf<ASTileVariantEnviornment>> SetVariantEnvVars(TArray<TSubclassOf<ASTileVariantEnviornment>> VariantsEnvArray);
 
 public:	
 	// Called every frame
