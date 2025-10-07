@@ -314,93 +314,113 @@ bool UTileGridBranchComponent::VariantCandidateAnalysis(ASTile* CurrentTile, USF
 	bool placedStatus = false;
 	//current tile is starting point, then we check every transform for variant to see if it fits
 
+	bool isSingleTile = (CurrentVariant->Size.X == 1 && CurrentVariant->Size.Y == 1);
+
 	//check if we can place the variant based on size of variant and availability of tile
 	if (!CurrentTile->TileVariantInUse && CurrentTile->IsNotSpecialTile())
 	{
 		TArray<ASTileDoor*> DoorsArray;
 		TArray<ASTileWall*> WallArray;
-		int choosenSide = -1;
+		TArray<ASTile*> TileArray;
 		int counter = 1;
 
+		//for bigger tiles, every direction we can place gets randomly choosen at after for loop
+		TArray<int> DirectionsAvailable;
 		
 		for (FVariantOffsetTransforms_Rotates transform : CurrentVariant->VariantPaths)
 		{
 			TArray <ASTile*> EncompassingTilesBuild;
+
+			
 			//check all offsets based on this main tile starting point and populate corresponding data for setup if it fits!
-			if (PlugTile(transform, CurrentVariant, CurrentTile, choosenSide, EncompassingTilesBuild, DoorsArray, WallArray))
+			if (PlugTile(transform, CurrentVariant, CurrentTile, EncompassingTilesBuild, DoorsArray, WallArray, TileArray))
 			{
-				//which type of abnormal tile variant are we going to place? (like the preset, which preset?)
-				int variantIndex = TileManagerRef->GameStream.RandRange(0, CurrentVariant->TileVariantEnviornments.Num() - 1);
-				TSubclassOf<ASTileVariantEnviornment> ChoosenVariant = CurrentVariant->TileVariantEnviornments[variantIndex];
-				FVector SpawnPos;
-				FRotator SpawnRot = FRotator(0.0f, 0.0f, 0.0f);
-
-				//set rotation of TilePrefab
-				float rotationModifier = 0;
-				choosenSide = counter;
-				//start with location of currentTile, rotate based on which side choosen
-				switch (choosenSide)
-				{
-				case 1: //default?
-					rotationModifier = 0;
-					break;
-				case 2: //90 degrees
-					rotationModifier = 90;
-					SpawnRot = FRotator(0.0f, 90.0f, 0.0f);
-					break;
-				case 3: //180
-					rotationModifier = 180;
-					SpawnRot = FRotator(0.0f, 180.0f, 0.0f);
-					break;
-				case 4: //270
-					rotationModifier = 270;
-					SpawnRot = FRotator(0.0f, 270.0f, 0.0f);
-					break;
-
-				default:
-					//TODO: Throw error
-					UE_LOG(LogTemp, Error, TEXT("No val set"));
-					rotationModifier = 0;
-					break;
-				}
-				UE_LOG(LogTemp, Log, TEXT("Tile to place: %d.%d rotated %d degrees"), CurrentVariant->Size.X, CurrentVariant->Size.Y, rotationModifier);
-
-				//physically spawn USFTileVariantDefinitionData->TilePrefab with transform, variant choosen at the 
-				//transform of the spawn point in the variant class
-				FActorSpawnParameters SpawnParams;
-				SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
-				ASTileVariantEnviornment* SpawnedVariant = GetWorld()->SpawnActor<ASTileVariantEnviornment>(ChoosenVariant, CurrentTile->GetActorLocation(), CurrentTile->GetActorRotation(), SpawnParams);
-				SpawnedVariant->SetActorRotation(SpawnRot);
-				FString VariantTileName = "VariantTileMap_" + FString::FromInt(CurrentVariant->Size.X) + "_" + FString::FromInt(CurrentVariant->Size.Y);
-				SpawnedVariant->SetActorLabel(VariantTileName);
-#if WITH_EDITOR
-				SpawnedVariant->SetFolderPath(TileManagerRef->VariantTileMapSubFolderName);
-				
-#endif
-
-				//an array should be passed up of all the relevant tiles, add them to the VariantEncompassingTiles
-				//EncompassingTilesBuild
-				//TODO: should also have array doors/walls we want to remove? 
-				for (ASTileDoor* doorToDestroy : DoorsArray)
-				{
-					doorToDestroy->DoorActive = false;
-				}
-
-				for (ASTileWall* wallToDestroy : WallArray)
-				{
-					wallToDestroy->Destroy();
-				}
-
-				//if we can, great!
-				placedStatus = true;
-
-				//TODO: SEt breakpoint to see how logic exits....
-				break;
+				DirectionsAvailable.Add(transform.TransformDirection); //make it new int but its not ptr?
 			}
 			else {
 				counter++;
 			}
+		}
+
+		//choose which direction (if non-empty and non single tile)
+		if (!DirectionsAvailable.IsEmpty() || isSingleTile)
+		{
+			int directionPlacement = TileManagerRef->GameStream.RandRange(0, 3);
+
+			if(!DirectionsAvailable.IsEmpty())
+				directionPlacement = DirectionsAvailable[TileManagerRef->GameStream.RandRange(0, DirectionsAvailable.Num() - 1)];
+
+			//which type of abnormal tile variant are we going to place? (like the preset, which preset?)
+			int variantIndex = TileManagerRef->GameStream.RandRange(0, CurrentVariant->TileVariantEnviornments.Num() - 1);
+			TSubclassOf<ASTileVariantEnviornment> ChoosenVariant = CurrentVariant->TileVariantEnviornments[variantIndex];
+			FVector SpawnPos;
+			FRotator SpawnRot = FRotator(0.0f, 0.0f, 0.0f);
+
+			//set rotation of TilePrefab
+			float rotationModifier = 0;
+			
+			//start with location of currentTile, rotate based on which side choosen
+			switch (directionPlacement)
+			{
+			case 0: //default?
+				rotationModifier = 0;
+				break;
+			case 1: //90 degrees
+				rotationModifier = 90;
+				SpawnRot = FRotator(0.0f, 90.0f, 0.0f);
+				break;
+			case 2: //180
+				rotationModifier = 180;
+				SpawnRot = FRotator(0.0f, 180.0f, 0.0f);
+				break;
+			case 3: //270
+				rotationModifier = 270;
+				SpawnRot = FRotator(0.0f, 270.0f, 0.0f);
+				break;
+
+			default:
+				UE_LOG(LogTemp, Error, TEXT("Improper direction placement %d"), directionPlacement);
+				rotationModifier = 0;
+				break;
+			}
+			UE_LOG(LogTemp, Log, TEXT("Tile to place: %d.%d rotated %f degrees (aka selection %d)"), CurrentVariant->Size.X, CurrentVariant->Size.Y, rotationModifier, directionPlacement);
+
+			//physically spawn USFTileVariantDefinitionData->TilePrefab with transform, variant choosen at the 
+			//transform of the spawn point in the variant class
+			FActorSpawnParameters SpawnParams;
+			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+			ASTileVariantEnviornment* SpawnedVariant = GetWorld()->SpawnActor<ASTileVariantEnviornment>(ChoosenVariant, CurrentTile->GetActorLocation(), CurrentTile->GetActorRotation(), SpawnParams);
+			SpawnedVariant->SetActorRotation(SpawnRot);
+			FString VariantTileName = "VariantTileMap_" + FString::FromInt(CurrentVariant->Size.X) + "_" + FString::FromInt(CurrentVariant->Size.Y);
+			SpawnedVariant->SetActorLabel(VariantTileName);
+#if WITH_EDITOR
+			SpawnedVariant->SetFolderPath(TileManagerRef->VariantTileMapSubFolderName);
+
+#endif
+
+			//an array should be passed up of all the relevant tiles, add them to the VariantEncompassingTiles
+			//EncompassingTilesBuild
+			//TODO: should also have array doors/walls we want to remove? 
+			for (ASTileDoor* doorToDestroy : DoorsArray)
+			{
+				doorToDestroy->DoorActive = false;
+			}
+
+			for (ASTileWall* wallToDestroy : WallArray)
+			{
+				wallToDestroy->Destroy();
+			}
+
+			//mark base tiles to be non usable 
+			for (ASTile* tileToMark : TileArray)
+			{
+				tileToMark->TileVariantInUse = true;
+			}
+
+
+			//if we can, great!
+			placedStatus = true;
 		}
 	}
 
@@ -416,7 +436,7 @@ bool UTileGridBranchComponent::VariantCandidateAnalysis(ASTile* CurrentTile, USF
 /// <param name="directionChoosen"></param>
 /// <param name="EncompassingTilesBuild"></param>
 /// <returns></returns>
-bool UTileGridBranchComponent::PlugTile(FVariantOffsetTransforms_Rotates transformRotated, USFTileVariantDefinitionData* currentVariant, ASTile* CurrentTile, int& directionChoosen, TArray <ASTile*>& EncompassingTilesBuild, TArray<ASTileDoor*>& DoorsArray, TArray<ASTileWall*>& WallArray)
+bool UTileGridBranchComponent::PlugTile(FVariantOffsetTransforms_Rotates transformRotated, USFTileVariantDefinitionData* currentVariant, ASTile* CurrentTile, TArray <ASTile*>& EncompassingTilesBuild, TArray<ASTileDoor*>& DoorsArray, TArray<ASTileWall*>& WallArray, TArray<ASTile*>& TileArray)
 {
 	bool CantPlaceVariant = true;
 
@@ -425,13 +445,6 @@ bool UTileGridBranchComponent::PlugTile(FVariantOffsetTransforms_Rotates transfo
 
 	//as we check through each one, build an array that we can send back if it can be inserted
 	//FIntPoint PrevCords = (-1,-1);
-	//TODO: Transforms_flavor is currently empty when we regularly get here. Investigate (related to USFTileVariantDefinitionData?)
-	//the issue stems from the offsets not being set at runtime. First idea was to have this run in a constructor but the values cant be read until after constructor
-	// maybe have it set those offsets in the SLocalLevel?
-
-	//calculate the transform flavors now?
-
-
 	for (FIntPoint GivenOffset : transformRotated.Transforms_flavor) //each index of variant paths is passed in via transformRotated, and then each of those indexs has the transform flavors array to index through
 	{
 		//TODO: convert x,z index into FIntPoint Globally
@@ -460,6 +473,7 @@ bool UTileGridBranchComponent::PlugTile(FVariantOffsetTransforms_Rotates transfo
 			CantPlaceVariant = false;
 			break;
 		}
+		TileArray.Add(OffsetTileToCheck);
 
 		//if (PrevCords !=  ( -1, -1))
 		//{
@@ -475,6 +489,7 @@ bool UTileGridBranchComponent::PlugTile(FVariantOffsetTransforms_Rotates transfo
 		//clear arrays before exit (prep vars)
 		DoorsArray.Empty();
 		WallArray.Empty();
+		TileArray.Empty();
 	}
 	else {
 		AddDoorsAndWalls(DoorsArray, WallArray, currentVariant->SidesToCheckOffsets);
