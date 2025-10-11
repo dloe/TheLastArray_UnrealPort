@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
 #include "STileVariantEnviornment.h"
+#include "Enviornment/TileGeneration/STileDoor.h"
+#include "ASTileWall.h"
 #include "SFTileVariantDefinitionData.generated.h"
 
 UENUM(BlueprintType)
@@ -32,6 +34,17 @@ struct FIntPointPair {
 
 	UPROPERTY(EditAnywhere)
 	FIntPoint endCords;
+	FIntPointPair()
+	{
+
+	}
+
+	FIntPointPair(FIntPoint startCord, FIntPoint endCord) //can also looked at as (Y cord : X Cord)
+	{
+		startCords = startCord;
+		endCords = endCord;
+	}
+
 };
 
 USTRUCT(BlueprintType)
@@ -68,6 +81,24 @@ public:
 
 };
 
+USTRUCT(BlueprintType)
+struct FTileVariantSetup_PlugTileSaveInfo
+{
+	GENERATED_BODY()
+
+	public:
+		UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TArray<ASTileDoor*> DoorsArray;
+		UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TArray<ASTileWall*> WallArray;
+		UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TArray<ASTile*> TileArray;
+		UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		int TransformDirection;
+
+};
+
+
 /// <summary>
 /// Each 'flavor' or rotated offset is saved here to be used in the plug and chug algorithm
 /// </summary>
@@ -102,6 +133,39 @@ public:
 	}
 
 };
+
+/// <summary>
+/// We have a starting point sides to check (aka the connecting sides of each tile per variant)
+/// If the variant is rotated (either 3 other rotations), therefore we have to have rotated cords
+/// 
+/// Should be similar to how we set VariantPaths
+/// </summary>
+USTRUCT(BlueprintType)
+struct FVariantOffsetTransforms_SidesToCheckOffsetsRotations
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere)
+	TArray<FIntPointPair> ConnectingSideOffset;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int TransformDirection;
+
+
+	FVariantOffsetTransforms_SidesToCheckOffsetsRotations(TArray<FIntPointPair> SidesToCheckOffsets, int direction)
+	{
+		ConnectingSideOffset = SidesToCheckOffsets;
+		TransformDirection = direction;
+	}
+
+	FVariantOffsetTransforms_SidesToCheckOffsetsRotations()
+	{
+
+	}
+
+
+};
+
 /*
 * (0,0) is considered anchor tile
 * Idea: define one variant direction, then apply a transformation on it and rotate it the other 3 directions
@@ -192,6 +256,12 @@ class ACTIONROUGELIKE_API USFTileVariantDefinitionData : public UDataAsset
 	TArray<FIntPointPair> SidesToCheckOffsets;
 
 
+	UPROPERTY(EditAnywhere)
+	TArray<FVariantOffsetTransforms_SidesToCheckOffsetsRotations> SidesToCheckRotation;
+
+	UPROPERTY(EditAnywhere)
+	int RotationCheckCounter;
+
 	//possible variants that get choosen randomly when spawned (not spawned yet and pulled from locallevel)
 	//the prefabs themselves to spawn
 	UPROPERTY(EditAnywhere)
@@ -213,8 +283,12 @@ class ACTIONROUGELIKE_API USFTileVariantDefinitionData : public UDataAsset
 	USFTileVariantDefinitionData();
 
 
+
 	UFUNCTION(BlueprintCallable)
 	TArray<FIntPoint> RotateOffsets(TArray<FIntPoint> OriginalOffsets, int32 RotationStepsClockwise);
+
+	UFUNCTION(BlueprintCallable)
+	TArray<FIntPointPair> RotateConnectedSides(TArray<FIntPointPair> OriginalOffsets, int32 RotationStepsClockwise);
 
 	UFUNCTION(BlueprintCallable)
 	void SetVariantPaths();

@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "Enviornment/TileGeneration/STileDoor.h"
 #include "ASTileWall.h"
+#include "STileVariantEnviornment.h"
 #include "STile.generated.h"
 
 UENUM(BlueprintType)
@@ -60,6 +61,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere)
 	USceneComponent* DoorsRoot;
+
+	UPROPERTY(VisibleAnywhere)
+	ASTileVariantEnviornment* AttachedVariant;
 
 	UFUNCTION(BlueprintCallable, Category = "Tile Components - Walls")
 	void ActivateWalls(TSubclassOf<ASTileWall> ChoosenWallAsset, FName WallsSubFolderName, TArray<ASTileWall*>& AllSpawnedWalls);

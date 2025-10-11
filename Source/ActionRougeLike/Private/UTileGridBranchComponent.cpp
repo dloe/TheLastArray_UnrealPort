@@ -249,7 +249,7 @@ void UTileGridBranchComponent::GridScanForCustomTileSizedVariants()
 			UE_LOG(LogTemp, Log, TEXT("Currently on tile tier: %d - number of columns: %d"), tileVariantTier, tier.Columns.Num());
 
 		//each tier of variants has a certain amount (so like 1 of the really big ones and higher number of the smaller sized groups of variants)
-		int VariantTierTotalAmountToPlace = FMath::RandRange(tier.Min, tier.Max);
+		int VariantTierTotalAmountToPlace = TileManagerRef->GameStream.RandRange(tier.Min, tier.Max);
 		int VariantsPlaced = 0;
 
 		//each type (so 2x2, 4x4, etc) of variant
@@ -261,12 +261,13 @@ void UTileGridBranchComponent::GridScanForCustomTileSizedVariants()
 			USFTileVariantDefinitionData* currentVariant = tier.Columns[tileVariantType];
 
 			//each variant type has a max we can place as well
-			int LocalVariantTotalAmount = FMath::RandRange(currentVariant->minorMin, currentVariant->minorMax);
+			int LocalVariantTotalAmount = TileManagerRef->GameStream.RandRange(currentVariant->minorMin, currentVariant->minorMax);
 			int localVariantsPlaced = 0;
 
 			//shuffle AllActiveTiles
 			ActiveUnusedTiles = ReshuffleTiles(ActiveUnusedTiles);
 
+			//TODO: This doesn't properly rotate each variant, the prefabs are set up incorrect perspective. AM FIXING
 			currentVariant->SetVariantPaths(); //setup the variant paths from OG offset array for each variant as we need
 			UE_LOG(LogTemp, Log, TEXT("Current Variant Size: %d by %d"), currentVariant->Size.X, currentVariant->Size.Y);
 
@@ -274,13 +275,14 @@ void UTileGridBranchComponent::GridScanForCustomTileSizedVariants()
 			//for each randomly choosen candidate (a tile on the grid): 
 			for (int tileCount = 0; (tileCount < ActiveUnusedTiles.Num() && VariantsPlaced < VariantTierTotalAmountToPlace && localVariantsPlaced < LocalVariantTotalAmount); tileCount++)
 			{
-				ASTile* currentTile = ActiveUnusedTiles[tileCount];
+				ASTile* currentTile = ActiveUnusedTiles[tileCount]; //should we remove this tile from the active unused tiles when we place?
 				//candidates analysis, pass in current variant, etc
 				if (VariantCandidateAnalysis(currentTile, currentVariant))
 				{
 					localVariantsPlaced++;
 					LocalVariantTotalAmount++;
 					VariantsPlaced++;
+					ActiveUnusedTiles.RemoveAt(tileCount);
 				}
 			}
 		}
@@ -319,36 +321,41 @@ bool UTileGridBranchComponent::VariantCandidateAnalysis(ASTile* CurrentTile, USF
 	//check if we can place the variant based on size of variant and availability of tile
 	if (!CurrentTile->TileVariantInUse && CurrentTile->IsNotSpecialTile())
 	{
-		TArray<ASTileDoor*> DoorsArray;
-		TArray<ASTileWall*> WallArray;
-		TArray<ASTile*> TileArray;
-		int counter = 1;
+		TArray<FTileVariantSetup_PlugTileSaveInfo> VariantPlugTileInfo;
 
 		//for bigger tiles, every direction we can place gets randomly choosen at after for loop
 		TArray<int> DirectionsAvailable;
-		
+		CurrentVariant->RotationCheckCounter = 0;
 		for (FVariantOffsetTransforms_Rotates transform : CurrentVariant->VariantPaths)
 		{
 			TArray <ASTile*> EncompassingTilesBuild;
-
+			FTileVariantSetup_PlugTileSaveInfo transVariantPlugInfo;
 			
 			//check all offsets based on this main tile starting point and populate corresponding data for setup if it fits!
-			if (PlugTile(transform, CurrentVariant, CurrentTile, EncompassingTilesBuild, DoorsArray, WallArray, TileArray))
+			if (PlugTile(transform, CurrentVariant, CurrentTile, EncompassingTilesBuild, transVariantPlugInfo))
 			{
 				DirectionsAvailable.Add(transform.TransformDirection); //make it new int but its not ptr?
+				
+				//need to save out the doors array, wall array and tile arrays in their respective index
+				VariantPlugTileInfo.Add(transVariantPlugInfo);
+				UE_LOG(LogTemp, Log, TEXT("Added to variant plug info, test new rotation. Currently variantpluginfosize = %d"), VariantPlugTileInfo.Num());
 			}
-			else {
-				counter++;
-			}
+			CurrentVariant->RotationCheckCounter++;
 		}
 
 		//choose which direction (if non-empty and non single tile)
 		if (!DirectionsAvailable.IsEmpty() || isSingleTile)
 		{
-			int directionPlacement = TileManagerRef->GameStream.RandRange(0, 3);
+			int choosenIndex = TileManagerRef->GameStream.RandRange(0, 3);
+			int directionPlacement = choosenIndex;
+			FTileVariantSetup_PlugTileSaveInfo choosenInfo;
 
-			if(!DirectionsAvailable.IsEmpty())
-				directionPlacement = DirectionsAvailable[TileManagerRef->GameStream.RandRange(0, DirectionsAvailable.Num() - 1)];
+			if(!DirectionsAvailable.IsEmpty()) {
+				choosenIndex = TileManagerRef->GameStream.RandRange(0, DirectionsAvailable.Num() - 1);
+				directionPlacement = DirectionsAvailable[choosenIndex];
+				choosenInfo = VariantPlugTileInfo[choosenIndex]; //TODO: Verify the choosen index info matches our direction placement
+			}
+			
 
 			//which type of abnormal tile variant are we going to place? (like the preset, which preset?)
 			int variantIndex = TileManagerRef->GameStream.RandRange(0, CurrentVariant->TileVariantEnviornments.Num() - 1);
@@ -361,11 +368,11 @@ bool UTileGridBranchComponent::VariantCandidateAnalysis(ASTile* CurrentTile, USF
 			
 			//start with location of currentTile, rotate based on which side choosen
 			switch (directionPlacement)
-			{
+			{ //0 and 2 are opposites, 1 and 3 are opposites
 			case 0: //default?
 				rotationModifier = 0;
 				break;
-			case 1: //90 degrees
+			case 3: //270 degrees
 				rotationModifier = 90;
 				SpawnRot = FRotator(0.0f, 90.0f, 0.0f);
 				break;
@@ -373,7 +380,7 @@ bool UTileGridBranchComponent::VariantCandidateAnalysis(ASTile* CurrentTile, USF
 				rotationModifier = 180;
 				SpawnRot = FRotator(0.0f, 180.0f, 0.0f);
 				break;
-			case 3: //270
+			case 1: //90
 				rotationModifier = 270;
 				SpawnRot = FRotator(0.0f, 270.0f, 0.0f);
 				break;
@@ -383,40 +390,58 @@ bool UTileGridBranchComponent::VariantCandidateAnalysis(ASTile* CurrentTile, USF
 				rotationModifier = 0;
 				break;
 			}
-			UE_LOG(LogTemp, Log, TEXT("Tile to place: %d.%d rotated %f degrees (aka selection %d)"), CurrentVariant->Size.X, CurrentVariant->Size.Y, rotationModifier, directionPlacement);
+			UE_LOG(LogTemp, Log, TEXT("Size Variant to place: %d:%d rotated %f degrees (aka selection %d). Place point: %d:%d"), CurrentVariant->Size.X, CurrentVariant->Size.Y, rotationModifier, directionPlacement, CurrentTile->XIndex,CurrentTile->ZIndex);
 
 			//physically spawn USFTileVariantDefinitionData->TilePrefab with transform, variant choosen at the 
 			//transform of the spawn point in the variant class
 			FActorSpawnParameters SpawnParams;
 			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-			ASTileVariantEnviornment* SpawnedVariant = GetWorld()->SpawnActor<ASTileVariantEnviornment>(ChoosenVariant, CurrentTile->GetActorLocation(), CurrentTile->GetActorRotation(), SpawnParams);
+			ASTileVariantEnviornment* SpawnedVariant = GetWorld()->SpawnActor<ASTileVariantEnviornment>(ChoosenVariant, CurrentTile->GetActorLocation(), CurrentTile->GetActorRotation(), SpawnParams);			
+			
 			SpawnedVariant->SetActorRotation(SpawnRot);
 			FString VariantTileName = "VariantTileMap_" + FString::FromInt(CurrentVariant->Size.X) + "_" + FString::FromInt(CurrentVariant->Size.Y);
 			SpawnedVariant->SetActorLabel(VariantTileName);
 #if WITH_EDITOR
 			SpawnedVariant->SetFolderPath(TileManagerRef->VariantTileMapSubFolderName);
+			DrawDebugSphere(GetWorld(), SpawnedVariant->GetActorLocation(), 225.0f, 20, FColor::Orange, false, 100);
 
 #endif
 
 			//an array should be passed up of all the relevant tiles, add them to the VariantEncompassingTiles
 			//EncompassingTilesBuild
 			//TODO: should also have array doors/walls we want to remove? 
-			for (ASTileDoor* doorToDestroy : DoorsArray)
+			if (!isSingleTile)
 			{
-				doorToDestroy->DoorActive = false;
-			}
+				for (ASTileDoor* doorToDestroy : choosenInfo.DoorsArray) 
+				{
+					if(doorToDestroy != NULL)
+						doorToDestroy->DoorActive = false;
+				}
 
-			for (ASTileWall* wallToDestroy : WallArray)
-			{
-				wallToDestroy->Destroy();
-			}
+				for (ASTileWall* wallToDestroy : choosenInfo.WallArray)
+				{
+					if (wallToDestroy != NULL)
+						wallToDestroy->Destroy();
+				}
 
-			//mark base tiles to be non usable 
-			for (ASTile* tileToMark : TileArray)
-			{
-				tileToMark->TileVariantInUse = true;
+				//mark base tiles to be non usable 
+				for (ASTile* tileToMark : choosenInfo.TileArray)
+				{
+					if(tileToMark->TileVariantInUse)
+						UE_LOG(LogTemp, Error, TEXT("tile in use? why is this getting hit?"));
+
+					tileToMark->TileVariantInUse = true;
+					tileToMark->AttachedVariant = SpawnedVariant; //TODO: find out what is throwing off their spawn locations? are they attached to the proper tiles?
+
+					//link those tiles to SpawnedVariant also!
+					SpawnedVariant->VariantEncompassingTiles.Add(tileToMark);
+				}
 			}
+			else {
+				SpawnedVariant->VariantEncompassingTiles.Add(CurrentTile);
+			}
+			
 
 
 			//if we can, great!
@@ -436,15 +461,18 @@ bool UTileGridBranchComponent::VariantCandidateAnalysis(ASTile* CurrentTile, USF
 /// <param name="directionChoosen"></param>
 /// <param name="EncompassingTilesBuild"></param>
 /// <returns></returns>
-bool UTileGridBranchComponent::PlugTile(FVariantOffsetTransforms_Rotates transformRotated, USFTileVariantDefinitionData* currentVariant, ASTile* CurrentTile, TArray <ASTile*>& EncompassingTilesBuild, TArray<ASTileDoor*>& DoorsArray, TArray<ASTileWall*>& WallArray, TArray<ASTile*>& TileArray)
+bool UTileGridBranchComponent::PlugTile(FVariantOffsetTransforms_Rotates transformRotated, USFTileVariantDefinitionData* currentVariant, ASTile* CurrentTile, TArray <ASTile*>& EncompassingTilesBuild, FTileVariantSetup_PlugTileSaveInfo& transVariantPlugInfo)
 {
 	bool CantPlaceVariant = true;
-
+	UE_LOG(LogTemp, Log, TEXT("Start of plug tile for tile %d,%d"), CurrentTile->XIndex, CurrentTile->ZIndex);
 	//check given orientations the variant can be placed at
 	//for each in offset in array
 
 	//as we check through each one, build an array that we can send back if it can be inserted
 	//FIntPoint PrevCords = (-1,-1);
+
+	UE_LOG(LogTemp, Log, TEXT("Rotation: %d"), transformRotated.TransformDirection);
+	
 	for (FIntPoint GivenOffset : transformRotated.Transforms_flavor) //each index of variant paths is passed in via transformRotated, and then each of those indexs has the transform flavors array to index through
 	{
 		//TODO: convert x,z index into FIntPoint Globally
@@ -454,26 +482,29 @@ bool UTileGridBranchComponent::PlugTile(FVariantOffsetTransforms_Rotates transfo
 		{
 			UE_LOG(LogTemp, Error, TEXT("Current Tile already marked, skipping?"));
 			CantPlaceVariant = false;
+			//currentVariant->RotationCheckCounter++;
 			break;
 		}
 
 		//for each current offset flavor (aka a rotated og offset mapping)
 			//offset cords
 		FIntPoint OffsetCheck = GridCordToCheck + GivenOffset;
-		UE_LOG(LogTemp, Log, TEXT("GridCordToCheck: %d.%d - offset to apply: %d.%d - Therefore Checking tile: %d,%d"), GridCordToCheck.X, GridCordToCheck.Y, GivenOffset.X, GivenOffset.Y, OffsetCheck.X, OffsetCheck.Y);
+		//UE_LOG(LogTemp, Log, TEXT("GridCordToCheck: %d.%d - offset to apply: %d.%d - Therefore Checking tile: %d,%d"), GridCordToCheck.X, GridCordToCheck.Y, GivenOffset.X, GivenOffset.Y, OffsetCheck.X, OffsetCheck.Y);
 
 		//check if tile is legit, not null, not starting, not boss room and isn't already marked
 		ASTile* OffsetTileToCheck = TileManagerRef->GetGridTilePair(OffsetCheck);
-		if(OffsetTileToCheck != NULL)
-			UE_LOG(LogTemp, Log, TEXT("Retrieved tile: %d,%d"), OffsetTileToCheck->XIndex, OffsetTileToCheck->ZIndex);
+		
 		//no negatives should appear if we null check
 		if (OffsetTileToCheck == NULL || OffsetTileToCheck->TileVariantInUse || OffsetTileToCheck->TileStatus == ETileStatus::ETile_BOSSROOM ||
 			OffsetTileToCheck->TileStatus == ETileStatus::ETile_NULLROOM || OffsetTileToCheck->TileStatus == ETileStatus::ETile_SECRETROOM || OffsetTileToCheck->TileStatus == ETileStatus::ETile_STARTINGROOM)
 		{
 			CantPlaceVariant = false;
+			//currentVariant->RotationCheckCounter++;
 			break;
 		}
-		TileArray.Add(OffsetTileToCheck);
+		if (OffsetTileToCheck != NULL)
+			UE_LOG(LogTemp, Log, TEXT("Retrieved tile: %d,%d"), OffsetTileToCheck->XIndex, OffsetTileToCheck->ZIndex);
+		transVariantPlugInfo.TileArray.Add(OffsetTileToCheck);
 
 		//if (PrevCords !=  ( -1, -1))
 		//{
@@ -481,18 +512,20 @@ bool UTileGridBranchComponent::PlugTile(FVariantOffsetTransforms_Rotates transfo
 		//	AddDoorsAndWalls(DoorsArray, WallArray, currentVariant->SidesToCheckOffsets);
 		//}
 		//PrevCords = OffsetCheck;
-
+		//currentVariant->RotationCheckCounter++;
 	}
 
 	if (!CantPlaceVariant)
 	{
 		//clear arrays before exit (prep vars)
-		DoorsArray.Empty();
-		WallArray.Empty();
-		TileArray.Empty();
+		transVariantPlugInfo.DoorsArray.Empty();
+		transVariantPlugInfo.WallArray.Empty();
+		transVariantPlugInfo.TileArray.Empty();
 	}
 	else {
-		AddDoorsAndWalls(DoorsArray, WallArray, currentVariant->SidesToCheckOffsets);
+		UE_LOG(LogTemp, Log, TEXT("counter: %d"), currentVariant->RotationCheckCounter);
+		//which  currentVariant->SidesToCheckRotation.TranformDirection == transformRotated.TransformDirection?
+		AddDoorsAndWalls(CurrentTile, transVariantPlugInfo.DoorsArray, transVariantPlugInfo.WallArray, currentVariant->SidesToCheckRotation[currentVariant->RotationCheckCounter].ConnectingSideOffset);
 	}
 
 	return CantPlaceVariant;
@@ -500,22 +533,36 @@ bool UTileGridBranchComponent::PlugTile(FVariantOffsetTransforms_Rotates transfo
 
 /// <summary>
 /// Once we know this variant can be placed, go through each of the doors
+/// TODO: Don't need current tile i think for params
 /// </summary>
 /// <param name="Current"></param>
 /// <param name="PrevTile"></param>
 /// <param name="CurrentTile"></param>
 /// <param name="DoorsArray"></param>
 /// <param name="WallArray"></param>
-void UTileGridBranchComponent::AddDoorsAndWalls(TArray<ASTileDoor*>& DoorsArray, TArray<ASTileWall*>& WallArray, TArray<FIntPointPair> SidesToCheck)
+void UTileGridBranchComponent::AddDoorsAndWalls(ASTile* CurrentTile, TArray<ASTileDoor*>& DoorsArray, TArray<ASTileWall*>& WallArray, TArray<FIntPointPair> SidesToCheck)
 {
 	for (FIntPointPair PairToCheck : SidesToCheck)
 	{
 		//based on the 2 sides (next to each other), determine which is the proper side
-
-		FIntPoint tile1ToCompare = PairToCheck.startCords;
-		FIntPoint tile2ToCompare = PairToCheck.endCords;
+		FIntPoint StartingTileCords = FIntPoint(CurrentTile->XIndex, CurrentTile->ZIndex); //cords for starting point we apply to every pairtoCheck
+		FIntPoint tile1ToCompare = PairToCheck.startCords + StartingTileCords;
+		FIntPoint tile2ToCompare = PairToCheck.endCords + StartingTileCords;
+		UE_LOG(LogTemp, Log, TEXT("Connection between %d,%d and %d,%d"), tile1ToCompare.X, tile1ToCompare.Y, tile2ToCompare.X, tile2ToCompare.Y);
 		ASTile* Tile1 = TileManagerRef->GetGridTilePair(tile1ToCompare);
 		ASTile* Tile2 = TileManagerRef->GetGridTilePair(tile2ToCompare);
+
+		//for now
+		if(Tile1 == NULL) {
+			UE_LOG(LogTemp, Error, TEXT("tile1 null"));
+			continue;
+		}
+
+		if (Tile2 == NULL) {
+			UE_LOG(LogTemp, Error, TEXT("tile2 null"));
+			continue;
+		}
+
 
 		if (tile1ToCompare.X == tile2ToCompare.X)
 		{
@@ -523,13 +570,19 @@ void UTileGridBranchComponent::AddDoorsAndWalls(TArray<ASTileDoor*>& DoorsArray,
 		//same will walls
 			if (tile1ToCompare.Y == tile2ToCompare.Y - 1)
 			{
-				WallArray.Add(Tile1->RightWall);
-				DoorsArray.Add(Tile1->RightDoor);
+				//if (Tile1->RightWall == NULL)
+					//UE_LOG(LogTemp, Error, TEXT("Door and wall null"));
+					WallArray.Add(Tile1->RightWall);
+				//if(Tile1->RightDoor == NULL)
+					DoorsArray.Add(Tile1->RightDoor);
 			}
 			else if (tile2ToCompare.Y == tile1ToCompare.Y - 1)
 			{
-				WallArray.Add(Tile1->LeftWall);
-				DoorsArray.Add(Tile1->LeftDoor);
+				//if (Tile1->LeftWall == NULL)
+					//UE_LOG(LogTemp, Error, TEXT("Door and wall null"));
+					WallArray.Add(Tile1->LeftWall);
+				//if(Tile1->LeftDoor == NULL)
+					DoorsArray.Add(Tile1->LeftDoor);
 			}
 			else {
 				UE_LOG(LogTemp, Error, TEXT("investigate"));
@@ -539,13 +592,19 @@ void UTileGridBranchComponent::AddDoorsAndWalls(TArray<ASTileDoor*>& DoorsArray,
 		{
 			if (tile1ToCompare.X == tile2ToCompare.X - 1)
 			{
-				WallArray.Add(Tile1->DownWall);
-				DoorsArray.Add(Tile1->DownDoor);
+				//if(Tile1->DownWall == NULL)
+					//UE_LOG(LogTemp, Error, TEXT("Door and wall null"));
+					WallArray.Add(Tile1->DownWall);
+				//if(Tile1->DownDoor == NULL)
+					DoorsArray.Add(Tile1->DownDoor);
 			}
 			else if (tile2ToCompare.Y == tile1ToCompare.Y - 1)
 			{
-				WallArray.Add(Tile1->UpWall);
-				DoorsArray.Add(Tile1->UpDoor);
+				//if (Tile1->UpWall == NULL)
+					//UE_LOG(LogTemp, Error, TEXT("Door and wall null"));
+					WallArray.Add(Tile1->UpWall);
+				//if(Tile1->UpDoor == NULL)
+					DoorsArray.Add(Tile1->UpDoor);
 			}
 			else {
 				UE_LOG(LogTemp, Error, TEXT("investigate 2"));

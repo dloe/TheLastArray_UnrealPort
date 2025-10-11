@@ -1002,9 +1002,9 @@ ASTile* ASTileManager::GetGridTile(int32 Y, int32 X)
 /// <returns></returns>
 ASTile* ASTileManager::GetGridTilePair(FIntPoint TileCords)
 {
-	if (TileCords.Y < LevelWidth && TileCords.Y >= 0 && TileCords.X < LevelHeight && TileCords.X >= 0)
+	if (TileCords.X < LevelWidth && TileCords.X >= 0 && TileCords.Y < LevelHeight && TileCords.Y >= 0)
 	{
-		return Grid2DArray[TileCords.Y]->TileColumn[TileCords.X];
+		return Grid2DArray[TileCords.X]->TileColumn[TileCords.Y]; //had these swapped?
 	}
 	else {
 		return NULL;
