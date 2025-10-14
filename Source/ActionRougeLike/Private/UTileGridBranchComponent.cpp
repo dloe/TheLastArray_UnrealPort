@@ -415,8 +415,10 @@ bool UTileGridBranchComponent::VariantCandidateAnalysis(ASTile* CurrentTile, USF
 			{
 				for (ASTileDoor* doorToDestroy : choosenInfo.DoorsArray) 
 				{
-					if(doorToDestroy != NULL)
+					if(doorToDestroy != NULL) {
 						doorToDestroy->DoorActive = false;
+						doorToDestroy->DestroyConnectorWalls = true;
+					}
 				}
 
 				for (ASTileWall* wallToDestroy : choosenInfo.WallArray)
@@ -469,7 +471,6 @@ bool UTileGridBranchComponent::PlugTile(FVariantOffsetTransforms_Rotates transfo
 	//for each in offset in array
 
 	//as we check through each one, build an array that we can send back if it can be inserted
-	//FIntPoint PrevCords = (-1,-1);
 
 	UE_LOG(LogTemp, Log, TEXT("Rotation: %d"), transformRotated.TransformDirection);
 	
@@ -482,7 +483,6 @@ bool UTileGridBranchComponent::PlugTile(FVariantOffsetTransforms_Rotates transfo
 		{
 			UE_LOG(LogTemp, Error, TEXT("Current Tile already marked, skipping?"));
 			CantPlaceVariant = false;
-			//currentVariant->RotationCheckCounter++;
 			break;
 		}
 
@@ -505,14 +505,6 @@ bool UTileGridBranchComponent::PlugTile(FVariantOffsetTransforms_Rotates transfo
 		if (OffsetTileToCheck != NULL)
 			UE_LOG(LogTemp, Log, TEXT("Retrieved tile: %d,%d"), OffsetTileToCheck->XIndex, OffsetTileToCheck->ZIndex);
 		transVariantPlugInfo.TileArray.Add(OffsetTileToCheck);
-
-		//if (PrevCords !=  ( -1, -1))
-		//{
-		//	//compare prev cords to these cords to determine which wall and door we need to add to array
-		//	AddDoorsAndWalls(DoorsArray, WallArray, currentVariant->SidesToCheckOffsets);
-		//}
-		//PrevCords = OffsetCheck;
-		//currentVariant->RotationCheckCounter++;
 	}
 
 	if (!CantPlaceVariant)
@@ -570,19 +562,13 @@ void UTileGridBranchComponent::AddDoorsAndWalls(ASTile* CurrentTile, TArray<ASTi
 		//same will walls
 			if (tile1ToCompare.Y == tile2ToCompare.Y - 1)
 			{
-				//if (Tile1->RightWall == NULL)
-					//UE_LOG(LogTemp, Error, TEXT("Door and wall null"));
-					WallArray.Add(Tile1->RightWall);
-				//if(Tile1->RightDoor == NULL)
-					DoorsArray.Add(Tile1->RightDoor);
+					WallArray.Add(Tile1->DownWall);
+					DoorsArray.Add(Tile1->DownDoor);
 			}
 			else if (tile2ToCompare.Y == tile1ToCompare.Y - 1)
 			{
-				//if (Tile1->LeftWall == NULL)
-					//UE_LOG(LogTemp, Error, TEXT("Door and wall null"));
-					WallArray.Add(Tile1->LeftWall);
-				//if(Tile1->LeftDoor == NULL)
-					DoorsArray.Add(Tile1->LeftDoor);
+					WallArray.Add(Tile1->UpWall);
+					DoorsArray.Add(Tile1->UpDoor);
 			}
 			else {
 				UE_LOG(LogTemp, Error, TEXT("investigate"));
@@ -592,19 +578,13 @@ void UTileGridBranchComponent::AddDoorsAndWalls(ASTile* CurrentTile, TArray<ASTi
 		{
 			if (tile1ToCompare.X == tile2ToCompare.X - 1)
 			{
-				//if(Tile1->DownWall == NULL)
-					//UE_LOG(LogTemp, Error, TEXT("Door and wall null"));
-					WallArray.Add(Tile1->DownWall);
-				//if(Tile1->DownDoor == NULL)
-					DoorsArray.Add(Tile1->DownDoor);
+					WallArray.Add(Tile1->RightWall);
+					DoorsArray.Add(Tile1->RightDoor);
 			}
 			else if (tile2ToCompare.Y == tile1ToCompare.Y - 1)
 			{
-				//if (Tile1->UpWall == NULL)
-					//UE_LOG(LogTemp, Error, TEXT("Door and wall null"));
-					WallArray.Add(Tile1->UpWall);
-				//if(Tile1->UpDoor == NULL)
-					DoorsArray.Add(Tile1->UpDoor);
+					WallArray.Add(Tile1->LeftWall);
+					DoorsArray.Add(Tile1->LeftDoor);
 			}
 			else {
 				UE_LOG(LogTemp, Error, TEXT("investigate 2"));
@@ -738,7 +718,7 @@ void UTileGridBranchComponent::CreateSecretRoom()
 		TileManagerRef->SecretRoom->DownNeighbor = selected.tile;
 		selected.tile->UpDoor = TileManagerRef->SecretRoom->DownDoor;
 		selected.tile->UpNeighbor = TileManagerRef->SecretRoom;
-		TileManagerRef->SecretRoom->SpawnDoorConnector(ETileSide::ETile_Down, TileManagerRef->ChoosenDoorwayAsset, TileManagerRef->DoorSubFolderName, TileManagerRef->AllSpawnedWalls);
+		TileManagerRef->SecretRoom->DownDoor->DoorsConnector = TileManagerRef->SecretRoom->SpawnDoorConnector(ETileSide::ETile_Down, TileManagerRef->ChoosenDoorwayAsset, TileManagerRef->DoorSubFolderName, TileManagerRef->AllSpawnedWalls);
 
 		break;
 	case 2:
@@ -762,7 +742,7 @@ void UTileGridBranchComponent::CreateSecretRoom()
 		TileManagerRef->SecretRoom->UpNeighbor = selected.tile;
 		selected.tile->DownDoor = TileManagerRef->SecretRoom->UpDoor;
 		selected.tile->DownNeighbor = TileManagerRef->SecretRoom;
-		TileManagerRef->SecretRoom->SpawnDoorConnector(ETileSide::ETile_Up, TileManagerRef->ChoosenDoorwayAsset, TileManagerRef->DoorSubFolderName, TileManagerRef->AllSpawnedWalls);
+		TileManagerRef->SecretRoom->UpDoor->DoorsConnector = TileManagerRef->SecretRoom->SpawnDoorConnector(ETileSide::ETile_Up, TileManagerRef->ChoosenDoorwayAsset, TileManagerRef->DoorSubFolderName, TileManagerRef->AllSpawnedWalls);
 		break;
 	case 3:
 		//right
@@ -785,7 +765,7 @@ void UTileGridBranchComponent::CreateSecretRoom()
 		TileManagerRef->SecretRoom->RightNeighbor = selected.tile;
 		selected.tile->LeftDoor = TileManagerRef->SecretRoom->RightDoor;
 		selected.tile->LeftNeighbor = TileManagerRef->SecretRoom;
-		TileManagerRef->SecretRoom->SpawnDoorConnector(ETileSide::ETile_Right, TileManagerRef->ChoosenDoorwayAsset, TileManagerRef->DoorSubFolderName, TileManagerRef->AllSpawnedWalls);
+		TileManagerRef->SecretRoom->RightDoor->DoorsConnector = TileManagerRef->SecretRoom->SpawnDoorConnector(ETileSide::ETile_Right, TileManagerRef->ChoosenDoorwayAsset, TileManagerRef->DoorSubFolderName, TileManagerRef->AllSpawnedWalls);
 		break;
 	case 4:
 		//left
@@ -808,7 +788,7 @@ void UTileGridBranchComponent::CreateSecretRoom()
 		TileManagerRef->SecretRoom->LeftNeighbor = selected.tile;
 		selected.tile->RightDoor = TileManagerRef->SecretRoom->LeftDoor;
 		selected.tile->RightNeighbor = TileManagerRef->SecretRoom;
-		TileManagerRef->SecretRoom->SpawnDoorConnector(ETileSide::ETile_Left, TileManagerRef->ChoosenDoorwayAsset, TileManagerRef->DoorSubFolderName, TileManagerRef->AllSpawnedWalls);
+		TileManagerRef->SecretRoom->LeftDoor->DoorsConnector = TileManagerRef->SecretRoom->SpawnDoorConnector(ETileSide::ETile_Left, TileManagerRef->ChoosenDoorwayAsset, TileManagerRef->DoorSubFolderName, TileManagerRef->AllSpawnedWalls);
 		break;
 	}
 	// TO DO: this will need to be updated to a specific Secrete Room BP set in LocalLevel
@@ -835,6 +815,14 @@ void UTileGridBranchComponent::FinalDoorSetupDoors()
 	{
 		//remove all doors inactive (aka the ones not connecting paths)
 		ASTileDoor* door = TileManagerRef->DoorArray[doorIndex];
+
+		if (door->DestroyConnectorWalls && door->DoorsConnector != NULL)
+		{
+			//if (door->DoorsConnector->GetActorLabel() == "TileConnector_0_3-0_4")
+			//	UE_LOG(LogTemp, Log, TEXT("hi3"));
+			door->DoorsConnector->Destroy();
+		}
+
 		if (!door->DoorActive)
 		{
 			//delete door

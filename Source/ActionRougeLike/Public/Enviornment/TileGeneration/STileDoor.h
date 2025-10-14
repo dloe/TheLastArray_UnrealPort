@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "ASTileWall.h"
 #include "STileDoor.generated.h"
 
 UCLASS()
@@ -17,6 +18,13 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Door Info")
 	bool DoorActive = false;
+
+
+	UPROPERTY(EditAnywhere, Category = "Door Info")
+	ASTileWall* DoorsConnector;
+
+	UPROPERTY(EditAnywhere, Category = "Door Info")
+	bool DestroyConnectorWalls = false;
 
 protected:
 	// Called when the game starts or when spawned

@@ -332,7 +332,8 @@ void ASTile::ConnectUpDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayA
 	UpDoor->DoorActive = true;
 	RemoveCurrentWall(ETileSide::ETile_Up);
 	//spawn door wall asset
-	SpawnDoorConnector(ETileSide::ETile_Up, ChoosenDoorwayAsset, WallsSubFolderName, AllSpawnedWalls);
+	if (!UpDoor->DestroyConnectorWalls && UpDoor->DoorsConnector == NULL)
+		UpDoor->DoorsConnector = SpawnDoorConnector(ETileSide::ETile_Up, ChoosenDoorwayAsset, WallsSubFolderName, AllSpawnedWalls);
 
 }
 
@@ -340,21 +341,24 @@ void ASTile::ConnectDownDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwa
 {
 	DownDoor->DoorActive = true;
 	RemoveCurrentWall(ETileSide::ETile_Down);
-	SpawnDoorConnector(ETileSide::ETile_Down, ChoosenDoorwayAsset, WallsSubFolderName, AllSpawnedWalls);
+	if(!DownDoor->DestroyConnectorWalls && DownDoor->DoorsConnector == NULL)
+		DownDoor->DoorsConnector = SpawnDoorConnector(ETileSide::ETile_Down, ChoosenDoorwayAsset, WallsSubFolderName, AllSpawnedWalls);
 }
 
 void ASTile::ConnectLeftDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName, TArray<ASTileWall*>& AllSpawnedWalls)
 {
 	LeftDoor->DoorActive = true;
 	RemoveCurrentWall(ETileSide::ETile_Left);
-	SpawnDoorConnector(ETileSide::ETile_Left, ChoosenDoorwayAsset, WallsSubFolderName, AllSpawnedWalls);
+	if (!LeftDoor->DestroyConnectorWalls && LeftDoor->DoorsConnector == NULL)
+		LeftDoor->DoorsConnector = SpawnDoorConnector(ETileSide::ETile_Left, ChoosenDoorwayAsset, WallsSubFolderName, AllSpawnedWalls);
 }
 
 void ASTile::ConnectRightDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName, TArray<ASTileWall*>& AllSpawnedWalls)
 {
 	RightDoor->DoorActive = true;
 	RemoveCurrentWall(ETileSide::ETile_Right);
-	SpawnDoorConnector(ETileSide::ETile_Right, ChoosenDoorwayAsset, WallsSubFolderName, AllSpawnedWalls);
+	if (!RightDoor->DestroyConnectorWalls && RightDoor->DoorsConnector == NULL)
+		RightDoor->DoorsConnector = SpawnDoorConnector(ETileSide::ETile_Right, ChoosenDoorwayAsset, WallsSubFolderName, AllSpawnedWalls);
 }
 
 void ASTile::ActivateUpDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName, TArray<ASTileWall*>& AllSpawnedWalls)
@@ -362,9 +366,8 @@ void ASTile::ActivateUpDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorway
 	if (HasValidUpNeighbor()) {
 		UpDoor->DoorActive = true;
 		RemoveCurrentWall(ETileSide::ETile_Up);
-		//
-		//UpNeighbor->RemoveCurrentWall(ETileSide::ETile_Up);
-		SpawnDoorConnector(ETileSide::ETile_Up, ChoosenDoorwayAsset, WallsSubFolderName, AllSpawnedWalls);
+		if (!UpDoor->DestroyConnectorWalls && UpDoor->DoorsConnector == NULL)
+			UpDoor->DoorsConnector = SpawnDoorConnector(ETileSide::ETile_Up, ChoosenDoorwayAsset, WallsSubFolderName, AllSpawnedWalls);
 	}
 }
 
@@ -373,7 +376,8 @@ void ASTile::ActivateDownDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorw
 	if (HasValidDownNeighbor()) {
 		DownDoor->DoorActive = true;
 		RemoveCurrentWall(ETileSide::ETile_Down);
-		SpawnDoorConnector(ETileSide::ETile_Down, ChoosenDoorwayAsset, WallsSubFolderName, AllSpawnedWalls);
+		if (!DownDoor->DestroyConnectorWalls && DownDoor->DoorsConnector == NULL)
+			DownDoor->DoorsConnector = SpawnDoorConnector(ETileSide::ETile_Down, ChoosenDoorwayAsset, WallsSubFolderName, AllSpawnedWalls);
 	}
 }
 
@@ -382,7 +386,8 @@ void ASTile::ActivateRightDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoor
 	if (HasValidRightNeighbor()) {
 		RightDoor->DoorActive = true;
 		RemoveCurrentWall(ETileSide::ETile_Right);
-		SpawnDoorConnector(ETileSide::ETile_Right, ChoosenDoorwayAsset, WallsSubFolderName, AllSpawnedWalls);
+		if (!RightDoor->DestroyConnectorWalls && RightDoor->DoorsConnector == NULL)
+			RightDoor->DoorsConnector = SpawnDoorConnector(ETileSide::ETile_Right, ChoosenDoorwayAsset, WallsSubFolderName, AllSpawnedWalls);
 	}
 }
 
@@ -391,7 +396,8 @@ void ASTile::ActivateLeftDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorw
 	if (HasValidLeftNeighbor()) {
 		LeftDoor->DoorActive = true;
 		RemoveCurrentWall(ETileSide::ETile_Left);
-		SpawnDoorConnector(ETileSide::ETile_Left, ChoosenDoorwayAsset, WallsSubFolderName, AllSpawnedWalls);
+		if (!LeftDoor->DestroyConnectorWalls && LeftDoor->DoorsConnector == NULL)
+			LeftDoor->DoorsConnector = SpawnDoorConnector(ETileSide::ETile_Left, ChoosenDoorwayAsset, WallsSubFolderName, AllSpawnedWalls);
 	}
 }
 
@@ -432,12 +438,15 @@ void ASTile::RemoveCurrentWall(ETileSide side)
 /// <param name="side"></param>
 /// <param name="ThisTile"></param>
 /// <param name="ChoosenDoorwayAsset"></param>
-void ASTile::SpawnDoorConnector(ETileSide side, TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName, TArray<ASTileWall*>& AllSpawnedWalls)
+ASTileWall* ASTile::SpawnDoorConnector(ETileSide side, TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName, TArray<ASTileWall*>& AllSpawnedWalls)
 {
 	FVector WallLocation;
 	FTransform WallSpawnTrans;
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	ASTileWall* SpawnedDoorWallConnector;
+
+	FString ConnectorName = "TileConnector_";
 
 	switch (side)
 	{
@@ -447,12 +456,14 @@ void ASTile::SpawnDoorConnector(ETileSide side, TSubclassOf<ASTileDoorWallConnec
 		UpWall = GetWorld()->SpawnActor<ASTileWall>(ChoosenDoorwayAsset, WallSpawnTrans, SpawnParams);
 		UpWall->InnerTile = this;
 		UpWall->OuterTile = UpNeighbor;
+		ConnectorName += FString::FromInt(this->XIndex) + "_" + FString::FromInt(this->ZIndex) + "-" + FString::FromInt(UpNeighbor->XIndex) + "_" + FString::FromInt(UpNeighbor->ZIndex);
 		AllSpawnedWalls.Add(UpWall);
 
 		UpWall->SetOwner(this);
 #if WITH_EDITOR
 		UpWall->SetFolderPath(WallsSubFolderName);
 #endif
+		SpawnedDoorWallConnector = UpWall;
 		break;
 	case ETileSide::ETile_Down:
 		WallLocation = SM_DownWallSpawnPoint.GetLocation() + GetActorLocation();
@@ -460,12 +471,14 @@ void ASTile::SpawnDoorConnector(ETileSide side, TSubclassOf<ASTileDoorWallConnec
 		DownWall = GetWorld()->SpawnActor<ASTileWall>(ChoosenDoorwayAsset, WallSpawnTrans, SpawnParams);
 		DownWall->InnerTile = this;
 		DownWall->OuterTile = DownNeighbor;
+		ConnectorName += FString::FromInt(this->XIndex) + "_" + FString::FromInt(this->ZIndex) + "-" + FString::FromInt(DownNeighbor->XIndex) + "_" + FString::FromInt(DownNeighbor->ZIndex);
 		AllSpawnedWalls.Add(DownWall);
 
 		DownWall->SetOwner(this);
 #if WITH_EDITOR
 		DownWall->SetFolderPath(WallsSubFolderName);
 #endif
+		SpawnedDoorWallConnector = DownWall;
 		break;
 	case ETileSide::ETile_Left:
 		WallLocation = SM_LeftWallSpawnPoint.GetLocation() + GetActorLocation();
@@ -473,12 +486,14 @@ void ASTile::SpawnDoorConnector(ETileSide side, TSubclassOf<ASTileDoorWallConnec
 		LeftWall = GetWorld()->SpawnActor<ASTileWall>(ChoosenDoorwayAsset, WallSpawnTrans, SpawnParams);
 		LeftWall->InnerTile = this;
 		LeftWall->OuterTile = LeftNeighbor;
+		ConnectorName += FString::FromInt(this->XIndex) + "_" + FString::FromInt(this->ZIndex) + "-" + FString::FromInt(LeftNeighbor->XIndex) + "_" + FString::FromInt(LeftNeighbor->ZIndex);
 		AllSpawnedWalls.Add(LeftWall);
 
 		LeftWall->SetOwner(this);
 #if WITH_EDITOR
 		LeftWall->SetFolderPath(WallsSubFolderName);
 #endif
+		SpawnedDoorWallConnector = LeftWall;
 		break;
 	case ETileSide::ETile_Right:
 		WallLocation = SM_RightWallSpawnPoint.GetLocation() + GetActorLocation();
@@ -486,12 +501,14 @@ void ASTile::SpawnDoorConnector(ETileSide side, TSubclassOf<ASTileDoorWallConnec
 		RightWall = GetWorld()->SpawnActor<ASTileWall>(ChoosenDoorwayAsset, WallSpawnTrans, SpawnParams);
 		RightWall->InnerTile = this;
 		RightWall->OuterTile = RightNeighbor;
+		ConnectorName += FString::FromInt(this->XIndex) + "_" + FString::FromInt(this->ZIndex) + "-" + FString::FromInt(RightNeighbor->XIndex) + "_" + FString::FromInt(RightNeighbor->ZIndex);
 		AllSpawnedWalls.Add(RightWall);
 
 		RightWall->SetOwner(this);
 #if WITH_EDITOR
 		RightWall->SetFolderPath(WallsSubFolderName);
 #endif
+		SpawnedDoorWallConnector = RightWall;
 		break;
 	default: //defaults to UP
 		WallLocation = SM_UpWallSpawnPoint.GetLocation() + GetActorLocation();
@@ -499,6 +516,7 @@ void ASTile::SpawnDoorConnector(ETileSide side, TSubclassOf<ASTileDoorWallConnec
 		UpWall = GetWorld()->SpawnActor<ASTileWall>(ChoosenDoorwayAsset, WallSpawnTrans, SpawnParams);
 		UpWall->InnerTile = this;
 		UpWall->OuterTile = UpNeighbor;
+		ConnectorName += FString::FromInt(this->XIndex) + "_" + FString::FromInt(this->ZIndex) + "-" + FString::FromInt(UpNeighbor->XIndex) + "_" + FString::FromInt(UpNeighbor->ZIndex);
 		AllSpawnedWalls.Add(UpWall);
 
 		UpWall->SetOwner(this);
@@ -506,8 +524,12 @@ void ASTile::SpawnDoorConnector(ETileSide side, TSubclassOf<ASTileDoorWallConnec
 		UpWall->SetFolderPath(WallsSubFolderName);
 #endif
 		UE_LOG(LogTemp, Error, TEXT("Default param for RemovePlaceholderWall"));
+		SpawnedDoorWallConnector = UpWall;
 		break;
 	}
+	SpawnedDoorWallConnector->SetActorLabel(ConnectorName);
+
+	return SpawnedDoorWallConnector;
 }
 
 /// <summary>

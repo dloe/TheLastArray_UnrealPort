@@ -283,7 +283,7 @@ public:
 	void RemoveCurrentWall(ETileSide side);
 
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
-	void SpawnDoorConnector(ETileSide side, TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName, TArray<ASTileWall*>& AllSpawnedWalls);
+	ASTileWall* SpawnDoorConnector(ETileSide side, TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName, TArray<ASTileWall*>& AllSpawnedWalls);
 
 	UFUNCTION(Category = "Tile Components - Setup")
 	void SetupSecretRoomDoorWalls(ETileSide side, TSubclassOf<ASTileWall> ChoosenWallAsset, FName WallsSubFolderName, TArray<ASTileWall*>& AllSpawnedWalls);
