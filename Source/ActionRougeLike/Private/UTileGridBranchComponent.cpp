@@ -44,16 +44,27 @@ void UTileGridBranchComponent::GameMapAdditionalSetup()
 		if (TileManagerRef->DebugPrints)
 			UE_LOG(LogTemp, Log, TEXT("=================== Finished Spawn Room - Adding Secret Room =============================="));
 		CreateSecretRoom();
-
+		if (TileManagerRef->DebugPrints)
+			UE_LOG(LogTemp, Log, TEXT("=================== Finished Secret Room - Activating All Doors =============================="));
+	}
+	else {
+		if (TileManagerRef->DebugPrints)
+			UE_LOG(LogTemp, Log, TEXT("=================== Finished Spawn Room - Variant setup =============================="));
 	}
 
 	GridScanForCustomTileSizedVariants();
 
+
+
 	if (TileManagerRef->DoorsActive) {
 		if (TileManagerRef->DebugPrints)
-			UE_LOG(LogTemp, Log, TEXT("=================== Finished Secret Room - Activating All Doors =============================="));
+			UE_LOG(LogTemp, Log, TEXT("=================== Finished Variant setup - Final door sletup =============================="));
 
 		FinalDoorSetupDoors();
+	}
+	else {
+		if (TileManagerRef->DebugPrints)
+			UE_LOG(LogTemp, Log, TEXT("=================== Finished Variant setup - Implementing Final Tile Setup =============================="));
 	}
 
 	if (TileManagerRef->DebugPrints)
@@ -474,6 +485,7 @@ bool UTileGridBranchComponent::PlugTile(FVariantOffsetTransforms_Rotates transfo
 
 	UE_LOG(LogTemp, Log, TEXT("Rotation: %d"), transformRotated.TransformDirection);
 	
+	
 	for (FIntPoint GivenOffset : transformRotated.Transforms_flavor) //each index of variant paths is passed in via transformRotated, and then each of those indexs has the transform flavors array to index through
 	{
 		//TODO: convert x,z index into FIntPoint Globally
@@ -515,8 +527,9 @@ bool UTileGridBranchComponent::PlugTile(FVariantOffsetTransforms_Rotates transfo
 		transVariantPlugInfo.TileArray.Empty();
 	}
 	else {
-		UE_LOG(LogTemp, Log, TEXT("counter: %d"), currentVariant->RotationCheckCounter);
+		//UE_LOG(LogTemp, Log, TEXT("counter: %d"), currentVariant->RotationCheckCounter);
 		//which  currentVariant->SidesToCheckRotation.TranformDirection == transformRotated.TransformDirection?
+		UE_LOG(LogTemp, Log, TEXT("Starting tile: %d:%d rotation side counter: %d"), CurrentTile->XIndex, CurrentTile->ZIndex, currentVariant->RotationCheckCounter);
 		AddDoorsAndWalls(CurrentTile, transVariantPlugInfo.DoorsArray, transVariantPlugInfo.WallArray, currentVariant->SidesToCheckRotation[currentVariant->RotationCheckCounter].ConnectingSideOffset);
 	}
 
@@ -538,9 +551,10 @@ void UTileGridBranchComponent::AddDoorsAndWalls(ASTile* CurrentTile, TArray<ASTi
 	{
 		//based on the 2 sides (next to each other), determine which is the proper side
 		FIntPoint StartingTileCords = FIntPoint(CurrentTile->XIndex, CurrentTile->ZIndex); //cords for starting point we apply to every pairtoCheck
+		
 		FIntPoint tile1ToCompare = PairToCheck.startCords + StartingTileCords;
 		FIntPoint tile2ToCompare = PairToCheck.endCords + StartingTileCords;
-		UE_LOG(LogTemp, Log, TEXT("Connection between %d,%d and %d,%d"), tile1ToCompare.X, tile1ToCompare.Y, tile2ToCompare.X, tile2ToCompare.Y);
+		UE_LOG(LogTemp, Log, TEXT("Connection between %d,%d and %d,%d "), tile1ToCompare.X, tile1ToCompare.Y, tile2ToCompare.X, tile2ToCompare.Y);
 		ASTile* Tile1 = TileManagerRef->GetGridTilePair(tile1ToCompare);
 		ASTile* Tile2 = TileManagerRef->GetGridTilePair(tile2ToCompare);
 
@@ -1107,6 +1121,7 @@ void UTileGridBranchComponent::SpawnDoor(ASTile* tile, ETileSide SideToSpawnDoor
 		doorSpawnPoint = tile->RightDoorSpawnPoint;
 		break;
 	default:
+		UE_LOG(LogTemp, Error, TEXT("Defaulting! SideToSpawnDoor"));
 		break;
 	}
 

@@ -101,7 +101,7 @@ TArray<FIntPointPair> USFTileVariantDefinitionData::RotateConnectedSides(TArray<
 			case 2: //this should be neg for both right?
 			//180 deg
 				StartCord = FIntPoint(-LocalOffet.startCords.X, -LocalOffet.startCords.Y);
-				EndCord = FIntPoint(LocalOffet.endCords.Y, LocalOffet.endCords.X);
+				EndCord = FIntPoint(-LocalOffet.endCords.X, -LocalOffet.endCords.Y);
 			break;
 			case 3: //flipped from case 1 right?
 			//270 deg

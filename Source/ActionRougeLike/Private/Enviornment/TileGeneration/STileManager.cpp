@@ -876,26 +876,21 @@ void ASTileManager::LinkTile(ASTile* ThisTile, FMultiTileStruct Col)
 		}
 	}
 
-	UE_LOG(LogTemp, Log, TEXT("hi"));
 	//add outer walls
 	if (ThisTile->ZIndex == 0) //no up or down neighbor
 	{
-		UE_LOG(LogTemp, Log, TEXT("hi"));
 		AddWallToPerimeter(ETileSide::ETile_Up, ThisTile);
 	}
 	if (ThisTile->ZIndex == LevelWidth - 1)
 	{
-		UE_LOG(LogTemp, Log, TEXT("hi"));
 		AddWallToPerimeter(ETileSide::ETile_Down, ThisTile);
 	}
 	if (ThisTile->XIndex == 0) //no right nor left neighbor
 	{
-		UE_LOG(LogTemp, Log, TEXT("hi"));
 		AddWallToPerimeter(ETileSide::ETile_Left, ThisTile);
 	}
 	if (ThisTile->XIndex == LevelHeight - 1)
 	{
-		UE_LOG(LogTemp, Log, TEXT("hi"));
 		AddWallToPerimeter(ETileSide::ETile_Right, ThisTile);
 	}
 }

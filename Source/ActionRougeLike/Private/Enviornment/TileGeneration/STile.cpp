@@ -428,8 +428,11 @@ void ASTile::RemoveCurrentWall(ETileSide side)
 		break;
 
 	}
-
-	wall->Destroy();
+	if(wall != NULL)
+		wall->Destroy();
+	else {
+		UE_LOG(LogTemp, Error, TEXT("Wall is null for secret room?"));
+	}
 }
 
 /// <summary>
