@@ -324,8 +324,6 @@ void UTilePathSetupComp::ChooseStartEndRooms()
 	TArray<ASTile*> availableTiles = TileManagerRef->GetPossibleStartingTiles();
 	TileManagerRef->EndTile = availableTiles[TileManagerRef->GameStream.RandRange(0, availableTiles.Num() - 1)];
 	TileManagerRef->EndTile->ShadeEndRoom();
-
-	
 }
 
 void UTilePathSetupComp::GeneratePath()
@@ -389,7 +387,7 @@ void UTilePathSetupComp::CreateSpawnRoom()
 		StartingGridTileRef->LeftNeighbor = TileManagerRef->PlayerStartingTile_SpawnTile;
 		TileManagerRef->PlayerStartingTile_SpawnTile->RightNeighbor = StartingGridTileRef;
 		TileManagerRef->PlayerSpawnPresentTile->SetActorRotation(FRotator(TileManagerRef->PlayerSpawnPresentTile->GetActorRotation().Euler().X, -90.0f, TileManagerRef->PlayerSpawnPresentTile->GetActorRotation().Euler().Z));
-
+		//TileManagerRef->PlayerStartingTile_SpawnTile->ConnectRightDoor(TileManagerRef->ChoosenDoorwayAsset, TileManagerRef->WallsSubFolderName, TileManagerRef->AllSpawnedWalls);
 		break;
 	case 1:
 		//UP
@@ -398,6 +396,27 @@ void UTilePathSetupComp::CreateSpawnRoom()
 		TileManagerRef->PlayerSpawnPresentTile = GetWorld()->SpawnActor<ASTile>(MyLocalLevelRef->PresetStartingTile, SpawnPos, StartingGridTileRef->GetActorRotation(), SpawnParams);
 		StartingGridTileRef->UpNeighbor = TileManagerRef->PlayerStartingTile_SpawnTile;
 		TileManagerRef->PlayerStartingTile_SpawnTile->DownNeighbor = StartingGridTileRef;
+		//TileManagerRef->PlayerStartingTile_SpawnTile->ConnectDownDoor(TileManagerRef->ChoosenDoorwayAsset, TileManagerRef->WallsSubFolderName, TileManagerRef->AllSpawnedWalls);
+
+		if (TileManagerRef->DoorToStartRoom)
+		{
+			//Set up door - rn defaulted to 3 TODO: do i really need to even choose other sides to start on? is the player even gunna notice? perspective of player always starts the same
+			//should always be having the same rotation right? therefore the door should always be up while everyone else's has different orientations
+			const FString TileUpDoorName = "TileDoorConnecting_StartingRoom_to_" + FString::FromInt(TileManagerRef->PlayerStartingTile_SpawnTile->DownNeighbor->XIndex) + "_" + FString::FromInt(TileManagerRef->PlayerStartingTile_SpawnTile->DownNeighbor->ZIndex);
+			const FVector DownDoorSpawnLocation = TileManagerRef->PlayerStartingTile_SpawnTile->DownDoorSpawnPoint.GetLocation() + TileManagerRef->PlayerStartingTile_SpawnTile->GetActorLocation();
+			const FTransform Spawm = FTransform(TileManagerRef->PlayerStartingTile_SpawnTile->DownDoorSpawnPoint.GetRotation(), DownDoorSpawnLocation);
+			TileManagerRef->PlayerStartingTile_SpawnTile->DownDoor = GetWorld()->SpawnActor<ASTileDoor>(TileManagerRef->TileDoor, Spawm, SpawnParams);
+			TileManagerRef->DoorArray.Add(TileManagerRef->PlayerStartingTile_SpawnTile->DownDoor);
+			TileManagerRef->PlayerStartingTile_SpawnTile->DownDoor->SetActorLabel(TileUpDoorName);
+			TileManagerRef->PlayerStartingTile_SpawnTile->DownDoor->SetOwner(StartingGridTileRef);
+
+#if WITH_EDITOR
+			TileManagerRef->PlayerStartingTile_SpawnTile->DownDoor->SetFolderPath(TileManagerRef->DoorSubFolderName);
+#endif
+			StartingGridTileRef->UpDoor = TileManagerRef->PlayerStartingTile_SpawnTile->DownDoor;
+
+			StartingGridTileRef->ConnectUpDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, TileManagerRef->AllSpawnedWalls);
+		}
 
 		break;
 	case 2:
@@ -408,7 +427,7 @@ void UTilePathSetupComp::CreateSpawnRoom()
 		StartingGridTileRef->RightNeighbor = TileManagerRef->PlayerStartingTile_SpawnTile;
 		TileManagerRef->PlayerStartingTile_SpawnTile->LeftNeighbor = StartingGridTileRef;
 		TileManagerRef->PlayerSpawnPresentTile->SetActorRotation(FRotator(TileManagerRef->PlayerSpawnPresentTile->GetActorRotation().Euler().X, 90, TileManagerRef->PlayerSpawnPresentTile->GetActorRotation().Euler().Z));
-
+		//TileManagerRef->PlayerStartingTile_SpawnTile->ConnectRightDoor(TileManagerRef->ChoosenDoorwayAsset, TileManagerRef->WallsSubFolderName, TileManagerRef->AllSpawnedWalls);
 		break;
 	case 3:
 		//DOWN
@@ -459,6 +478,8 @@ void UTilePathSetupComp::CreateSpawnRoom()
 	TileManagerRef->PlayerStartingTile_SpawnTile->ShadeStartingRoom();
 	TileManagerRef->StartingGridTile = TileManagerRef->PlayerStartingTile_SpawnTile;
 }
+
+
 
 /// <summary>
 /// Backtracking reclusive algorithm for Main level path construction. Builds out LevelPath array.
@@ -534,6 +555,8 @@ void UTilePathSetupComp::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& Current
 
 		CurrentTile->ConnectUpDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, TileManagerRef->AllSpawnedWalls);
 		doorTransform = CurrentTile->UpDoor->GetTransform();
+		//save direction for boss room rotation
+		CurrentTile->UpNeighbor->bossRoomRotationDirection = 2; //180
 	}
 	else if ((CurrentTile->DownNeighbor && CurrentTile->DownNeighbor->IsBossTile()))
 	{
@@ -543,6 +566,7 @@ void UTilePathSetupComp::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& Current
 		AddTileToPath(CurrentTile->DownNeighbor);
 		CurrentTile->ConnectDownDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, TileManagerRef->AllSpawnedWalls);
 		doorTransform = CurrentTile->DownDoor->GetTransform();
+		CurrentTile->DownNeighbor->bossRoomRotationDirection = 0; //no rotation
 	}
 	else if ((CurrentTile->RightNeighbor && CurrentTile->RightNeighbor->IsBossTile()))
 	{
@@ -552,6 +576,7 @@ void UTilePathSetupComp::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& Current
 		AddTileToPath(CurrentTile->RightNeighbor);
 		CurrentTile->ConnectRightDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, TileManagerRef->AllSpawnedWalls);
 		doorTransform = CurrentTile->RightDoor->GetTransform();
+		CurrentTile->RightNeighbor->bossRoomRotationDirection = 1; //90 degrees
 	}
 	else if ((CurrentTile->LeftNeighbor && CurrentTile->LeftNeighbor->IsBossTile()))
 	{
@@ -561,6 +586,7 @@ void UTilePathSetupComp::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& Current
 		AddTileToPath(CurrentTile->LeftNeighbor);
 		CurrentTile->ConnectLeftDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, TileManagerRef->AllSpawnedWalls);
 		doorTransform = CurrentTile->LeftDoor->GetTransform();
+		CurrentTile->LeftNeighbor->bossRoomRotationDirection = 3; //270 degrees
 	}
 	else {
 		//now that we know theres valid neighbors and none of them are the boss room, lets check our neighbors

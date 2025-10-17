@@ -133,8 +133,7 @@ void USFTileVariantDefinitionData::SetVariantPaths()
 			{
 				TArray<FIntPoint> Rotated = RotateOffsets(Offsets, dir);
 
-			//get rotated sides to check also
-
+				//get rotated sides to check also
 
 				FVariantOffsetTransforms_Rotates offset = FVariantOffsetTransforms_Rotates(Rotated, dir);
 				VariantPaths.Add(offset);
@@ -152,7 +151,6 @@ void USFTileVariantDefinitionData::SetVariantPaths()
 				TArray<FIntPointPair> RotatedSidesToCheck = RotateConnectedSides(SidesToCheckOffsets, dir);
 
 				//get rotated sides to check also
-
 
 				FVariantOffsetTransforms_SidesToCheckOffsetsRotations offset = FVariantOffsetTransforms_SidesToCheckOffsetsRotations(RotatedSidesToCheck, dir);
 				SidesToCheckRotation.Add(offset);

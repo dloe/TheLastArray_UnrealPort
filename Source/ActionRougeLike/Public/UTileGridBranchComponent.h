@@ -68,6 +68,9 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
 	void CreateSecretRoom();
 
+	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
+	void SpawnEndRoom();
+
 	UFUNCTION(BlueprintCallable, Category = "Door Setup")
 	void FinalDoorSetupDoors();
 
@@ -87,6 +90,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	ASTile* choosen;
+
+	UPROPERTY(EditAnywhere, Category = "Tile Generation")
+	USFTileVariantDefinitionData* SingleVariantData;
 
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
 	void CheckBranchTile(ASTile* TileToAdd, TArray<ASTile*>& CurrentPath, int Length, int prevDirection);

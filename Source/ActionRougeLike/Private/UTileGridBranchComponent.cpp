@@ -243,7 +243,6 @@ void UTileGridBranchComponent::GridScanForCustomTileSizedVariants()
 		UE_LOG(LogTemp, Log, TEXT("Starting Custom Sized Tile Variants"));
 	//scan through grid where abnormal tiles could potentially be placed
 	//only tiles that are off limits would be starting and end tile (TODO: maybe higher tiers of levels could have variants?)
-	//TODO: currently this is only starting tile? when do we add all the other tiles? it should be off that right?
 	TArray<ASTile*>	ActiveUnusedTiles = TileManagerRef->AllActiveTiles;
 
 	TileManagerRef->TileVariantComponent->SetVariables();
@@ -272,7 +271,15 @@ void UTileGridBranchComponent::GridScanForCustomTileSizedVariants()
 			USFTileVariantDefinitionData* currentVariant = tier.Columns[tileVariantType];
 
 			//each variant type has a max we can place as well
-			int LocalVariantTotalAmount = TileManagerRef->GameStream.RandRange(currentVariant->minorMin, currentVariant->minorMax);
+			int LocalVariantTotalAmount;
+			if(currentVariant->Size.X == 1 && currentVariant->Size.Y == 1)	{
+				LocalVariantTotalAmount = 40;//single tiles fill out everything else on map
+				//save this variant to be used later
+				SingleVariantData = currentVariant;
+				}
+			else {
+				LocalVariantTotalAmount = TileManagerRef->GameStream.RandRange(currentVariant->minorMin, currentVariant->minorMax);
+			}
 			int localVariantsPlaced = 0;
 
 			//shuffle AllActiveTiles
@@ -595,7 +602,7 @@ void UTileGridBranchComponent::AddDoorsAndWalls(ASTile* CurrentTile, TArray<ASTi
 					WallArray.Add(Tile1->RightWall);
 					DoorsArray.Add(Tile1->RightDoor);
 			}
-			else if (tile2ToCompare.Y == tile1ToCompare.Y - 1)
+			else if (tile2ToCompare.X == tile1ToCompare.X - 1)
 			{
 					WallArray.Add(Tile1->LeftWall);
 					DoorsArray.Add(Tile1->LeftDoor);
@@ -702,11 +709,12 @@ void UTileGridBranchComponent::CreateSecretRoom()
 	//UE_LOG(LogTemp, Log, TEXT("Selected:  x= %d, y = %d], z = %d"), test->GetActorLocation().X, test->GetActorLocation().Y, test->GetActorLocation().Z);
 
 	FString name = test->GetActorLabel();
-	//ASTile* tempTile;
 	//UE_LOG(LogTemp, Log, TEXT("Tile: %s"), *name);
 	FVector Origin;
 	FVector Extents;
 	FString TileDoorName;
+
+	int selectedRotation = 0;
 
 	//TODO: weird but with center of tile being at the top, causing a 240 offset. Will need to investigate later
 	switch (selected.neighborArray[loc])
@@ -720,7 +728,7 @@ void UTileGridBranchComponent::CreateSecretRoom()
 			//SpawnRot = FRotator(selected.tile->GetActorRotation().Euler().X, 180.0f, selected.tile->GetActorRotation().Euler().Z);
 			TileManagerRef->SecretRoom = GetWorld()->SpawnActor<ASTile>(TileManagerRef->TileBase, SpawnPos, SpawnRot, SpawnParams);
 			SpawnDoor(TileManagerRef->SecretRoom, ETileSide::ETile_Down, "SecretRoom");
-
+			
 			
 		}
 		else if (selected.tile->UpNeighbor->TileStatus == ETileStatus::ETile_NULLROOM) { //confirmed this works now get other wey of working
@@ -733,7 +741,7 @@ void UTileGridBranchComponent::CreateSecretRoom()
 		selected.tile->UpDoor = TileManagerRef->SecretRoom->DownDoor;
 		selected.tile->UpNeighbor = TileManagerRef->SecretRoom;
 		TileManagerRef->SecretRoom->DownDoor->DoorsConnector = TileManagerRef->SecretRoom->SpawnDoorConnector(ETileSide::ETile_Down, TileManagerRef->ChoosenDoorwayAsset, TileManagerRef->DoorSubFolderName, TileManagerRef->AllSpawnedWalls);
-
+		selectedRotation = 0; //no rotation
 		break;
 	case 2:
 		//down
@@ -757,6 +765,7 @@ void UTileGridBranchComponent::CreateSecretRoom()
 		selected.tile->DownDoor = TileManagerRef->SecretRoom->UpDoor;
 		selected.tile->DownNeighbor = TileManagerRef->SecretRoom;
 		TileManagerRef->SecretRoom->UpDoor->DoorsConnector = TileManagerRef->SecretRoom->SpawnDoorConnector(ETileSide::ETile_Up, TileManagerRef->ChoosenDoorwayAsset, TileManagerRef->DoorSubFolderName, TileManagerRef->AllSpawnedWalls);
+		selectedRotation = 2; //180
 		break;
 	case 3:
 		//right
@@ -780,6 +789,7 @@ void UTileGridBranchComponent::CreateSecretRoom()
 		selected.tile->LeftDoor = TileManagerRef->SecretRoom->RightDoor;
 		selected.tile->LeftNeighbor = TileManagerRef->SecretRoom;
 		TileManagerRef->SecretRoom->RightDoor->DoorsConnector = TileManagerRef->SecretRoom->SpawnDoorConnector(ETileSide::ETile_Right, TileManagerRef->ChoosenDoorwayAsset, TileManagerRef->DoorSubFolderName, TileManagerRef->AllSpawnedWalls);
+		selectedRotation = 3; //270
 		break;
 	case 4:
 		//left
@@ -803,6 +813,7 @@ void UTileGridBranchComponent::CreateSecretRoom()
 		selected.tile->RightDoor = TileManagerRef->SecretRoom->LeftDoor;
 		selected.tile->RightNeighbor = TileManagerRef->SecretRoom;
 		TileManagerRef->SecretRoom->LeftDoor->DoorsConnector = TileManagerRef->SecretRoom->SpawnDoorConnector(ETileSide::ETile_Left, TileManagerRef->ChoosenDoorwayAsset, TileManagerRef->DoorSubFolderName, TileManagerRef->AllSpawnedWalls);
+		selectedRotation = 1; //90
 		break;
 	}
 	// TO DO: this will need to be updated to a specific Secrete Room BP set in LocalLevel
@@ -816,6 +827,127 @@ void UTileGridBranchComponent::CreateSecretRoom()
 
 	//ACTIVATE WALLS
 	TileManagerRef->SecretRoom->ActivateWalls(TileManagerRef->ChoosenWallAsset, TileManagerRef->WallsSubFolderName, TileManagerRef->AllSpawnedWalls);
+
+	
+	//populate secret room contents
+	FActorSpawnParameters SpawnParamsPrefab;
+	SpawnParamsPrefab.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	TSubclassOf<ASTileVariantEnviornment> ChoosenSecretRoomVariant;
+	//TODO: This secret room environment data needs to be updated for the secret room variants
+	int variantIndex = TileManagerRef->GameStream.RandRange(0, SingleVariantData->TileVariantEnviornments.Num() - 1);
+	ChoosenSecretRoomVariant = SingleVariantData->TileVariantEnviornments[variantIndex];
+
+	//rotation is dependent on prev tile
+	//FVector SpawnPosPrefab;
+	FRotator SpawnRotPrefab = FRotator(0.0f, 0.0f, 0.0f);
+
+
+	float rotationModifier;
+	//set rotation of spawned TilePrefab contents
+	//start with location of currentTile, rotate based on which side choosen
+	switch (selectedRotation)
+	{ //0 and 2 are opposites, 1 and 3 are opposites
+	case 0: //default?
+		rotationModifier = 0;
+		break;
+	case 3: //270 degrees
+		rotationModifier = 90;
+		SpawnRotPrefab = FRotator(0.0f, 90.0f, 0.0f);
+		break;
+	case 2: //180
+		rotationModifier = 180;
+		SpawnRotPrefab = FRotator(0.0f, 180.0f, 0.0f);
+		break;
+	case 1: //90
+		rotationModifier = 270;
+		SpawnRotPrefab = FRotator(0.0f, 270.0f, 0.0f);
+		break;
+
+	default:
+		UE_LOG(LogTemp, Error, TEXT("Improper direction placement %d"), selectedRotation);
+		rotationModifier = 0;
+		break;
+	}
+
+	ASTileVariantEnviornment* SecretRoomVariant = GetWorld()->SpawnActor<ASTileVariantEnviornment>(ChoosenSecretRoomVariant, TileManagerRef->SecretRoom->GetActorLocation(), TileManagerRef->SecretRoom->GetActorRotation(), SpawnParamsPrefab);
+
+	SecretRoomVariant->SetActorRotation(SpawnRotPrefab);
+	FString VariantTileName = "VariantTileMap_" + FString::FromInt(TileManagerRef->SecretRoom->XIndex) + "_" + FString::FromInt(TileManagerRef->SecretRoom->ZIndex);
+	SecretRoomVariant->SetActorLabel(VariantTileName);
+#if WITH_EDITOR
+	SecretRoomVariant->SetFolderPath(TileManagerRef->VariantTileMapSubFolderName);
+	DrawDebugSphere(GetWorld(), SecretRoomVariant->GetActorLocation(), 225.0f, 20, FColor::Orange, false, 100);
+
+#endif
+
+}
+
+/// <summary>
+/// End room spawn
+/// 
+/// The contents of end room (which would eventually include boss setup behavior)
+/// </summary>
+void UTileGridBranchComponent::SpawnEndRoom()
+{
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	TSubclassOf<ASTileVariantEnviornment> ChoosenEndRoomVariant;
+	int rotationToSpawn = TileManagerRef->GameStream.RandRange(0, 3);
+	if (true) //if not boss fight
+	{
+		//normal 1x1 variant
+		int variantIndex = TileManagerRef->GameStream.RandRange(0, SingleVariantData->TileVariantEnviornments.Num() - 1);
+		ChoosenEndRoomVariant = SingleVariantData->TileVariantEnviornments[variantIndex];
+	}
+	else {
+		rotationToSpawn = TileManagerRef->EndTile->bossRoomRotationDirection;
+	}
+	FVector SpawnPos;
+	FRotator SpawnRot = FRotator(0.0f, 0.0f, 0.0f);
+
+	//set rotation of TilePrefab
+	float rotationModifier = 0;
+
+	//start with location of currentTile, rotate based on which side choosen
+	switch (rotationToSpawn)
+	{ //0 and 2 are opposites, 1 and 3 are opposites
+	case 0: //default?
+		rotationModifier = 0;
+		break;
+	case 3: //270 degrees
+		rotationModifier = 90;
+		SpawnRot = FRotator(0.0f, 90.0f, 0.0f);
+		break;
+	case 2: //180
+		rotationModifier = 180;
+		SpawnRot = FRotator(0.0f, 180.0f, 0.0f);
+		break;
+	case 1: //90
+		rotationModifier = 270;
+		SpawnRot = FRotator(0.0f, 270.0f, 0.0f);
+		break;
+
+	default:
+		UE_LOG(LogTemp, Error, TEXT("Improper direction placement %d"), rotationToSpawn);
+		rotationModifier = 0;
+		break;
+	}
+
+	ASTileVariantEnviornment* EndRoomVariant = GetWorld()->SpawnActor<ASTileVariantEnviornment>(ChoosenEndRoomVariant, TileManagerRef->EndTile->GetActorLocation(), TileManagerRef->EndTile->GetActorRotation(), SpawnParams);
+
+	EndRoomVariant->SetActorRotation(SpawnRot);
+	FString VariantTileName = "VariantTileMap_" + FString::FromInt(TileManagerRef->EndTile->XIndex) + "_" + FString::FromInt(TileManagerRef->EndTile->ZIndex);
+	EndRoomVariant->SetActorLabel(VariantTileName);
+#if WITH_EDITOR
+	EndRoomVariant->SetFolderPath(TileManagerRef->VariantTileMapSubFolderName);
+	DrawDebugSphere(GetWorld(), EndRoomVariant->GetActorLocation(), 225.0f, 20, FColor::Orange, false, 100);
+
+#endif
+	//if not boss fight add objective spawned with tile to objective list
+
+
 }
 
 /// <summary>

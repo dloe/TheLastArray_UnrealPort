@@ -241,6 +241,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Walls")
 	ASTileWall* RightWall;
 
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Walls")
+	int bossRoomRotationDirection = -1;
 	
 	UFUNCTION(BlueprintCallable, Category = "Tile Components - Doors")
 	void ActivateDoorToPath();
