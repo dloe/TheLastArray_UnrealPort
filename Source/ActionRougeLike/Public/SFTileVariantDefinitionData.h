@@ -242,6 +242,9 @@ class ACTIONROUGELIKE_API USFTileVariantDefinitionData : public UDataAsset
 	UPROPERTY(EditAnywhere)
 	int minorMax;
 
+	UPROPERTY(EditAnywhere)
+	bool IsSingleVariant;
+
 	//offset transforms, original (unrotated)
 	UPROPERTY(EditAnywhere)
 	TArray<FIntPoint> Offsets; // = {

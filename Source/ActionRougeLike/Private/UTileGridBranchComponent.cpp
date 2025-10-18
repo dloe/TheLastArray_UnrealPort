@@ -49,16 +49,20 @@ void UTileGridBranchComponent::GameMapAdditionalSetup()
 	}
 	else {
 		if (TileManagerRef->DebugPrints)
-			UE_LOG(LogTemp, Log, TEXT("=================== Finished Spawn Room - Variant setup =============================="));
+			UE_LOG(LogTemp, Log, TEXT("=================== Finished Spawn Room - Adding Variant setup =============================="));
 	}
 
 	GridScanForCustomTileSizedVariants();
 
+	if (TileManagerRef->DebugPrints)
+		UE_LOG(LogTemp, Log, TEXT("=================== Finished Variant setup - Setup EndRoom/BossRoom =============================="));
+
+	SpawnEndRoom();
 
 
 	if (TileManagerRef->DoorsActive) {
 		if (TileManagerRef->DebugPrints)
-			UE_LOG(LogTemp, Log, TEXT("=================== Finished Variant setup - Final door sletup =============================="));
+			UE_LOG(LogTemp, Log, TEXT("=================== Finished EndRoom/BossRoom - Final door sletup =============================="));
 
 		FinalDoorSetupDoors();
 	}
@@ -272,10 +276,10 @@ void UTileGridBranchComponent::GridScanForCustomTileSizedVariants()
 
 			//each variant type has a max we can place as well
 			int LocalVariantTotalAmount;
-			if(currentVariant->Size.X == 1 && currentVariant->Size.Y == 1)	{
+			if(currentVariant->IsSingleVariant)	{
 				LocalVariantTotalAmount = 40;//single tiles fill out everything else on map
 				//save this variant to be used later
-				SingleVariantData = currentVariant;
+				//SingleVariantData = currentVariant;
 				}
 			else {
 				LocalVariantTotalAmount = TileManagerRef->GameStream.RandRange(currentVariant->minorMin, currentVariant->minorMax);
@@ -489,9 +493,7 @@ bool UTileGridBranchComponent::PlugTile(FVariantOffsetTransforms_Rotates transfo
 	//for each in offset in array
 
 	//as we check through each one, build an array that we can send back if it can be inserted
-
 	UE_LOG(LogTemp, Log, TEXT("Rotation: %d"), transformRotated.TransformDirection);
-	
 	
 	for (FIntPoint GivenOffset : transformRotated.Transforms_flavor) //each index of variant paths is passed in via transformRotated, and then each of those indexs has the transform flavors array to index through
 	{
@@ -506,7 +508,6 @@ bool UTileGridBranchComponent::PlugTile(FVariantOffsetTransforms_Rotates transfo
 		}
 
 		//for each current offset flavor (aka a rotated og offset mapping)
-			//offset cords
 		FIntPoint OffsetCheck = GridCordToCheck + GivenOffset;
 		//UE_LOG(LogTemp, Log, TEXT("GridCordToCheck: %d.%d - offset to apply: %d.%d - Therefore Checking tile: %d,%d"), GridCordToCheck.X, GridCordToCheck.Y, GivenOffset.X, GivenOffset.Y, OffsetCheck.X, OffsetCheck.Y);
 
@@ -576,7 +577,6 @@ void UTileGridBranchComponent::AddDoorsAndWalls(ASTile* CurrentTile, TArray<ASTi
 			continue;
 		}
 
-
 		if (tile1ToCompare.X == tile2ToCompare.X)
 		{
 			//if x axis the same, and y axis is one less, then tile1ToCompare's right neighbor aka tile2toCompares's left neighbor
@@ -626,6 +626,8 @@ void UTileGridBranchComponent::AddDoorsAndWalls(ASTile* CurrentTile, TArray<ASTi
 /// </summary>
 void UTileGridBranchComponent::CreateSecretRoom()
 {
+	USFTileVariantDefinitionData* singleVariantData = TileManagerRef->SingleVariantData;
+
 	TArray<ASTile*> outskirtsCheck;
 	for (int tileCount = 0; tileCount < TileManagerRef->AllActiveTiles.Num(); tileCount++)
 	{
@@ -828,20 +830,18 @@ void UTileGridBranchComponent::CreateSecretRoom()
 	//ACTIVATE WALLS
 	TileManagerRef->SecretRoom->ActivateWalls(TileManagerRef->ChoosenWallAsset, TileManagerRef->WallsSubFolderName, TileManagerRef->AllSpawnedWalls);
 
-	
 	//populate secret room contents
 	FActorSpawnParameters SpawnParamsPrefab;
 	SpawnParamsPrefab.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
 	TSubclassOf<ASTileVariantEnviornment> ChoosenSecretRoomVariant;
 	//TODO: This secret room environment data needs to be updated for the secret room variants
-	int variantIndex = TileManagerRef->GameStream.RandRange(0, SingleVariantData->TileVariantEnviornments.Num() - 1);
-	ChoosenSecretRoomVariant = SingleVariantData->TileVariantEnviornments[variantIndex];
+	int variantIndex = TileManagerRef->GameStream.RandRange(0, singleVariantData->TileVariantEnviornments.Num() - 1);
+	ChoosenSecretRoomVariant = singleVariantData->TileVariantEnviornments[variantIndex];
 
 	//rotation is dependent on prev tile
 	//FVector SpawnPosPrefab;
 	FRotator SpawnRotPrefab = FRotator(0.0f, 0.0f, 0.0f);
-
 
 	float rotationModifier;
 	//set rotation of spawned TilePrefab contents
@@ -873,12 +873,11 @@ void UTileGridBranchComponent::CreateSecretRoom()
 	ASTileVariantEnviornment* SecretRoomVariant = GetWorld()->SpawnActor<ASTileVariantEnviornment>(ChoosenSecretRoomVariant, TileManagerRef->SecretRoom->GetActorLocation(), TileManagerRef->SecretRoom->GetActorRotation(), SpawnParamsPrefab);
 
 	SecretRoomVariant->SetActorRotation(SpawnRotPrefab);
-	FString VariantTileName = "VariantTileMap_" + FString::FromInt(TileManagerRef->SecretRoom->XIndex) + "_" + FString::FromInt(TileManagerRef->SecretRoom->ZIndex);
+	FString VariantTileName = "Secret_VariantTileMap_" + FString::FromInt(TileManagerRef->SecretRoom->XIndex) + "_" + FString::FromInt(TileManagerRef->SecretRoom->ZIndex);
 	SecretRoomVariant->SetActorLabel(VariantTileName);
 #if WITH_EDITOR
 	SecretRoomVariant->SetFolderPath(TileManagerRef->VariantTileMapSubFolderName);
 	DrawDebugSphere(GetWorld(), SecretRoomVariant->GetActorLocation(), 225.0f, 20, FColor::Orange, false, 100);
-
 #endif
 
 }
@@ -890,6 +889,7 @@ void UTileGridBranchComponent::CreateSecretRoom()
 /// </summary>
 void UTileGridBranchComponent::SpawnEndRoom()
 {
+	USFTileVariantDefinitionData* singleVariantData = TileManagerRef->SingleVariantData;
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
@@ -898,8 +898,8 @@ void UTileGridBranchComponent::SpawnEndRoom()
 	if (true) //if not boss fight
 	{
 		//normal 1x1 variant
-		int variantIndex = TileManagerRef->GameStream.RandRange(0, SingleVariantData->TileVariantEnviornments.Num() - 1);
-		ChoosenEndRoomVariant = SingleVariantData->TileVariantEnviornments[variantIndex];
+		int variantIndex = TileManagerRef->GameStream.RandRange(0, singleVariantData->TileVariantEnviornments.Num() - 1);
+		ChoosenEndRoomVariant = singleVariantData->TileVariantEnviornments[variantIndex];
 	}
 	else {
 		rotationToSpawn = TileManagerRef->EndTile->bossRoomRotationDirection;
@@ -938,7 +938,7 @@ void UTileGridBranchComponent::SpawnEndRoom()
 	ASTileVariantEnviornment* EndRoomVariant = GetWorld()->SpawnActor<ASTileVariantEnviornment>(ChoosenEndRoomVariant, TileManagerRef->EndTile->GetActorLocation(), TileManagerRef->EndTile->GetActorRotation(), SpawnParams);
 
 	EndRoomVariant->SetActorRotation(SpawnRot);
-	FString VariantTileName = "VariantTileMap_" + FString::FromInt(TileManagerRef->EndTile->XIndex) + "_" + FString::FromInt(TileManagerRef->EndTile->ZIndex);
+	FString VariantTileName = "EndRoom_VariantTileMap_" + FString::FromInt(TileManagerRef->EndTile->XIndex) + "_" + FString::FromInt(TileManagerRef->EndTile->ZIndex);
 	EndRoomVariant->SetActorLabel(VariantTileName);
 #if WITH_EDITOR
 	EndRoomVariant->SetFolderPath(TileManagerRef->VariantTileMapSubFolderName);
@@ -946,7 +946,6 @@ void UTileGridBranchComponent::SpawnEndRoom()
 
 #endif
 	//if not boss fight add objective spawned with tile to objective list
-
 
 }
 

@@ -41,6 +41,8 @@ public:
 	UFUNCTION(Category = "Door Setup")
 	void SetupDoor(ASTile* tile, ETileSide SideToSpawnDoor, FString NameOfTileToConnect, ASTileDoor* door);
 
+	
+
 protected:
 
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
@@ -91,8 +93,7 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	ASTile* choosen;
 
-	UPROPERTY(EditAnywhere, Category = "Tile Generation")
-	USFTileVariantDefinitionData* SingleVariantData;
+	
 
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
 	void CheckBranchTile(ASTile* TileToAdd, TArray<ASTile*>& CurrentPath, int Length, int prevDirection);

@@ -30,9 +30,8 @@ ASTileManager::ASTileManager()
 	LevelAssetSetupComponent = CreateDefaultSubobject<ULevelAssetSetupComponent>(TEXT("LevelAssetSetupComponent"));
 	LevelAssetSetupComponent->TileManagerRef = this;
 
+	//TODO: dont think i need this? will use if i end up finding a better way than bp
 	//TileVariantComponent = CreateDefaultSubobject<UTileVariantComponent>(TEXT("TileVariantComponent"));
-	
-
 }
 
 
@@ -89,27 +88,12 @@ void ASTileManager::BeginPlay()
 
 }
 
+/// <summary>
+/// For now not in use since don't need to load variants from local level, this will be used when we get there
+/// 
+/// </summary>
 void ASTileManager::SetVariables()
 {
-//tile variants priorities are hardcoded
-	/*TileVariants = {
-		FTileVariantDefinition(ETileSizeVariant::ET1x1, FIntPoint(1,1), 1, ),
-		FTileVariantDefinition(ETileSizeVariant::ET2x1, FIntPoint(2,1), 4),
-		FTileVariantDefinition(ETileSizeVariant::ET2x2, FIntPoint(2,2), 5),
-		FTileVariantDefinition(ETileSizeVariant::ET3x1, FIntPoint(3,1), 5),
-		FTileVariantDefinition(ETileSizeVariant::ET3x2, FIntPoint(3,2), 7),
-		FTileVariantDefinition(ETileSizeVariant::ET4x2, FIntPoint(4,2), 8),
-		FTileVariantDefinition(ETileSizeVariant::ET4x3, FIntPoint(4,3), 8),
-		FTileVariantDefinition(ETileSizeVariant::ET4x4, FIntPoint(4,4), 8)
-	};*/
-
-	//shorthand sort (based on priority
-	/*TileVariants.Sort([](const FTileVariantDefinition& A, const FTileVariantDefinition& B)
-		{
-			return A.Priority < B.Priority;
-		}
-	);*/
-
 
 	//TileVariantTiers = TileVariantComponent->TileVariantTiersLocal;
 
@@ -184,33 +168,11 @@ void ASTileManager::Create2DTileArray()
 			Col->TileColumn.Add(T);
 			LinkTile(T, *Col);
 			T->ShadeNull();
-
-			////if top row or bottom row add walls
-			//if (ZIndex == 0) //nothing to left so add wall
-			//{
-
-			//}
-			//else if (ZIndex == LevelHeight - 1)
-			//{
-			//	//nothing to right so add wall
-			//}
-			//else if (XIndex == 0)
-			//{
-			//	//nothing below so add wall
-			//}
-			//else if (XIndex == LevelWidth - 1)
-			//{
-			//	//nothing above so add wall
-			//}
-
 		}
 
 		Grid2DArray.Add(Col);
 	}
 	totalGridTilesAvailable = (LevelHeight * LevelWidth) * gridDensity;
-
-	//add walls to perimeter
-
 
 	if (DebugPrints)
 		UE_LOG(LogTemp, Log, TEXT("=================== 2D array CREATED! =============================="));
@@ -411,7 +373,6 @@ void ASTileManager::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& CurrentPath)
 	}
 	else {
 		//now that we know theres valid neighbors and none of them are the boss room, lets check our neighbors
-
 		//UE_LOG(LogTemp, Log, TEXT("Path Checking: %d,%d"), CurrentTile->XIndex, CurrentTile->ZIndex);
 		//direction
 		TArray <int> DirectionsToCheck = { 1, 2, 3, 4 };
@@ -521,7 +482,6 @@ void ASTileManager::CheckBranchTile(ASTile* TileToAdd, TArray<ASTile*>& CurrentP
 			Length = 0;
 
 			//TODO: Should there be a possibility of this end of branch connecting else where? or should it be purely linear?
-
 			ConnectDoorBranch(TileToAdd, prevDirection);
 
 			return;  //exit branch

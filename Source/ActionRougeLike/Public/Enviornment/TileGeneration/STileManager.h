@@ -242,6 +242,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Tile Variants")
 	UTileVariantComponent* TileVariantComponent;
 
+	UPROPERTY(EditAnywhere, Category = "Tile Generation")
+	USFTileVariantDefinitionData* SingleVariantData;
+
 #pragma endregion
 
 	
@@ -291,6 +294,8 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	FTransform doorTransform;
+
+	
 
 	UFUNCTION()
 	void OnTilePathGeneration();

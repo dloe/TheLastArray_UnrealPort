@@ -6,9 +6,7 @@
 
 USFTileVariantDefinitionData::USFTileVariantDefinitionData()
 {
-	
 	minorMax = 1;
-	//SetVariantPaths();
 }
 
 /// <summary>
@@ -26,12 +24,10 @@ USFTileVariantDefinitionData::USFTileVariantDefinitionData()
 TArray<FIntPoint> USFTileVariantDefinitionData::RotateOffsets(TArray<FIntPoint> OriginalOffsets, int RotationStepsClockwise)
 {
 	TArray<FIntPoint> Rotated;
-
 	//for each transform
 	for (FIntPoint& LocalOffet : OriginalOffsets)
 	{
 		FIntPoint Transformed;
-
 		switch (RotationStepsClockwise)
 		{
 			case 0:
@@ -80,7 +76,6 @@ TArray<FIntPointPair> USFTileVariantDefinitionData::RotateConnectedSides(TArray<
 	for (FIntPointPair& LocalOffet : OriginalOffsets)
 	{
 		FIntPointPair Transformed;
-
 		 //test it rotates both okayFIntPoint StartCord 
 		FIntPoint StartCord;
 		FIntPoint EndCord;
@@ -112,9 +107,7 @@ TArray<FIntPointPair> USFTileVariantDefinitionData::RotateConnectedSides(TArray<
 				UE_LOG(LogTemp, Error, TEXT("oppsie"));
 				break;
 		}
-
 		Transformed = FIntPointPair(StartCord, EndCord); //TODO: incorporate FIntPointPair with this algorithm
-
 		Rotated.Add(Transformed);
 	}
 	return Rotated;
@@ -125,7 +118,6 @@ void USFTileVariantDefinitionData::SetVariantPaths()
 {
 	if(VariantPaths.IsEmpty()) {
 		//UE_LOG(LogTemp, Error, TEXT("Array isn't empty? why this run more than once on this guy?"));
-		
 		VariantPaths.Add(FVariantOffsetTransforms_Rotates(Offsets, 0)); //offsets is empty at constructors
 
 		if (Variant != ETileSizeVariant::ET1x1) {

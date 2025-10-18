@@ -74,9 +74,9 @@ public:
 
 	//what our index is on the array
 	UPROPERTY(EditAnywhere, Category = "Tile Stats")
-	int32 XIndex;
+	int32 XIndex = -1;
 	UPROPERTY(EditAnywhere, Category = "Tile Stats")
-	int32 ZIndex;
+	int32 ZIndex = -1;
 
 	// Contains a reference to the present used for overall Tile layout
 	UPROPERTY(EditAnywhere, Category = "Tile Stats")
