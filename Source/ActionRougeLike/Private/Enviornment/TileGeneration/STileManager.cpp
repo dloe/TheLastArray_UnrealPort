@@ -687,10 +687,6 @@ void ASTileManager::MakeAvailableTiles()
 	}
 }
 
-
-
-
-
 /// <summary>
 /// Knuth shuffle algorithm
 /// 

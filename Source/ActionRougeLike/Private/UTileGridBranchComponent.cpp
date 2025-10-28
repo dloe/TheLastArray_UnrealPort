@@ -295,16 +295,21 @@ void UTileGridBranchComponent::GridScanForCustomTileSizedVariants()
 
 			//scan in random order
 			//for each randomly choosen candidate (a tile on the grid): 
-			for (int tileCount = 0; (tileCount < ActiveUnusedTiles.Num() && VariantsPlaced < VariantTierTotalAmountToPlace && localVariantsPlaced < LocalVariantTotalAmount); tileCount++)
+			//int arrayCount = ActiveUnusedTiles.Num();
+			//TODO: when we place a variant, all connecting tiles should be removed (ActiveUnusedTiles?). When there are no longer any tiles to place (single or any), this can exit
+			for (int tileCount = 0; (tileCount < ActiveUnusedTiles.Num() && VariantsPlaced < VariantTierTotalAmountToPlace && localVariantsPlaced < LocalVariantTotalAmount); )
 			{
 				ASTile* currentTile = ActiveUnusedTiles[tileCount]; //should we remove this tile from the active unused tiles when we place?
 				//candidates analysis, pass in current variant, etc
 				if (VariantCandidateAnalysis(currentTile, currentVariant))
 				{
 					localVariantsPlaced++;
-					LocalVariantTotalAmount++;
+					//LocalVariantTotalAmount++; //code smells
 					VariantsPlaced++;
-					ActiveUnusedTiles.RemoveAt(tileCount);
+					ActiveUnusedTiles.RemoveAt(tileCount); //TODO: this code smells
+				}
+				else {
+					tileCount++;
 				}
 			}
 		}
