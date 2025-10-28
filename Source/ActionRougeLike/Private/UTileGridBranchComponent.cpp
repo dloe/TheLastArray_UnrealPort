@@ -742,7 +742,7 @@ void UTileGridBranchComponent::CreateSecretRoom()
 		TileManagerRef->SecretRoom->DownNeighbor = selected.tile;
 		selected.tile->UpDoor = TileManagerRef->SecretRoom->DownDoor;
 		selected.tile->UpNeighbor = TileManagerRef->SecretRoom;
-		TileManagerRef->SecretRoom->DownDoor->DoorsConnector = TileManagerRef->SecretRoom->SpawnDoorConnector(ETileSide::ETile_Down, TileManagerRef->ChoosenDoorwayAsset, TileManagerRef->DoorSubFolderName, TileManagerRef->AllSpawnedWalls);
+		TileManagerRef->SecretRoom->DownDoor->DoorsConnector = TileManagerRef->SecretRoom->SpawnDoorConnector(ETileSide::ETile_Down, TileManagerRef->ChoosenDoorwayAsset, TileManagerRef->WallsSubFolderName, TileManagerRef->AllSpawnedWalls);
 		selectedRotation = 0; //no rotation
 		break;
 	case 2:
@@ -766,7 +766,7 @@ void UTileGridBranchComponent::CreateSecretRoom()
 		TileManagerRef->SecretRoom->UpNeighbor = selected.tile;
 		selected.tile->DownDoor = TileManagerRef->SecretRoom->UpDoor;
 		selected.tile->DownNeighbor = TileManagerRef->SecretRoom;
-		TileManagerRef->SecretRoom->UpDoor->DoorsConnector = TileManagerRef->SecretRoom->SpawnDoorConnector(ETileSide::ETile_Up, TileManagerRef->ChoosenDoorwayAsset, TileManagerRef->DoorSubFolderName, TileManagerRef->AllSpawnedWalls);
+		TileManagerRef->SecretRoom->UpDoor->DoorsConnector = TileManagerRef->SecretRoom->SpawnDoorConnector(ETileSide::ETile_Up, TileManagerRef->ChoosenDoorwayAsset, TileManagerRef->WallsSubFolderName, TileManagerRef->AllSpawnedWalls);
 		selectedRotation = 2; //180
 		break;
 	case 3:
@@ -781,7 +781,7 @@ void UTileGridBranchComponent::CreateSecretRoom()
 			TileManagerRef->SecretRoom = GetWorld()->SpawnActor<ASTile>(TileManagerRef->TileBase, SpawnPos, SpawnRot, SpawnParams);
 			SpawnDoor(TileManagerRef->SecretRoom, ETileSide::ETile_Right, "SecretRoom");
 		}
-		else if (selected.tile->LeftNeighbor->TileStatus == ETileStatus::ETile_NULLROOM) { //confirmed this works now get other wey of working
+		else if (selected.tile->LeftNeighbor->TileStatus == ETileStatus::ETile_NULLROOM) { //confirmed this works now get other way of working
 			//rotate tile? may need tile to be setup for easier testing of rotation
 			TileManagerRef->SecretRoom = selected.tile->LeftNeighbor;
 			SetupDoor(TileManagerRef->SecretRoom, ETileSide::ETile_Right, "SecretRoom", selected.tile->LeftDoor);
@@ -790,7 +790,7 @@ void UTileGridBranchComponent::CreateSecretRoom()
 		TileManagerRef->SecretRoom->RightNeighbor = selected.tile;
 		selected.tile->LeftDoor = TileManagerRef->SecretRoom->RightDoor;
 		selected.tile->LeftNeighbor = TileManagerRef->SecretRoom;
-		TileManagerRef->SecretRoom->RightDoor->DoorsConnector = TileManagerRef->SecretRoom->SpawnDoorConnector(ETileSide::ETile_Right, TileManagerRef->ChoosenDoorwayAsset, TileManagerRef->DoorSubFolderName, TileManagerRef->AllSpawnedWalls);
+		TileManagerRef->SecretRoom->RightDoor->DoorsConnector = TileManagerRef->SecretRoom->SpawnDoorConnector(ETileSide::ETile_Right, TileManagerRef->ChoosenDoorwayAsset, TileManagerRef->WallsSubFolderName, TileManagerRef->AllSpawnedWalls);
 		selectedRotation = 3; //270
 		break;
 	case 4:
@@ -814,7 +814,7 @@ void UTileGridBranchComponent::CreateSecretRoom()
 		TileManagerRef->SecretRoom->LeftNeighbor = selected.tile;
 		selected.tile->RightDoor = TileManagerRef->SecretRoom->LeftDoor;
 		selected.tile->RightNeighbor = TileManagerRef->SecretRoom;
-		TileManagerRef->SecretRoom->LeftDoor->DoorsConnector = TileManagerRef->SecretRoom->SpawnDoorConnector(ETileSide::ETile_Left, TileManagerRef->ChoosenDoorwayAsset, TileManagerRef->DoorSubFolderName, TileManagerRef->AllSpawnedWalls);
+		TileManagerRef->SecretRoom->LeftDoor->DoorsConnector = TileManagerRef->SecretRoom->SpawnDoorConnector(ETileSide::ETile_Left, TileManagerRef->ChoosenDoorwayAsset, TileManagerRef->WallsSubFolderName, TileManagerRef->AllSpawnedWalls);
 		selectedRotation = 1; //90
 		break;
 	}

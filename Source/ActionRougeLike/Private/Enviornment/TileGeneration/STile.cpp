@@ -139,7 +139,6 @@ bool ASTile::IsNotSpecialTile()
 {
 	if (TileStatus != ETileStatus::ETile_BOSSROOM && TileStatus != ETileStatus::ETile_SECRETROOM && TileStatus != ETileStatus::ETile_STARTINGROOM)
 	{
-		//UE_LOG(LogTemp, Log, TEXT("Check12"));
 		return true;
 	}
 	else
@@ -291,11 +290,8 @@ bool ASTile::HasConnectedLeftNeighbor()
 
 bool ASTile::HasConnectedUpNeighbor()
 {
-	//bool result = false;
-
 	if (UpNeighbor != NULL && (UpNeighbor->TileStatus == ETileStatus::ETile_PATH || UpNeighbor->TileStatus == ETileStatus::ETile_ROOM))
 	{
-		//UE_LOG(LogTemp, Log, TEXT("Check4"));
 		return true;
 	}
 
@@ -450,7 +446,7 @@ ASTileWall* ASTile::SpawnDoorConnector(ETileSide side, TSubclassOf<ASTileDoorWal
 	ASTileWall* SpawnedDoorWallConnector;
 
 	FString ConnectorName = "TileConnector_";
-
+	
 	switch (side)
 	{
 	case ETileSide::ETile_Up:
@@ -461,7 +457,7 @@ ASTileWall* ASTile::SpawnDoorConnector(ETileSide side, TSubclassOf<ASTileDoorWal
 		UpWall->OuterTile = UpNeighbor;
 		ConnectorName += FString::FromInt(this->XIndex) + "_" + FString::FromInt(this->ZIndex) + "-" + FString::FromInt(UpNeighbor->XIndex) + "_" + FString::FromInt(UpNeighbor->ZIndex);
 		AllSpawnedWalls.Add(UpWall);
-
+		UpNeighbor->RemoveCurrentWall(ETileSide::ETile_Down);
 		UpWall->SetOwner(this);
 #if WITH_EDITOR
 		UpWall->SetFolderPath(WallsSubFolderName);
@@ -476,7 +472,7 @@ ASTileWall* ASTile::SpawnDoorConnector(ETileSide side, TSubclassOf<ASTileDoorWal
 		DownWall->OuterTile = DownNeighbor;
 		ConnectorName += FString::FromInt(this->XIndex) + "_" + FString::FromInt(this->ZIndex) + "-" + FString::FromInt(DownNeighbor->XIndex) + "_" + FString::FromInt(DownNeighbor->ZIndex);
 		AllSpawnedWalls.Add(DownWall);
-
+		DownNeighbor->RemoveCurrentWall(ETileSide::ETile_Up);
 		DownWall->SetOwner(this);
 #if WITH_EDITOR
 		DownWall->SetFolderPath(WallsSubFolderName);
@@ -491,7 +487,7 @@ ASTileWall* ASTile::SpawnDoorConnector(ETileSide side, TSubclassOf<ASTileDoorWal
 		LeftWall->OuterTile = LeftNeighbor;
 		ConnectorName += FString::FromInt(this->XIndex) + "_" + FString::FromInt(this->ZIndex) + "-" + FString::FromInt(LeftNeighbor->XIndex) + "_" + FString::FromInt(LeftNeighbor->ZIndex);
 		AllSpawnedWalls.Add(LeftWall);
-
+		LeftNeighbor->RemoveCurrentWall(ETileSide::ETile_Right);
 		LeftWall->SetOwner(this);
 #if WITH_EDITOR
 		LeftWall->SetFolderPath(WallsSubFolderName);
@@ -506,7 +502,7 @@ ASTileWall* ASTile::SpawnDoorConnector(ETileSide side, TSubclassOf<ASTileDoorWal
 		RightWall->OuterTile = RightNeighbor;
 		ConnectorName += FString::FromInt(this->XIndex) + "_" + FString::FromInt(this->ZIndex) + "-" + FString::FromInt(RightNeighbor->XIndex) + "_" + FString::FromInt(RightNeighbor->ZIndex);
 		AllSpawnedWalls.Add(RightWall);
-
+		RightNeighbor->RemoveCurrentWall(ETileSide::ETile_Left);
 		RightWall->SetOwner(this);
 #if WITH_EDITOR
 		RightWall->SetFolderPath(WallsSubFolderName);
@@ -521,7 +517,7 @@ ASTileWall* ASTile::SpawnDoorConnector(ETileSide side, TSubclassOf<ASTileDoorWal
 		UpWall->OuterTile = UpNeighbor;
 		ConnectorName += FString::FromInt(this->XIndex) + "_" + FString::FromInt(this->ZIndex) + "-" + FString::FromInt(UpNeighbor->XIndex) + "_" + FString::FromInt(UpNeighbor->ZIndex);
 		AllSpawnedWalls.Add(UpWall);
-
+		UpNeighbor->RemoveCurrentWall(ETileSide::ETile_Down);
 		UpWall->SetOwner(this);
 #if WITH_EDITOR
 		UpWall->SetFolderPath(WallsSubFolderName);

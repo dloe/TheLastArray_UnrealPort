@@ -286,16 +286,11 @@ protected:
 	UPROPERTY()
 	ULevelAssetSetupComponent* LevelAssetSetupComponent;
 
-	
-	
-
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	int FailsafeCount = 0;
 
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	FTransform doorTransform;
-
-	
 
 	UFUNCTION()
 	void OnTilePathGeneration();
@@ -311,9 +306,6 @@ protected:
 
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
 	void AddWallToPerimeter(ETileSide side, ASTile* ThisTile);
-
-	//UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
-	//void SpawnDoorConnector(ETileSide side, ASTile* ThisTile);
 
 	UFUNCTION(Category = "ArrayCreation")
 	void LinkTile(ASTile* ThisTile, FMultiTileStruct Col);
