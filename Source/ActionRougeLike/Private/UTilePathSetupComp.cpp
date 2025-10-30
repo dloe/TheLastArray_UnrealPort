@@ -380,7 +380,7 @@ void UTilePathSetupComp::CreateSpawnRoom()
 	switch (StartRoomSide)
 	{
 	case 0:
-		//RIGHT
+		//left
 		SpawnPos = FVector(StartingGridTileRef->GetActorLocation().X - (StartingGridTileRef->TileLength + DoorwayAdjustment), StartingGridTileRef->GetActorLocation().Y, StartingGridTileRef->GetActorLocation().Z);
 		TileManagerRef->PlayerStartingTile_SpawnTile = GetWorld()->SpawnActor<ASTile>(TileManagerRef->TileBase, SpawnPos, StartingGridTileRef->GetActorRotation(), SpawnParams);
 		TileManagerRef->PlayerSpawnPresentTile = GetWorld()->SpawnActor<ASTile>(MyLocalLevelRef->PresetStartingTile, SpawnPos, StartingGridTileRef->GetActorRotation(), SpawnParams); //rotate -90
@@ -388,6 +388,27 @@ void UTilePathSetupComp::CreateSpawnRoom()
 		TileManagerRef->PlayerStartingTile_SpawnTile->RightNeighbor = StartingGridTileRef;
 		TileManagerRef->PlayerSpawnPresentTile->SetActorRotation(FRotator(TileManagerRef->PlayerSpawnPresentTile->GetActorRotation().Euler().X, -90.0f, TileManagerRef->PlayerSpawnPresentTile->GetActorRotation().Euler().Z));
 		//TileManagerRef->PlayerStartingTile_SpawnTile->ConnectRightDoor(TileManagerRef->ChoosenDoorwayAsset, TileManagerRef->WallsSubFolderName, TileManagerRef->AllSpawnedWalls);
+		
+		if (TileManagerRef->DoorToStartRoom)
+		{
+			//Set up door - rn defaulted to 3 TODO: do i really need to even choose other sides to start on? is the player even gunna notice? perspective of player always starts the same
+			//should always be having the same rotation right? therefore the door should always be up while everyone else's has different orientations
+			const FString TileLeftDoorName = "TileDoorConnecting_StartingRoom_to_" + FString::FromInt(TileManagerRef->PlayerStartingTile_SpawnTile->RightNeighbor->XIndex) + "_" + FString::FromInt(TileManagerRef->PlayerStartingTile_SpawnTile->RightNeighbor->ZIndex);
+			const FVector LeftDoorSpawnLocation = TileManagerRef->PlayerStartingTile_SpawnTile->RightDoorSpawnPoint.GetLocation() + TileManagerRef->PlayerStartingTile_SpawnTile->GetActorLocation();
+			const FTransform Spawm = FTransform(TileManagerRef->PlayerStartingTile_SpawnTile->RightDoorSpawnPoint.GetRotation(), LeftDoorSpawnLocation);
+			TileManagerRef->PlayerStartingTile_SpawnTile->RightDoor = GetWorld()->SpawnActor<ASTileDoor>(TileManagerRef->TileDoor, Spawm, SpawnParams);
+			TileManagerRef->DoorArray.Add(TileManagerRef->PlayerStartingTile_SpawnTile->RightDoor);
+			TileManagerRef->PlayerStartingTile_SpawnTile->RightDoor->SetActorLabel(TileLeftDoorName);
+			TileManagerRef->PlayerStartingTile_SpawnTile->RightDoor->SetOwner(StartingGridTileRef);
+
+#if WITH_EDITOR
+			TileManagerRef->PlayerStartingTile_SpawnTile->RightDoor->SetFolderPath(TileManagerRef->DoorSubFolderName);
+#endif
+			StartingGridTileRef->LeftDoor = TileManagerRef->PlayerStartingTile_SpawnTile->RightDoor;
+
+			StartingGridTileRef->ConnectLeftDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, TileManagerRef->AllSpawnedWalls);
+		}
+		
 		break;
 	case 1:
 		//UP
@@ -420,7 +441,7 @@ void UTilePathSetupComp::CreateSpawnRoom()
 
 		break;
 	case 2:
-		//LEFT
+		//Right
 		SpawnPos = FVector(StartingGridTileRef->GetActorLocation().X + (StartingGridTileRef->TileLength + DoorwayAdjustment), StartingGridTileRef->GetActorLocation().Y, StartingGridTileRef->GetActorLocation().Z);
 		TileManagerRef->PlayerStartingTile_SpawnTile = GetWorld()->SpawnActor<ASTile>(TileManagerRef->TileBase, SpawnPos, StartingGridTileRef->GetActorRotation(), SpawnParams);
 		TileManagerRef->PlayerSpawnPresentTile = GetWorld()->SpawnActor<ASTile>(MyLocalLevelRef->PresetStartingTile, SpawnPos, StartingGridTileRef->GetActorRotation(), SpawnParams); //rotate 90
@@ -428,6 +449,27 @@ void UTilePathSetupComp::CreateSpawnRoom()
 		TileManagerRef->PlayerStartingTile_SpawnTile->LeftNeighbor = StartingGridTileRef;
 		TileManagerRef->PlayerSpawnPresentTile->SetActorRotation(FRotator(TileManagerRef->PlayerSpawnPresentTile->GetActorRotation().Euler().X, 90, TileManagerRef->PlayerSpawnPresentTile->GetActorRotation().Euler().Z));
 		//TileManagerRef->PlayerStartingTile_SpawnTile->ConnectRightDoor(TileManagerRef->ChoosenDoorwayAsset, TileManagerRef->WallsSubFolderName, TileManagerRef->AllSpawnedWalls);
+		
+		if (TileManagerRef->DoorToStartRoom)
+		{
+			//Set up door - rn defaulted to 3 TODO: do i really need to even choose other sides to start on? is the player even gunna notice? perspective of player always starts the same
+			//should always be having the same rotation right? therefore the door should always be up while everyone else's has different orientations
+			const FString TileRightDoorName = "TileDoorConnecting_StartingRoom_to_" + FString::FromInt(TileManagerRef->PlayerStartingTile_SpawnTile->LeftNeighbor->XIndex) + "_" + FString::FromInt(TileManagerRef->PlayerStartingTile_SpawnTile->LeftNeighbor->ZIndex);
+			const FVector RightDoorSpawnLocation = TileManagerRef->PlayerStartingTile_SpawnTile->LeftDoorSpawnPoint.GetLocation() + TileManagerRef->PlayerStartingTile_SpawnTile->GetActorLocation();
+			const FTransform Spawm = FTransform(TileManagerRef->PlayerStartingTile_SpawnTile->LeftDoorSpawnPoint.GetRotation(), RightDoorSpawnLocation);
+			TileManagerRef->PlayerStartingTile_SpawnTile->LeftDoor = GetWorld()->SpawnActor<ASTileDoor>(TileManagerRef->TileDoor, Spawm, SpawnParams);
+			TileManagerRef->DoorArray.Add(TileManagerRef->PlayerStartingTile_SpawnTile->LeftDoor);
+			TileManagerRef->PlayerStartingTile_SpawnTile->LeftDoor->SetActorLabel(TileRightDoorName);
+			TileManagerRef->PlayerStartingTile_SpawnTile->LeftDoor->SetOwner(StartingGridTileRef);
+
+#if WITH_EDITOR
+			TileManagerRef->PlayerStartingTile_SpawnTile->LeftDoor->SetFolderPath(TileManagerRef->DoorSubFolderName);
+#endif
+			StartingGridTileRef->RightDoor = TileManagerRef->PlayerStartingTile_SpawnTile->LeftDoor;
+
+			StartingGridTileRef->ConnectRightDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, TileManagerRef->AllSpawnedWalls);
+		}
+		
 		break;
 	case 3:
 		//DOWN
