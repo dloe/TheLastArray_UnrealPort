@@ -35,6 +35,21 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile")
 	FTransform PresetThisSpawnPoint;
 
+	//Due to spacing of tiles and door wys and gaps between tiles, we need to account for walls
+	//side by side to not have any gaps. hence why we have these patches. Goal is to merge the static mesh of 
+	//these guys with the walls themselves to creaste one coherent wall for each tile side.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WallSetup")
+	TArray <UStaticMeshComponent*> LeftPatchArray;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WallSetup")
+	TArray <UStaticMeshComponent*> RightPatchArray;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WallSetup")
+	TArray <UStaticMeshComponent*> UpPatchArray;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WallSetup")
+	TArray <UStaticMeshComponent*> DownPatchArray;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
