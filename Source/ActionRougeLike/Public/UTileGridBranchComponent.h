@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "STileVariantEnviornment.h"
 #include "UTileGridBranchComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBranchFillGenerated);
@@ -79,6 +80,12 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "Door Setup")
 	void DeactiveInactiveRooms();
 
+	UFUNCTION(BlueprintCallable, Category = "Wall Setup")
+	void MergeWallsForVariantTiles();
+
+	UFUNCTION(BlueprintCallable, Category = "Wall Setup")
+	UStaticMeshComponent* MergeWall(TArray<UStaticMeshComponent*> StaticMeshArrayToMerge);
+
 	//needs reference to STileManager for accessing Grid and other properties
 	UPROPERTY(EditAnywhere)
 	ASTileManager* TileManagerRef;
@@ -93,6 +100,8 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	ASTile* choosen;
 
+	UPROPERTY(EditAnywhere, Category = "Tile Variants")
+	TArray <ASTileVariantEnviornment*> SpawnedVariants;
 	
 
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")

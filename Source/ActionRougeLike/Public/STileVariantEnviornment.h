@@ -7,6 +7,7 @@
 #include "STileVariantEnviornment.generated.h"
 
 class ASTile;
+class ASTileWall;
 class USFTileVariantDefinitionData;
 class ASTileDoor;
 
@@ -24,6 +25,28 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Tile")
 	TArray <ASTile*> VariantEncompassingTiles;
+
+	UPROPERTY(EditAnywhere, Category = "Tile")
+	TArray<ASTileWall*> UpWalls;
+	UPROPERTY(EditAnywhere, Category = "Tile")
+	TArray<ASTileWall*> DownWalls;
+	UPROPERTY(EditAnywhere, Category = "Tile")
+	TArray<ASTileWall*> LeftWalls;
+	UPROPERTY(EditAnywhere, Category = "Tile")
+	TArray<ASTileWall*> RightWalls;
+
+	UPROPERTY(EditAnywhere, Category = "Walls")
+	UStaticMeshComponent* UpWallWhole;
+
+	UPROPERTY(EditAnywhere, Category = "Walls")
+	UStaticMeshComponent* DownWallWhole;
+
+	UPROPERTY(EditAnywhere, Category = "Walls")
+	UStaticMeshComponent* LeftWallWhole;
+
+	UPROPERTY(EditAnywhere, Category = "Walls")
+	UStaticMeshComponent* RightWallWhole;
+
 
 	UPROPERTY(EditAnywhere, Category = "Tile")
 	TArray<ASTileDoor*> DoorsToRemove;

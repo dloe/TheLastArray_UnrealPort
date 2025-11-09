@@ -76,6 +76,8 @@ void UTileGridBranchComponent::GameMapAdditionalSetup()
 
 	DeactiveInactiveRooms();
 
+	MergeWallsForVariantTiles();
+
 
 	//notify next component to run
 	OnGridAdditionalSetupCompletedEvent.Broadcast();
@@ -469,8 +471,29 @@ bool UTileGridBranchComponent::VariantCandidateAnalysis(ASTile* CurrentTile, USF
 			}
 			else {
 				SpawnedVariant->VariantEncompassingTiles.Add(CurrentTile);
+
+				//organize and save out walls for later combination merge of static meshes
+				if (CurrentTile->UpWall != NULL)
+				{
+					SpawnedVariant->UpWalls.Add(CurrentTile->UpWall);
+				}
+				if (CurrentTile->DownWall != NULL)
+				{
+					SpawnedVariant->DownWalls.Add(CurrentTile->DownWall);
+				}
+				if (CurrentTile->LeftWall != NULL)
+				{
+					SpawnedVariant->LeftWalls.Add(CurrentTile->LeftWall);
+				}
+				if (CurrentTile->RightWall != NULL)
+				{
+					SpawnedVariant->RightWalls.Add(CurrentTile->RightWall);
+				}
+
 			}
 			
+			//add spawned variant to list of variants
+			SpawnedVariants.Add(SpawnedVariant);
 
 
 			//if we can, great!
@@ -1004,6 +1027,71 @@ void UTileGridBranchComponent::DeactiveInactiveRooms()
 		}
 
 	}
+}
+
+/// <summary>
+/// For all active variant tiles (not starting and end rooms), each side of walls should be merged for texture purposes
+/// </summary>
+void UTileGridBranchComponent::MergeWallsForVariantTiles()
+{
+	
+	for (ASTileVariantEnviornment* SpawnedVariant : SpawnedVariants)
+	{
+		
+		//UpWall
+		TArray <UStaticMeshComponent*> UpWallStaticMeshesArray;
+		//each side, go through walls and add them to array
+		for (ASTileWall* Wall : SpawnedVariant->UpWalls)
+		{
+			UpWallStaticMeshesArray.Append(Wall->WallComponentsInnerArray);
+		}
+
+		//merge all static meshes in array
+		//SpawnedVariant->UpWallWhole = MergeWall(UpWallStaticMeshesArray);
+
+		//DownWall
+		TArray <UStaticMeshComponent*> DownWallStaticMeshesArray;
+		//each side, go through walls and add them to array
+		for (ASTileWall* Wall : SpawnedVariant->DownWalls)
+		{
+			DownWallStaticMeshesArray.Append(Wall->WallComponentsInnerArray);
+		}
+
+		//merge all static meshes in array
+		//SpawnedVariant->DownWallWhole = MergeWall(DownWallStaticMeshesArray);
+
+		//LeftWall
+		TArray <UStaticMeshComponent*> LeftWallStaticMeshesArray;
+		//each side, go through walls and add them to array
+		for (ASTileWall* Wall : SpawnedVariant->LeftWalls)
+		{
+			LeftWallStaticMeshesArray.Append(Wall->WallComponentsInnerArray);
+		}
+
+		//merge all static meshes in array
+		//SpawnedVariant->LeftWallWhole = MergeWall(LeftWallStaticMeshesArray);
+
+		//RightWall
+		TArray <UStaticMeshComponent*> RightWallStaticMeshesArray;
+		//each side, go through walls and add them to array
+		for (ASTileWall* Wall : SpawnedVariant->RightWalls)
+		{
+			RightWallStaticMeshesArray.Append(Wall->WallComponentsInnerArray);
+		}
+
+		//merge all static meshes in array
+		//SpawnedVariant->RightWallWhole = MergeWall(RightWallStaticMeshesArray);
+
+	}
+
+}
+
+UStaticMeshComponent* UTileGridBranchComponent::MergeWall(TArray<UStaticMeshComponent*> StaticMeshArrayToMerge)
+{
+	return NULL;
+
+
+
 }
 
 /// <summary>
