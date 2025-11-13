@@ -73,6 +73,9 @@ protected:
 	void CheckTile(ASTile* TileToAdd, TArray<ASTile*>& CurrentPath);
 
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
+	void SetupMainPathConnectors();
+
+	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
 	bool AddTileToPath(ASTile* TileToAdd);
 
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")

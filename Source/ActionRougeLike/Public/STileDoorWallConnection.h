@@ -25,6 +25,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	ASTileDoor* DoorKey;
 
+	ASTileDoorWallConnection();
+
 	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Tile Generation")
 	//float DoorwayLengthAdjustment = 200;
 

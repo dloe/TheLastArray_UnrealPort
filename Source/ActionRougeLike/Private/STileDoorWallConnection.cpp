@@ -3,3 +3,7 @@
 
 #include "STileDoorWallConnection.h"
 
+ASTileDoorWallConnection::ASTileDoorWallConnection()
+{
+	isConnector = true;
+}

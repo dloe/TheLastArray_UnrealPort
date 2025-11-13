@@ -827,8 +827,7 @@ void UTileGridBranchComponent::CreateSecretRoom()
 		//TODO: may need to fix rotation? 
 		if (selected.tile->RightNeighbor == NULL)
 		{
-			SpawnPos = FVector(selected.tile->GetActorLocation().X + (selected.tile->TileLength), selected.tile->GetActorLocation().Y, selected.tile->GetActorLocation().Z + 240);
-			//UE_LOG(LogTemp, Log, TEXT("SpawnPas: %s"), *SpawnPos.ToString());
+			SpawnPos = FVector(selected.tile->GetActorLocation().X + (selected.tile->TileLength), selected.tile->GetActorLocation().Y, selected.tile->GetActorLocation().Z);
 			SpawnRot = FRotator(TileManagerRef->PlayerSpawnPresentTile->GetActorRotation().Euler().X, -90.0f, TileManagerRef->PlayerSpawnPresentTile->GetActorRotation().Euler().Z);
 			TileManagerRef->SecretRoom = GetWorld()->SpawnActor<ASTile>(TileManagerRef->TileBase, SpawnPos, SpawnRot, SpawnParams);
 			SpawnDoor(TileManagerRef->SecretRoom, ETileSide::ETile_Left, "SecretRoom");
@@ -849,7 +848,6 @@ void UTileGridBranchComponent::CreateSecretRoom()
 	// TO DO: this will need to be updated to a specific Secrete Room BP set in LocalLevel
 
 	TileManagerRef->SecretRoom->SetActorLabel("SecretRoom");
-	//SecretRoom->SetOwner(this);
 #if WITH_EDITOR
 	TileManagerRef->SecretRoom->SetFolderPath(TileManagerRef->TileSubFolderName);
 	TileManagerRef->SecretRoom->ShadeSecretRoom();
@@ -868,7 +866,6 @@ void UTileGridBranchComponent::CreateSecretRoom()
 	ChoosenSecretRoomVariant = singleVariantData->TileVariantEnviornments[variantIndex];
 
 	//rotation is dependent on prev tile
-	//FVector SpawnPosPrefab;
 	FRotator SpawnRotPrefab = FRotator(0.0f, 0.0f, 0.0f);
 
 	float rotationModifier;
@@ -991,8 +988,6 @@ void UTileGridBranchComponent::FinalDoorSetupDoors()
 
 		if (door->DestroyConnectorWalls && door->DoorsConnector != NULL)
 		{
-			//if (door->DoorsConnector->GetActorLabel() == "TileConnector_0_3-0_4")
-			//	UE_LOG(LogTemp, Log, TEXT("hi3"));
 			door->DoorsConnector->Destroy();
 		}
 
@@ -1020,7 +1015,6 @@ void UTileGridBranchComponent::DeactiveInactiveRooms()
 		{
 			if (tile->TileStatus == ETileStatus::ETile_NULLROOM)
 			{
-				//Destroy(tile);
 				tile->Destroy();
 			}
 			//TODO: turn on walls at borders of path handled in levelassetspawn

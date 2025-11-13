@@ -33,8 +33,6 @@ void UTilePathSetupComp::TilePathGeneration()
 
 	CreateSpawnRoom();
 
-	//GridScanForCustomTileSizedVariants();
-
 	//notify next component to run
 	OnPathGeneratedEvent.Broadcast();
 }
@@ -338,6 +336,13 @@ void UTilePathSetupComp::GeneratePath()
 	//TArray<ASTile*> LevelPathRef = TileManagerRef->LevelPath;
 
 	CheckTile(TileManagerRef->StartingGridTile, TileManagerRef->LevelPath);
+
+	if (TileManagerRef->DebugPrints)
+		UE_LOG(LogTemp, Log, TEXT("Path generated, connecting connectors"));
+
+	SetupMainPathConnectors();
+
+
 
 	if (TileManagerRef->DebugPrints) {
 		//draw lines through path
@@ -648,14 +653,15 @@ void UTilePathSetupComp::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& Current
 				//UP
 				if (CurrentTile->HasValidUpNeighbor() && !CurrentTile->UpNeighbor->CheckForPath && !CurrentTile->UpNeighbor->IsStartingTile())
 				{
-					//add this tile to path, go to up neighbor
-					CurrentTile->ActivateUpDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, TileManagerRef->AllSpawnedWalls);
+
+					//mark current tile that their up direction will have a door connector
+					//after we have the path built, we then go through the array of tiles and spawn each connector
+					CurrentTile->UpDoor->DoorActive = true;
 					CurrentTile->UpNeighbor->PreviousTile = CurrentTile;
 					AddTileToPath(CurrentTile);
 					//no need to keep going through other directions directions
 					DirectionCount = 5;
 					doorTransform = CurrentTile->UpDoor->GetTransform();
-
 					CheckTile(CurrentTile->UpNeighbor, CurrentPath);
 				}
 				break;
@@ -663,12 +669,11 @@ void UTilePathSetupComp::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& Current
 				//DOWN
 				if (CurrentTile->HasValidDownNeighbor() && !CurrentTile->DownNeighbor->CheckForPath && !CurrentTile->DownNeighbor->IsStartingTile())
 				{
-					CurrentTile->ActivateDownDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, TileManagerRef->AllSpawnedWalls);
+					CurrentTile->DownDoor->DoorActive = true;
 					CurrentTile->DownNeighbor->PreviousTile = CurrentTile;
 					AddTileToPath(CurrentTile);
 					DirectionCount = 5;
 					doorTransform = CurrentTile->DownDoor->GetTransform();
-
 					CheckTile(CurrentTile->DownNeighbor, CurrentPath);
 				}
 				break;
@@ -676,7 +681,7 @@ void UTilePathSetupComp::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& Current
 				//LEFT
 				if (CurrentTile->HasValidLeftNeighbor() && !CurrentTile->LeftNeighbor->CheckForPath && !CurrentTile->LeftNeighbor->IsStartingTile())
 				{
-					CurrentTile->ActivateLeftDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, TileManagerRef->AllSpawnedWalls);
+					CurrentTile->LeftDoor->DoorActive = true;
 					CurrentTile->LeftNeighbor->PreviousTile = CurrentTile;
 					AddTileToPath(CurrentTile);
 					DirectionCount = 5;
@@ -688,7 +693,7 @@ void UTilePathSetupComp::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& Current
 				//RIGHT
 				if (CurrentTile->HasValidRightNeighbor() && !CurrentTile->RightNeighbor->CheckForPath && !CurrentTile->RightNeighbor->IsStartingTile())
 				{
-					CurrentTile->ActivateRightDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, TileManagerRef->AllSpawnedWalls);
+					CurrentTile->RightDoor->DoorActive = true;
 					CurrentTile->RightNeighbor->PreviousTile = CurrentTile;
 					AddTileToPath(CurrentTile);
 					DirectionCount = 5;
@@ -697,6 +702,36 @@ void UTilePathSetupComp::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& Current
 				}
 				break;
 			}
+		}
+	}
+}
+
+/// <summary>
+/// Once main path is made and LevelPath populated, each tile has active doors spawn their proper connector
+/// 
+/// Only spawn a connector and remove wall if neighbor valid, door bool is on and the wall currently there is not already a connector
+/// </summary>
+void UTilePathSetupComp::SetupMainPathConnectors()
+{
+	TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAssetRef = TileManagerRef->ChoosenDoorwayAsset;
+	FName WallsSubFolderNameRef = TileManagerRef->WallsSubFolderName;
+	for (ASTile* PathTile : TileManagerRef->LevelPath)
+	{
+		if (PathTile->UpNeighbor && PathTile->UpDoor->DoorActive && !PathTile->UpWall->isConnector)
+		{
+			PathTile->ConnectUpDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, TileManagerRef->AllSpawnedWalls);
+		}
+		if (PathTile->DownNeighbor && PathTile->DownDoor->DoorActive && !PathTile->DownWall->isConnector)
+		{
+			PathTile->ConnectDownDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, TileManagerRef->AllSpawnedWalls);
+		}
+		if (PathTile->LeftNeighbor && PathTile->LeftDoor->DoorActive && !PathTile->LeftWall->isConnector)
+		{
+			PathTile->ConnectLeftDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, TileManagerRef->AllSpawnedWalls);
+		}
+		if (PathTile->RightNeighbor && PathTile->RightDoor->DoorActive && !PathTile->RightWall->isConnector)
+		{
+			PathTile->ConnectRightDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, TileManagerRef->AllSpawnedWalls);
 		}
 	}
 }
@@ -731,7 +766,7 @@ TArray <int> UTilePathSetupComp::Reshuffle(TArray <int> ar)
 	return ar;
 }
 
-//template be more efficient
+//tile
 TArray <ASTile*> UTilePathSetupComp::ReshuffleTiles(TArray <ASTile*> ar)
 {
 	// Knuth shuffle algorithm :: courtesy of Wikipedia :)

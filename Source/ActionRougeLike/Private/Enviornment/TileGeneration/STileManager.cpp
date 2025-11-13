@@ -395,7 +395,6 @@ void ASTileManager::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& CurrentPath)
 					//no need to keep going through other directions directions
 					DirectionCount = 5;
 					doorTransform = CurrentTile->UpDoor->GetTransform();
-
 					CheckTile(CurrentTile->UpNeighbor, CurrentPath);
 				}
 				break;
@@ -408,7 +407,6 @@ void ASTileManager::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& CurrentPath)
 					AddTileToPath(CurrentTile);
 					DirectionCount = 5;
 					doorTransform = CurrentTile->DownDoor->GetTransform();
-
 					CheckTile(CurrentTile->DownNeighbor, CurrentPath);
 				}
 				break;

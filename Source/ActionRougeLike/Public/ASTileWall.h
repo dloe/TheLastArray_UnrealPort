@@ -30,6 +30,9 @@ public:
 	int WallsBuffer; //inner is moved in 100, outer is moved out 100, center still at 0,0,120
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WallSetup")
+	bool isConnector = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WallSetup")
 	TArray <UStaticMeshComponent*> WallComponentsInnerArray;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WallSetup")

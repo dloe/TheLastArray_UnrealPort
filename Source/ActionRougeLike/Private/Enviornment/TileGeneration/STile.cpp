@@ -310,16 +310,24 @@ bool ASTile::HasConnectedDownNeighbor()
 	return result;
 }
 
+/// <summary>
+/// Turn all doors off that exist. No connections to this tile, quarentine.
+/// </summary>
 void ASTile::TurnAllDoorsInactive()
 {
-	if (HasValidDownNeighbor())
+	//compiller tries to opimize calls and for some reason, calling the hasvalid functions directly in the 
+	// if statements cause it to skip. This approach will get the values we need, then use those as needed. Hopefully...
+	//research shows this is common in developer and debug game editor
+
+	//UE_LOG(LogTemp, Log, TEXT("test %d,%d,%d,%d"), DownNeighborValid, UpNeighborValid, RightNeighborValid, LeftNeighborValid);
+	if (DownNeighbor != NULL && DownDoor != NULL)
 		DownDoor->DoorActive = false;
-	if (HasValidUpNeighbor())
+	if (UpNeighbor != NULL && UpDoor != NULL)
 		UpDoor->DoorActive = false;
-	if (HasValidRightNeighbor())
-		RightDoor = false;
-	if (HasValidLeftNeighbor())
-		LeftDoor = false;
+	if (RightNeighbor != NULL && RightDoor != NULL)
+		RightDoor->DoorActive = false;
+	if (LeftNeighbor != NULL && LeftDoor != NULL)
+		LeftDoor->DoorActive = false;
 }
 
 //should i have more checks in here?
