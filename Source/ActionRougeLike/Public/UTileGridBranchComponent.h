@@ -86,12 +86,7 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "Wall Setup")
 	UStaticMeshComponent* MergeWall(TArray<UStaticMeshComponent*> StaticMeshArrayToMerge);
 
-	//needs reference to STileManager for accessing Grid and other properties
-	UPROPERTY(EditAnywhere)
-	ASTileManager* TileManagerRef;
 
-	UPROPERTY(EditAnywhere)
-	ALocalLevel* LocalLevelRef;
 
 	//single rooms
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
@@ -120,6 +115,25 @@ protected:
 
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
 	void ConnectDoorBranch(ASTile* TileToAdd, int prevDirection);
+
+
+	//Cached references to external component pointers / variables
+
+	//needs reference to STileManager for accessing Grid and other properties
+	UPROPERTY(EditAnywhere)
+	ASTileManager* TileManagerRef;
+
+	UPROPERTY(EditAnywhere)
+	ALocalLevel* LocalLevelRef;
+
+	//doesn't need to be pointer cause its value never changes on start
+	UPROPERTY(EditAnywhere)
+	bool DebugPrintsRef;
+
+	//doesn't need to be pointer cause its value never changes on start
+	UPROPERTY(EditAnywhere)
+	bool DoorsActiveRef;
+
 public:	
 	
 		

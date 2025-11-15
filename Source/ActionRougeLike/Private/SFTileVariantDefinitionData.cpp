@@ -6,7 +6,7 @@
 
 USFTileVariantDefinitionData::USFTileVariantDefinitionData()
 {
-	minorMax = 1;
+	MinorMax = 1;
 }
 
 /// <summary>
@@ -85,23 +85,23 @@ TArray<FIntPointPair> USFTileVariantDefinitionData::RotateConnectedSides(TArray<
 		{
 			case 0:
 			//relative
-				StartCord = LocalOffet.startCords;
-				EndCord = LocalOffet.endCords;
+				StartCord = LocalOffet.StartCords;
+				EndCord = LocalOffet.EndCords;
 			break;
 			case 1:
 			//90 deg
-				StartCord = FIntPoint(LocalOffet.startCords.Y, -LocalOffet.startCords.X);
-				EndCord = FIntPoint(LocalOffet.endCords.Y, -LocalOffet.endCords.X);
+				StartCord = FIntPoint(LocalOffet.StartCords.Y, -LocalOffet.StartCords.X);
+				EndCord = FIntPoint(LocalOffet.EndCords.Y, -LocalOffet.EndCords.X);
 			break;
 			case 2: //this should be neg for both right?
 			//180 deg
-				StartCord = FIntPoint(-LocalOffet.startCords.X, -LocalOffet.startCords.Y);
-				EndCord = FIntPoint(-LocalOffet.endCords.X, -LocalOffet.endCords.Y);
+				StartCord = FIntPoint(-LocalOffet.StartCords.X, -LocalOffet.StartCords.Y);
+				EndCord = FIntPoint(-LocalOffet.EndCords.X, -LocalOffet.EndCords.Y);
 			break;
 			case 3: //flipped from case 1 right?
 			//270 deg
-				StartCord = FIntPoint(-LocalOffet.startCords.Y, LocalOffet.startCords.X);
-				EndCord = FIntPoint(-LocalOffet.endCords.Y, LocalOffet.endCords.X);
+				StartCord = FIntPoint(-LocalOffet.StartCords.Y, LocalOffet.StartCords.X);
+				EndCord = FIntPoint(-LocalOffet.EndCords.Y, LocalOffet.EndCords.X);
 			break;
 			default:
 				UE_LOG(LogTemp, Error, TEXT("oppsie"));
@@ -118,12 +118,12 @@ void USFTileVariantDefinitionData::SetVariantPaths()
 {
 	if(VariantPaths.IsEmpty()) {
 		//UE_LOG(LogTemp, Error, TEXT("Array isn't empty? why this run more than once on this guy?"));
-		VariantPaths.Add(FVariantOffsetTransforms_Rotates(Offsets, 0)); //offsets is empty at constructors
+		VariantPaths.Add(FVariantOffsetTransforms_Rotates(TileVariantOffsets, 0)); //offsets is empty at constructors
 
-		if (Variant != ETileSizeVariant::ET1x1) {
+		if (EVariantSize != ETileSizeVariant::ET1x1) {
 			for (int dir = 1; dir < 4; dir++)
 			{
-				TArray<FIntPoint> Rotated = RotateOffsets(Offsets, dir);
+				TArray<FIntPoint> Rotated = RotateOffsets(TileVariantOffsets, dir);
 
 				//get rotated sides to check also
 
@@ -137,7 +137,7 @@ void USFTileVariantDefinitionData::SetVariantPaths()
 		//rotate sidestocheck also
 		SidesToCheckRotation.Add(FVariantOffsetTransforms_SidesToCheckOffsetsRotations(SidesToCheckOffsets, 0));
 
-		if (Variant != ETileSizeVariant::ET1x1) {
+		if (EVariantSize != ETileSizeVariant::ET1x1) {
 			for (int dir = 1; dir < 4; dir++)
 			{
 				TArray<FIntPointPair> RotatedSidesToCheck = RotateConnectedSides(SidesToCheckOffsets, dir);

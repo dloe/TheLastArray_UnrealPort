@@ -23,9 +23,16 @@ public:
 	// Sets default values for this actor's properties
 	ASTileVariantEnviornment();
 
+	// ---------------------------------
+	// -------- Public Variables -------
+	// ---------------------------------
+
 	UPROPERTY(EditAnywhere, Category = "Tile")
 	TArray <ASTile*> VariantEncompassingTiles;
 
+	/// <summary>
+	/// Arrays of walls for each side
+	/// </summary>
 	UPROPERTY(EditAnywhere, Category = "Tile")
 	TArray<ASTileWall*> UpWalls;
 	UPROPERTY(EditAnywhere, Category = "Tile")
@@ -35,43 +42,46 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Tile")
 	TArray<ASTileWall*> RightWalls;
 
-	UPROPERTY(EditAnywhere, Category = "Walls")
-	UStaticMeshComponent* UpWallWhole;
 
+	//Fully combined walls (Still WIP TBD if this is useful)
 	UPROPERTY(EditAnywhere, Category = "Walls")
-	UStaticMeshComponent* DownWallWhole;
-
-	UPROPERTY(EditAnywhere, Category = "Walls")
-	UStaticMeshComponent* LeftWallWhole;
+	UStaticMeshComponent* SMUpWallWhole;
 
 	UPROPERTY(EditAnywhere, Category = "Walls")
-	UStaticMeshComponent* RightWallWhole;
+	UStaticMeshComponent* SMDownWallWhole;
 
+	UPROPERTY(EditAnywhere, Category = "Walls")
+	UStaticMeshComponent* SMLeftWallWhole;
 
+	UPROPERTY(EditAnywhere, Category = "Walls")
+	UStaticMeshComponent* SMRightWallWhole;
+
+	//Builds out array of doors that we run though after all pathing is figured out (so only a one time door removal)
 	UPROPERTY(EditAnywhere, Category = "Tile")
 	TArray<ASTileDoor*> DoorsToRemove;
 
+	//definition data for Tile Variant (UDataAsset)
 	UPROPERTY(EditAnywhere, Category = "Tile")
-	USFTileVariantDefinitionData* variantDefinition;
+	USFTileVariantDefinitionData* TileVariDefinition;
 
 	//this is manually placed in bp to be the starting tile we spawn at (not spawning at the center of this bp)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile")
-	FTransform PresetThisSpawnPoint;
+	FTransform PresentSpawnPointTransform;
 
 	//Due to spacing of tiles and door wys and gaps between tiles, we need to account for walls
 	//side by side to not have any gaps. hence why we have these patches. Goal is to merge the static mesh of 
-	//these guys with the walls themselves to creaste one coherent wall for each tile side.
+	//these guys with the walls themselves to create one coherent wall for each tile side.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WallSetup")
-	TArray <UStaticMeshComponent*> LeftPatchArray;
+	TArray <UStaticMeshComponent*> LeftPatchSMArray;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WallSetup")
-	TArray <UStaticMeshComponent*> RightPatchArray;
+	TArray <UStaticMeshComponent*> RightPatchSMArray;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WallSetup")
-	TArray <UStaticMeshComponent*> UpPatchArray;
+	TArray <UStaticMeshComponent*> UpPatchSMArray;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WallSetup")
-	TArray <UStaticMeshComponent*> DownPatchArray;
+	TArray <UStaticMeshComponent*> DownPatchSMArray;
 
 protected:
 	// Called when the game starts or when spawned

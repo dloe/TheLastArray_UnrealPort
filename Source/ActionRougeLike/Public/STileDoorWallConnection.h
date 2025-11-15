@@ -18,15 +18,22 @@ class ACTIONROUGELIKE_API ASTileDoorWallConnection : public ASTileWall
 	
 
 public:
-	UPROPERTY(EditAnywhere, Category = "Tile Generation")
-	ASTileDoor* myTileDoor;
-
-	//could be protected?
-	UPROPERTY(EditAnywhere, Category = "Tile Generation")
-	ASTileDoor* DoorKey;
 
 	ASTileDoorWallConnection();
 
+	// ---------------------------------
+	// -------- Public Variables -------
+	// ---------------------------------
+
+	UPROPERTY(EditAnywhere, Category = "Tile Generation")
+	ASTileDoor* AMyTileDoor;
+
+	//could be protected?
+	UPROPERTY(EditAnywhere, Category = "Tile Generation")
+	AActor* DoorKey;
+
+	
+	//for ref mainly
 	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Tile Generation")
 	//float DoorwayLengthAdjustment = 200;
 

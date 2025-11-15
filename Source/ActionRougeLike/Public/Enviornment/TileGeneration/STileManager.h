@@ -74,69 +74,43 @@ public:
 	// Sets default values for this actor's properties
 	ASTileManager();
 
-#pragma region Tile Generation
+	// ---------------------------------
+	// ------- Public Functions --------
+	// ---------------------------------
 
-	UPROPERTY(EditAnywhere, Category = "Tile Generation")
+	UPROPERTY(EditAnywhere, Category = "Game Setup Generation")
 	uint32 GameSeed = 0; 
 
-	UPROPERTY(EditAnywhere, Category = "Tile Generation")
-	bool DebugPrints = false;
-
 	//managing random numbers and seeds
-	UPROPERTY(EditAnywhere, Category = "Tile Generation")
+	UPROPERTY(EditAnywhere, Category = "Game Setup Generation")
 	FRandomStream GameStream;
 
+	UPROPERTY(EditAnywhere, Category = "Game Setup Generation")
+	bool bDebugPrints = false;
+
+#pragma region Tile Generation Public Vars
 
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
-	TSubclassOf<ASTile> TileBase;
+	TSubclassOf<ASTile> TileBaseClass;
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
-	TSubclassOf<ASTileDoor> TileDoor;
+	TSubclassOf<ASTileDoor> TileDoorClass;
 
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	TArray<FTileInfoStruct> OutskirtTiles;
 
 	//this will be assigned from the locallevel object. But it spawns in between the tiles
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
-	TSubclassOf<ASTileWall> ChoosenWallAsset;
+	TSubclassOf<ASTileWall> ChoosenWallAssetClass;
 
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
-	TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset;
-
-	UFUNCTION()
-	int GetLevelHeight() { return LevelHeight; };
-	
-
-	UFUNCTION()
-	int GetLevelWidth() { return LevelWidth; };
+	TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAssetClass;
 
 	//density of grid - percentage of non-main path tiles compared to total tiles while still not overcrowding
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	float gridDensity = 0.5;
 
-	/// <summary>
-	/// 
-	/// </summary>
-	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
-	float BranchDensityFactor_DynamicMainPathLength();
-	//float BranchDensityFactor = FMath::Clamp(0.1f + (LevelWidth * LevelHeight / 5000.0f), 0.05f, 0.3f);
-
-	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
-	float BranchDensityFactor_DependencyOnMazeSize();
-	
-
-	UFUNCTION()
-	ASTile* GetGridTile(int32 X, int32 Y);
-
-	UFUNCTION()
-	ASTile* GetGridTilePair(FIntPoint TileCords);
-
-	//UFUNCTION()
-	//TArray <FMultiTileStruct> GetGrid() {return Grid2DArray; };
 	//2D array to hold all tiles
 	TArray <FMultiTileStruct*> Grid2DArray;
-
-	UPROPERTY(EditAnywhere, Category = "Tile Generation")
-	int totalGridTilesAvailable = -1;
 
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	ALocalLevel* MyLocalLevel;
@@ -145,9 +119,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	bool DoorsActive = true;
 
-	//root component
-	UPROPERTY(VisibleAnywhere)
-	USceneComponent* TilesRoot;
+	//list of possible starting tiles
+	UPROPERTY(EditAnywhere, Category = "Tile Generation")
+	TArray<ASTile*> PossibleStartingTiles;
 
 	//folder name for where tiles are placed when spawned
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
@@ -186,37 +160,24 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	ASTile* SecretRoom;
 
-	//list of possible starting tiles - DO DO: PROTECT THIS LATER
-	UPROPERTY(EditAnywhere, Category = "Tile Generation")
-	TArray<ASTile*> PossibleStartingTiles;
+	
 
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	TArray<ASTileWall*> AllSpawnedWalls;
 
-	UFUNCTION()
-	TArray<ASTile*> GetPossibleStartingTiles() const {return PossibleStartingTiles;};
-
-	UFUNCTION()
-	void SetPossibleStartingTiles(TArray<ASTile*> NewArray) { PossibleStartingTiles  = NewArray;};
-	
-
-	//list of possible starting tiles - DO DO: PROTECT THIS LATER
+	//list of possible starting tiles
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	TArray<ASTile*> LevelPath;
 
-	//list of possible starting tiles - DO DO: PROTECT THIS LATER
-	UPROPERTY(EditAnywhere, Category = "Tile Generation")
-	TArray<ASTile*> BackTrackHistory;
-
-	//list of possible starting tiles - DO DO: PROTECT THIS LATER
+	//list of possible starting tiles
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	TArray<ASTileDoor*> DoorArray;
 
-	//list of possible starting tiles - DO DO: PROTECT THIS LATER
+	//list of possible starting tiles
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	int PathNumber = 0;
 
-	//list of current active tiles - DO DO: PROTECT THIS LATER
+	//list of current active tiles
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	TArray<ASTile*>	AllActiveTiles;
 
@@ -227,10 +188,6 @@ public:
 	//Assigned and brought in from local level
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	ASTile* PlayerSpawnPresentTile;
-
-	//single rooms
-	UPROPERTY(EditAnywhere, Category = "Tile Generation")
-	int FillerRooms = 0;
 
 	UPROPERTY(EditAnywhere, Category = "Start Room")
 	bool DoorToStartRoom = true;
@@ -245,25 +202,84 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	USFTileVariantDefinitionData* SingleVariantData;
 
+	//root component
+	UPROPERTY(VisibleAnywhere)
+	USceneComponent* TilesRoot;
+
 #pragma endregion
 
+	// ---------------------------------
+	// -------- Public Functions -------
+	// ---------------------------------
+
+#pragma region Tile Generation Public Functions
+
+	UFUNCTION()
+	int GetLevelHeight() { return LevelHeight; };
+	
+
+	UFUNCTION()
+	int GetLevelWidth() { return LevelWidth; };
+
+	
+	/// <summary>
+	/// 
+	/// </summary>
+	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
+	float BranchDensityFactor_DynamicMainPathLength();
+	//float BranchDensityFactor = FMath::Clamp(0.1f + (LevelWidth * LevelHeight / 5000.0f), 0.05f, 0.3f);
+
+	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
+	float BranchDensityFactor_DependencyOnMazeSize();
+	
+
+	UFUNCTION()
+	ASTile* GetGridTile(int32 X, int32 Y);
+
+	UFUNCTION()
+	ASTile* GetGridTilePair(FIntPoint TileCords);
+
+
+	UFUNCTION()
+	TArray<ASTile*> GetPossibleStartingTiles() const {return PossibleStartingTiles;};
+
+	UFUNCTION()
+	void SetPossibleStartingTiles(TArray<ASTile*> NewArray) { PossibleStartingTiles  = NewArray;};
+	
+	UFUNCTION(BlueprintCallable, Category = "Tile Generation")
+	float GetCurrentGridDensity();
+
+#pragma endregion
+
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
+
+	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
+	void MakeAvailableTiles();
+
+	UFUNCTION(BlueprintCallable)
+	TArray <int> Reshuffle2(TArray <int> ar);
 	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-
-	UFUNCTION()
-	void SetVariables();
-
-#pragma region Tile Generation
 	
+	// ---------------------------------
+	// -- Internal state / variables --
+	// ---------------------------------
+
+#pragma region Tile Generation Protected Vars
+	//list of possible starting tiles - DO DO: PROTECT THIS LATER
+	UPROPERTY(EditAnywhere, Category = "Tile Generation")
+	TArray<ASTile*> BackTrackHistory;
+
+	UPROPERTY(EditAnywhere, Category = "Tile Generation")
+	int totalGridTilesAvailable = -1;
+
 	//definitions for variants, sizes and priority
 	UPROPERTY(EditAnywhere)
 	TArray<USFTileVariantDefinitionData*> TileVariants;
-
-
-	
 
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	int LevelHeight = 5;
@@ -291,6 +307,18 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	FTransform doorTransform;
+
+	//For debug if we want to hard code a specific side to test, we set to 0 -3 otherwise it will get overridden
+	UPROPERTY(EditAnywhere, Category = "Tile Generation")
+	int StartRoomSide = -1;
+
+#pragma endregion
+
+	// ---------------------------------
+	// -------- Helper Functions -------
+	// ---------------------------------
+
+#pragma region Tile Generation Helper Functions
 
 	UFUNCTION()
 	void OnTilePathGeneration();
@@ -334,23 +362,10 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
 	void RemoveUnusedOuters();
 
-	//For debug if we want to hard code a specific side to test, we set to 0 -3 otherwise it will get overridden
-	UPROPERTY(EditAnywhere, Category = "Tile Generation")
-	int StartRoomSide = -1;
+	
 #pragma endregion
 
-
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
-	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
-	void MakeAvailableTiles();
-
-	UFUNCTION(BlueprintCallable, Category = "Tile Generation")
-	float GetCurrentGridDensity();
-
-	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
-	TArray <int> Reshuffle2(TArray <int> ar);
+UFUNCTION()
+	void SetVariables();
 
 };

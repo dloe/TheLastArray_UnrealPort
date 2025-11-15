@@ -30,10 +30,12 @@ struct FIntPointPair {
 
 	public:
 	UPROPERTY(EditAnywhere)
-	FIntPoint startCords;
+	FIntPoint StartCords;
 
 	UPROPERTY(EditAnywhere)
-	FIntPoint endCords;
+	FIntPoint EndCords;
+
+	//constructor
 	FIntPointPair()
 	{
 
@@ -41,8 +43,8 @@ struct FIntPointPair {
 
 	FIntPointPair(FIntPoint startCord, FIntPoint endCord) //can also looked at as (Y cord : X Cord)
 	{
-		startCords = startCord;
-		endCords = endCord;
+		StartCords = startCord;
+		EndCords = endCord;
 	}
 
 };
@@ -89,12 +91,15 @@ struct FTileVariantSetup_PlugTileSaveInfo
 	public:
 		UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<ASTileDoor*> DoorsArray;
+
 		UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<ASTileWall*> WallArray;
+
 		UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<ASTile*> TileArray;
+
 		UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		int TransformDirection;
+		int TransformDirectionSetup;
 
 };
 
@@ -109,16 +114,16 @@ struct FVariantOffsetTransforms_Rotates
 
 public:
 
-//1 = left neighbor, 2 = right neighbor, 3 = up neighbor, 4 = down neighbor
+    //1 = left neighbor, 2 = right neighbor, 3 = up neighbor, 4 = down neighbor
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<FIntPoint>Transforms_flavor;
+	TArray<FIntPoint>DirectionsRotations;
 
 	UPROPERTY(EditAnywhere)
-	TArray<FIntPointPair> SidesToCheck_flavor;
+	TArray<FIntPointPair> CordsSideToCheck;
 
 	//maybe this be an int?
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int TransformDirection;
+	int TransformDirectionRotation;
 
 	FVariantOffsetTransforms_Rotates()
 	{
@@ -128,8 +133,8 @@ public:
 
 	FVariantOffsetTransforms_Rotates(TArray<FIntPoint> transforms, int direction)
 	{
-		Transforms_flavor = transforms;
-		TransformDirection = direction;
+		DirectionsRotations = transforms;
+		TransformDirectionRotation = direction;
 	}
 
 };
@@ -148,14 +153,10 @@ struct FVariantOffsetTransforms_SidesToCheckOffsetsRotations
 	UPROPERTY(EditAnywhere)
 	TArray<FIntPointPair> ConnectingSideOffset;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int TransformDirection;
-
 
 	FVariantOffsetTransforms_SidesToCheckOffsetsRotations(TArray<FIntPointPair> SidesToCheckOffsets, int direction)
 	{
 		ConnectingSideOffset = SidesToCheckOffsets;
-		TransformDirection = direction;
 	}
 
 	FVariantOffsetTransforms_SidesToCheckOffsetsRotations()
@@ -223,9 +224,29 @@ class ACTIONROUGELIKE_API USFTileVariantDefinitionData : public UDataAsset
 	GENERATED_BODY()
 	
 	public:
+
+	USFTileVariantDefinitionData();
+
+	// ---------------------------------
+	// ------- Public Functions --------
+	// ---------------------------------
+
+	UFUNCTION(BlueprintCallable)
+	TArray<FIntPoint> RotateOffsets(TArray<FIntPoint> OriginalOffsets, int32 RotationStepsClockwise);
+
+	UFUNCTION(BlueprintCallable)
+	TArray<FIntPointPair> RotateConnectedSides(TArray<FIntPointPair> OriginalOffsets, int32 RotationStepsClockwise);
+
+	UFUNCTION(BlueprintCallable)
+	void SetVariantPaths();
+
+	// ---------------------------------
+	// -------- Public Variables -------
+	// ---------------------------------
+
 	//variant type
 	UPROPERTY(EditAnywhere)
-	ETileSizeVariant Variant;
+	ETileSizeVariant EVariantSize;
 
 	//could define as a FIntPoint? so like a tuple?
 	UPROPERTY(EditAnywhere)
@@ -237,17 +258,17 @@ class ACTIONROUGELIKE_API USFTileVariantDefinitionData : public UDataAsset
 	int Priority;
 
 	UPROPERTY(EditAnywhere)
-	int minorMin;
+	int MinorMin;
 
 	UPROPERTY(EditAnywhere)
-	int minorMax;
+	int MinorMax;
 
 	UPROPERTY(EditAnywhere)
-	bool IsSingleVariant;
+	bool bIsSingleVariant;
 
 	//offset transforms, original (unrotated)
 	UPROPERTY(EditAnywhere)
-	TArray<FIntPoint> Offsets; // = {
+	TArray<FIntPoint> TileVariantOffsets; // = {
 	//	FIntPoint(0, 0),  // Origin (assumed clear)
 	//	FIntPoint(1, 0),  // Right
 	//	FIntPoint(0, 1),  // Down
@@ -276,24 +297,11 @@ class ACTIONROUGELIKE_API USFTileVariantDefinitionData : public UDataAsset
 	//Constructor 
 	USFTileVariantDefinitionData(ETileSizeVariant variant, FIntPoint size, int priority, int min, int max)
 	{
-		Variant = variant;
+		EVariantSize = variant;
 		Size = size;
 		Priority = priority;
-		minorMin = min;
-		minorMax = max;
+		MinorMin = min;
+		MinorMax = max;
 	}
-
-	USFTileVariantDefinitionData();
-
-
-
-	UFUNCTION(BlueprintCallable)
-	TArray<FIntPoint> RotateOffsets(TArray<FIntPoint> OriginalOffsets, int32 RotationStepsClockwise);
-
-	UFUNCTION(BlueprintCallable)
-	TArray<FIntPointPair> RotateConnectedSides(TArray<FIntPointPair> OriginalOffsets, int32 RotationStepsClockwise);
-
-	UFUNCTION(BlueprintCallable)
-	void SetVariantPaths();
 
 };

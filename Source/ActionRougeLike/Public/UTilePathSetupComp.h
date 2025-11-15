@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "UTilePathSetupComp.generated.h"
 
+//forward declared
 class ASTileManager;
 class ASTile;
 
@@ -28,8 +29,16 @@ public:
 	// Sets default values for this actor's properties
 	UTilePathSetupComp();
 
+	// ---------------------------------
+	// ------- Public Functions --------
+	// ---------------------------------
+
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
 	void TilePathGeneration();
+
+	// ---------------------------------
+	// -------- Public Variables -------
+	// ---------------------------------
 
 	//don't want things to be as statically coupled in manager so split things out with modular classes for each function of the map creation and setup
 	UPROPERTY(BlueprintAssignable)
@@ -43,46 +52,66 @@ public:
 
 protected:
 
+	// ---------------------------------
+	// -------- Helper Functions -------
+	// ---------------------------------
+
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+
+	UFUNCTION(Category = "ArrayCreation")
+	void ChooseStartEndRooms();
+
+	UFUNCTION(Category = "ArrayCreation")
+	void GeneratePath();
+
+	UFUNCTION(Category = "ArrayCreation")
+	void CreateSpawnRoom();
+
+	UFUNCTION(Category = "ArrayCreation")
+	void CheckTile(ASTile* TileToAdd, TArray<ASTile*>& CurrentPath);
+
+	UFUNCTION(Category = "ArrayCreation")
+	void SetupMainPathConnectors();
+
+	UFUNCTION(Category = "ArrayCreation")
+	bool AddTileToPath(ASTile* TileToAdd);
+
+	UFUNCTION(Category = "ArrayCreation")
+	TArray <int> Reshuffle(TArray <int> ar);
+
+	UFUNCTION(Category = "ArrayCreation")
+	TArray <ASTile*> ReshuffleTiles(TArray <ASTile*> ar);
+
+
+	// ---------------------------------
+	// -- Internal state / variables --
+	// ---------------------------------
+
+	
+
 	//needs reference to STileManager for accessing Grid and other properties
 	UPROPERTY(EditAnywhere)
-	ASTileManager* TileManagerRef;
+	ASTileManager* ATileManagerRef;
 
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	int FailsafeCount = 0;
 
 	//list of possible starting tiles - DO DO: PROTECT THIS LATER
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
-	TArray<ASTile*> BackTrackHistory;
+	TArray<ASTile*> BackTrackHistoryTiles;
 
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
-	FTransform doorTransform;
+	FTransform TransformCurrentDoor;
 
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
 
-	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
-	void ChooseStartEndRooms();
+	// ---------------------------------
+	// -- Cached references to external component pointers / variables --
+	// ---------------------------------
 
-	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
-	void GeneratePath();
+	UPROPERTY(EditAnywhere, Category = "Tile Manager")
+	bool bDebugPrintsRef;
 
-	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
-	void CreateSpawnRoom();
-
-	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
-	void CheckTile(ASTile* TileToAdd, TArray<ASTile*>& CurrentPath);
-
-	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
-	void SetupMainPathConnectors();
-
-	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
-	bool AddTileToPath(ASTile* TileToAdd);
-
-	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
-	TArray <int> Reshuffle(TArray <int> ar);
-
-	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
-	TArray <ASTile*> ReshuffleTiles(TArray <ASTile*> ar);
 
 public:	
 	
