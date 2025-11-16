@@ -758,21 +758,21 @@ void UTileGridBranchComponent::CreateSecretRoom()
 			SpawnPos = FVector(selected.tile->GetActorLocation().X, selected.tile->GetActorLocation().Y - (TileManagerRef->StartingGridTile->TileLength), selected.tile->GetActorLocation().Z); //+ 240
 			//UE_LOG(LogTemp, Log, TEXT("SpawnPas: %s"), *SpawnPos.ToString());
 			//SpawnRot = FRotator(selected.tile->GetActorRotation().Euler().X, 180.0f, selected.tile->GetActorRotation().Euler().Z);
-			TileManagerRef->SecretRoom = GetWorld()->SpawnActor<ASTile>(TileManagerRef->TileBaseClass, SpawnPos, SpawnRot, SpawnParams);
-			SpawnDoor(TileManagerRef->SecretRoom, ETileSide::ETile_Down, "SecretRoom");
+			SecretRoom = GetWorld()->SpawnActor<ASTile>(TileManagerRef->TileBaseClass, SpawnPos, SpawnRot, SpawnParams);
+			SpawnDoor(SecretRoom, ETileSide::ETile_Down, "SecretRoom");
 			
 			
 		}
 		else if (selected.tile->UpNeighbor->TileStatus == ETileStatus::ETile_NULLROOM) { //confirmed this works now get other wey of working
 			//rotate tile? may need tile to be setup for easier testing of rotation
-			TileManagerRef->SecretRoom = selected.tile->UpNeighbor;
-			SetupDoor(TileManagerRef->SecretRoom, ETileSide::ETile_Down, "SecretRoom", selected.tile->UpDoor);
+			SecretRoom = selected.tile->UpNeighbor;
+			SetupDoor(SecretRoom, ETileSide::ETile_Down, "SecretRoom", selected.tile->UpDoor);
 		}
 		
-		TileManagerRef->SecretRoom->DownNeighbor = selected.tile;
-		selected.tile->UpDoor = TileManagerRef->SecretRoom->DownDoor;
-		selected.tile->UpNeighbor = TileManagerRef->SecretRoom;
-		TileManagerRef->SecretRoom->DownDoor->DoorsConnector = TileManagerRef->SecretRoom->SpawnDoorConnector(ETileSide::ETile_Down, TileManagerRef->ChoosenDoorwayAssetClass, TileManagerRef->WallsSubFolderName, TileManagerRef->AllSpawnedWalls);
+		SecretRoom->DownNeighbor = selected.tile;
+		selected.tile->UpDoor = SecretRoom->DownDoor;
+		selected.tile->UpNeighbor = SecretRoom;
+		SecretRoom->DownDoor->DoorsConnector = SecretRoom->SpawnDoorConnector(ETileSide::ETile_Down, TileManagerRef->ChoosenDoorwayAssetClass, TileManagerRef->WallsSubFolderName, TileManagerRef->AllSpawnedWalls);
 		selectedRotation = 0; //no rotation
 		break;
 	case 2:
@@ -784,19 +784,19 @@ void UTileGridBranchComponent::CreateSecretRoom()
 			SpawnPos = FVector(selected.tile->GetActorLocation().X, selected.tile->GetActorLocation().Y + (TileManagerRef->StartingGridTile->TileLength), selected.tile->GetActorLocation().Z);
 			//UE_LOG(LogTemp, Log, TEXT("SpawnPas: %s"), *SpawnPos.ToString());
 			SpawnRot = FRotator(selected.tile->GetActorRotation().Euler().X, 180.0f, selected.tile->GetActorRotation().Euler().Z);
-			TileManagerRef->SecretRoom = GetWorld()->SpawnActor<ASTile>(TileManagerRef->TileBaseClass, SpawnPos, SpawnRot, SpawnParams);
-			SpawnDoor(TileManagerRef->SecretRoom, ETileSide::ETile_Up, "SecretRoom");
+			SecretRoom = GetWorld()->SpawnActor<ASTile>(TileManagerRef->TileBaseClass, SpawnPos, SpawnRot, SpawnParams);
+			SpawnDoor(SecretRoom, ETileSide::ETile_Up, "SecretRoom");
 		}
 		else if (selected.tile->DownNeighbor->TileStatus == ETileStatus::ETile_NULLROOM) { //confirmed this works now get other wey of working
 			//rotate tile? may need tile to be setup for easier testing of rotation
-			TileManagerRef->SecretRoom = selected.tile->DownNeighbor;
-			SetupDoor(TileManagerRef->SecretRoom, ETileSide::ETile_Up, "SecretRoom", selected.tile->DownDoor);
+			SecretRoom = selected.tile->DownNeighbor;
+			SetupDoor(SecretRoom, ETileSide::ETile_Up, "SecretRoom", selected.tile->DownDoor);
 		}
 
-		TileManagerRef->SecretRoom->UpNeighbor = selected.tile;
-		selected.tile->DownDoor = TileManagerRef->SecretRoom->UpDoor;
-		selected.tile->DownNeighbor = TileManagerRef->SecretRoom;
-		TileManagerRef->SecretRoom->UpDoor->DoorsConnector = TileManagerRef->SecretRoom->SpawnDoorConnector(ETileSide::ETile_Up, TileManagerRef->ChoosenDoorwayAssetClass, TileManagerRef->WallsSubFolderName, TileManagerRef->AllSpawnedWalls);
+		SecretRoom->UpNeighbor = selected.tile;
+		selected.tile->DownDoor = SecretRoom->UpDoor;
+		selected.tile->DownNeighbor = SecretRoom;
+		SecretRoom->UpDoor->DoorsConnector = SecretRoom->SpawnDoorConnector(ETileSide::ETile_Up, TileManagerRef->ChoosenDoorwayAssetClass, TileManagerRef->WallsSubFolderName, TileManagerRef->AllSpawnedWalls);
 		selectedRotation = 2; //180
 		break;
 	case 3:
@@ -808,19 +808,19 @@ void UTileGridBranchComponent::CreateSecretRoom()
 			SpawnPos = FVector(selected.tile->GetActorLocation().X - (selected.tile->TileLength), selected.tile->GetActorLocation().Y, selected.tile->GetActorLocation().Z); //+ 240;
 			//UE_LOG(LogTemp, Log, TEXT("SpawnPas: %s"), *SpawnPos.ToString());
 			SpawnRot = FRotator(TileManagerRef->PlayerSpawnPresentTile->GetActorRotation().Euler().X, 90.0f, TileManagerRef->PlayerSpawnPresentTile->GetActorRotation().Euler().Z);
-			TileManagerRef->SecretRoom = GetWorld()->SpawnActor<ASTile>(TileManagerRef->TileBaseClass, SpawnPos, SpawnRot, SpawnParams);
-			SpawnDoor(TileManagerRef->SecretRoom, ETileSide::ETile_Right, "SecretRoom");
+			SecretRoom = GetWorld()->SpawnActor<ASTile>(TileManagerRef->TileBaseClass, SpawnPos, SpawnRot, SpawnParams);
+			SpawnDoor(SecretRoom, ETileSide::ETile_Right, "SecretRoom");
 		}
 		else if (selected.tile->LeftNeighbor->TileStatus == ETileStatus::ETile_NULLROOM) { //confirmed this works now get other way of working
 			//rotate tile? may need tile to be setup for easier testing of rotation
-			TileManagerRef->SecretRoom = selected.tile->LeftNeighbor;
-			SetupDoor(TileManagerRef->SecretRoom, ETileSide::ETile_Right, "SecretRoom", selected.tile->LeftDoor);
+			SecretRoom = selected.tile->LeftNeighbor;
+			SetupDoor(SecretRoom, ETileSide::ETile_Right, "SecretRoom", selected.tile->LeftDoor);
 		}
 
-		TileManagerRef->SecretRoom->RightNeighbor = selected.tile;
-		selected.tile->LeftDoor = TileManagerRef->SecretRoom->RightDoor;
-		selected.tile->LeftNeighbor = TileManagerRef->SecretRoom;
-		TileManagerRef->SecretRoom->RightDoor->DoorsConnector = TileManagerRef->SecretRoom->SpawnDoorConnector(ETileSide::ETile_Right, TileManagerRef->ChoosenDoorwayAssetClass, TileManagerRef->WallsSubFolderName, TileManagerRef->AllSpawnedWalls);
+		SecretRoom->RightNeighbor = selected.tile;
+		selected.tile->LeftDoor = SecretRoom->RightDoor;
+		selected.tile->LeftNeighbor = SecretRoom;
+		SecretRoom->RightDoor->DoorsConnector = SecretRoom->SpawnDoorConnector(ETileSide::ETile_Right, TileManagerRef->ChoosenDoorwayAssetClass, TileManagerRef->WallsSubFolderName, TileManagerRef->AllSpawnedWalls);
 		selectedRotation = 3; //270
 		break;
 	case 4:
@@ -831,32 +831,32 @@ void UTileGridBranchComponent::CreateSecretRoom()
 		{
 			SpawnPos = FVector(selected.tile->GetActorLocation().X + (selected.tile->TileLength), selected.tile->GetActorLocation().Y, selected.tile->GetActorLocation().Z);
 			SpawnRot = FRotator(TileManagerRef->PlayerSpawnPresentTile->GetActorRotation().Euler().X, -90.0f, TileManagerRef->PlayerSpawnPresentTile->GetActorRotation().Euler().Z);
-			TileManagerRef->SecretRoom = GetWorld()->SpawnActor<ASTile>(TileManagerRef->TileBaseClass, SpawnPos, SpawnRot, SpawnParams);
-			SpawnDoor(TileManagerRef->SecretRoom, ETileSide::ETile_Left, "SecretRoom");
+			SecretRoom = GetWorld()->SpawnActor<ASTile>(TileManagerRef->TileBaseClass, SpawnPos, SpawnRot, SpawnParams);
+			SpawnDoor(SecretRoom, ETileSide::ETile_Left, "SecretRoom");
 		}
 		else if (selected.tile->RightNeighbor->TileStatus == ETileStatus::ETile_NULLROOM) { //confirmed this works now get other wey of working
 			//rotate tile? may need tile to be setup for easier testing of rotation
-			TileManagerRef->SecretRoom = selected.tile->RightNeighbor;
-			SetupDoor(TileManagerRef->SecretRoom, ETileSide::ETile_Left, "SecretRoom", selected.tile->RightDoor);
+			SecretRoom = selected.tile->RightNeighbor;
+			SetupDoor(SecretRoom, ETileSide::ETile_Left, "SecretRoom", selected.tile->RightDoor);
 		}
 
-		TileManagerRef->SecretRoom->LeftNeighbor = selected.tile;
-		selected.tile->RightDoor = TileManagerRef->SecretRoom->LeftDoor;
-		selected.tile->RightNeighbor = TileManagerRef->SecretRoom;
-		TileManagerRef->SecretRoom->LeftDoor->DoorsConnector = TileManagerRef->SecretRoom->SpawnDoorConnector(ETileSide::ETile_Left, TileManagerRef->ChoosenDoorwayAssetClass, TileManagerRef->WallsSubFolderName, TileManagerRef->AllSpawnedWalls);
+		SecretRoom->LeftNeighbor = selected.tile;
+		selected.tile->RightDoor = SecretRoom->LeftDoor;
+		selected.tile->RightNeighbor = SecretRoom;
+		SecretRoom->LeftDoor->DoorsConnector = SecretRoom->SpawnDoorConnector(ETileSide::ETile_Left, TileManagerRef->ChoosenDoorwayAssetClass, TileManagerRef->WallsSubFolderName, TileManagerRef->AllSpawnedWalls);
 		selectedRotation = 1; //90
 		break;
 	}
 	// TO DO: this will need to be updated to a specific Secrete Room BP set in LocalLevel
 
-	TileManagerRef->SecretRoom->SetActorLabel("SecretRoom");
+	SecretRoom->SetActorLabel("SecretRoom");
 #if WITH_EDITOR
-	TileManagerRef->SecretRoom->SetFolderPath(TileManagerRef->TileSubFolderName);
-	TileManagerRef->SecretRoom->ShadeSecretRoom();
+	SecretRoom->SetFolderPath(TileManagerRef->TileSubFolderName);
+	SecretRoom->ShadeSecretRoom();
 #endif
 
 	//ACTIVATE WALLS
-	TileManagerRef->SecretRoom->ActivateWalls(TileManagerRef->ChoosenWallAssetClass, TileManagerRef->WallsSubFolderName, TileManagerRef->AllSpawnedWalls);
+	SecretRoom->ActivateWalls(TileManagerRef->ChoosenWallAssetClass, TileManagerRef->WallsSubFolderName, TileManagerRef->AllSpawnedWalls);
 
 	//populate secret room contents
 	FActorSpawnParameters SpawnParamsPrefab;
@@ -897,10 +897,10 @@ void UTileGridBranchComponent::CreateSecretRoom()
 		break;
 	}
 
-	ASTileVariantEnviornment* SecretRoomVariant = GetWorld()->SpawnActor<ASTileVariantEnviornment>(ChoosenSecretRoomVariant, TileManagerRef->SecretRoom->GetActorLocation(), TileManagerRef->SecretRoom->GetActorRotation(), SpawnParamsPrefab);
+	ASTileVariantEnviornment* SecretRoomVariant = GetWorld()->SpawnActor<ASTileVariantEnviornment>(ChoosenSecretRoomVariant, SecretRoom->GetActorLocation(), SecretRoom->GetActorRotation(), SpawnParamsPrefab);
 
 	SecretRoomVariant->SetActorRotation(SpawnRotPrefab);
-	FString VariantTileName = "Secret_VariantTileMap_" + FString::FromInt(TileManagerRef->SecretRoom->XIndex) + "_" + FString::FromInt(TileManagerRef->SecretRoom->ZIndex);
+	FString VariantTileName = "Secret_VariantTileMap_" + FString::FromInt(SecretRoom->XIndex) + "_" + FString::FromInt(SecretRoom->ZIndex);
 	SecretRoomVariant->SetActorLabel(VariantTileName);
 #if WITH_EDITOR
 	SecretRoomVariant->SetFolderPath(TileManagerRef->VariantTileMapSubFolderName);

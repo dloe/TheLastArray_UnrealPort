@@ -88,7 +88,8 @@ protected:
 	// -- Internal state / variables --
 	// ---------------------------------
 
-	
+	UPROPERTY(EditAnywhere, Category = "Tile Generation")
+	ASTile* PlayerStartingTile_SpawnTile; //TODO: difference between this and StartingTile???
 
 	//needs reference to STileManager for accessing Grid and other properties
 	UPROPERTY(EditAnywhere)
@@ -111,9 +112,5 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Tile Manager")
 	bool bDebugPrintsRef;
-
-
-public:	
-	
 
 };

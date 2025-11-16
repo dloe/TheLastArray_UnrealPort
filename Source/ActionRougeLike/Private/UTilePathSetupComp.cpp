@@ -390,10 +390,10 @@ void UTilePathSetupComp::CreateSpawnRoom()
 	case 0:
 		//left
 		SpawnPos = FVector(StartingGridTileRef->GetActorLocation().X - (StartingGridTileRef->TileLength + DoorwayAdjustment), StartingGridTileRef->GetActorLocation().Y, StartingGridTileRef->GetActorLocation().Z);
-		ATileManagerRef->PlayerStartingTile_SpawnTile = GetWorld()->SpawnActor<ASTile>(ATileManagerRef->TileBaseClass, SpawnPos, StartingGridTileRef->GetActorRotation(), SpawnParams);
+		PlayerStartingTile_SpawnTile = GetWorld()->SpawnActor<ASTile>(ATileManagerRef->TileBaseClass, SpawnPos, StartingGridTileRef->GetActorRotation(), SpawnParams);
 		ATileManagerRef->PlayerSpawnPresentTile = GetWorld()->SpawnActor<ASTile>(MyLocalLevelRef->PresetStartingTile, SpawnPos, StartingGridTileRef->GetActorRotation(), SpawnParams); //rotate -90
-		StartingGridTileRef->LeftNeighbor = ATileManagerRef->PlayerStartingTile_SpawnTile;
-		ATileManagerRef->PlayerStartingTile_SpawnTile->RightNeighbor = StartingGridTileRef;
+		StartingGridTileRef->LeftNeighbor = PlayerStartingTile_SpawnTile;
+		PlayerStartingTile_SpawnTile->RightNeighbor = StartingGridTileRef;
 		ATileManagerRef->PlayerSpawnPresentTile->SetActorRotation(FRotator(ATileManagerRef->PlayerSpawnPresentTile->GetActorRotation().Euler().X, -90.0f, ATileManagerRef->PlayerSpawnPresentTile->GetActorRotation().Euler().Z));
 		//TileManagerRef->PlayerStartingTile_SpawnTile->ConnectRightDoor(TileManagerRef->ChoosenDoorwayAsset, TileManagerRef->WallsSubFolderName, TileManagerRef->AllSpawnedWalls);
 		
@@ -401,18 +401,18 @@ void UTilePathSetupComp::CreateSpawnRoom()
 		{
 			//Set up door - rn defaulted to 3 TODO: do i really need to even choose other sides to start on? is the player even gunna notice? perspective of player always starts the same
 			//should always be having the same rotation right? therefore the door should always be up while everyone else's has different orientations
-			const FString TileLeftDoorName = "TileDoorConnecting_StartingRoom_to_" + FString::FromInt(ATileManagerRef->PlayerStartingTile_SpawnTile->RightNeighbor->XIndex) + "_" + FString::FromInt(ATileManagerRef->PlayerStartingTile_SpawnTile->RightNeighbor->ZIndex);
-			const FVector LeftDoorSpawnLocation = ATileManagerRef->PlayerStartingTile_SpawnTile->RightDoorSpawnPoint.GetLocation() + ATileManagerRef->PlayerStartingTile_SpawnTile->GetActorLocation();
-			const FTransform Spawm = FTransform(ATileManagerRef->PlayerStartingTile_SpawnTile->RightDoorSpawnPoint.GetRotation(), LeftDoorSpawnLocation);
-			ATileManagerRef->PlayerStartingTile_SpawnTile->RightDoor = GetWorld()->SpawnActor<ASTileDoor>(ATileManagerRef->TileDoorClass, Spawm, SpawnParams);
-			ATileManagerRef->DoorArray.Add(ATileManagerRef->PlayerStartingTile_SpawnTile->RightDoor);
-			ATileManagerRef->PlayerStartingTile_SpawnTile->RightDoor->SetActorLabel(TileLeftDoorName);
-			ATileManagerRef->PlayerStartingTile_SpawnTile->RightDoor->SetOwner(StartingGridTileRef);
+			const FString TileLeftDoorName = "TileDoorConnecting_StartingRoom_to_" + FString::FromInt(PlayerStartingTile_SpawnTile->RightNeighbor->XIndex) + "_" + FString::FromInt(PlayerStartingTile_SpawnTile->RightNeighbor->ZIndex);
+			const FVector LeftDoorSpawnLocation = PlayerStartingTile_SpawnTile->RightDoorSpawnPoint.GetLocation() + PlayerStartingTile_SpawnTile->GetActorLocation();
+			const FTransform Spawm = FTransform(PlayerStartingTile_SpawnTile->RightDoorSpawnPoint.GetRotation(), LeftDoorSpawnLocation);
+			PlayerStartingTile_SpawnTile->RightDoor = GetWorld()->SpawnActor<ASTileDoor>(ATileManagerRef->TileDoorClass, Spawm, SpawnParams);
+			ATileManagerRef->DoorArray.Add(PlayerStartingTile_SpawnTile->RightDoor);
+			PlayerStartingTile_SpawnTile->RightDoor->SetActorLabel(TileLeftDoorName);
+			PlayerStartingTile_SpawnTile->RightDoor->SetOwner(StartingGridTileRef);
 
 #if WITH_EDITOR
-			ATileManagerRef->PlayerStartingTile_SpawnTile->RightDoor->SetFolderPath(ATileManagerRef->DoorSubFolderName);
+			PlayerStartingTile_SpawnTile->RightDoor->SetFolderPath(ATileManagerRef->DoorSubFolderName);
 #endif
-			StartingGridTileRef->LeftDoor = ATileManagerRef->PlayerStartingTile_SpawnTile->RightDoor;
+			StartingGridTileRef->LeftDoor = PlayerStartingTile_SpawnTile->RightDoor;
 
 			StartingGridTileRef->ConnectLeftDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, ATileManagerRef->AllSpawnedWalls);
 		}
@@ -421,28 +421,28 @@ void UTilePathSetupComp::CreateSpawnRoom()
 	case 1:
 		//UP
 		SpawnPos = FVector(StartingGridTileRef->GetActorLocation().X, StartingGridTileRef->GetActorLocation().Y - (StartingGridTileRef->TileLength + DoorwayAdjustment), StartingGridTileRef->GetActorLocation().Z);
-		ATileManagerRef->PlayerStartingTile_SpawnTile = GetWorld()->SpawnActor<ASTile>(ATileManagerRef->TileBaseClass, SpawnPos, StartingGridTileRef->GetActorRotation(), SpawnParams);
+		PlayerStartingTile_SpawnTile = GetWorld()->SpawnActor<ASTile>(ATileManagerRef->TileBaseClass, SpawnPos, StartingGridTileRef->GetActorRotation(), SpawnParams);
 		ATileManagerRef->PlayerSpawnPresentTile = GetWorld()->SpawnActor<ASTile>(MyLocalLevelRef->PresetStartingTile, SpawnPos, StartingGridTileRef->GetActorRotation(), SpawnParams);
-		StartingGridTileRef->UpNeighbor = ATileManagerRef->PlayerStartingTile_SpawnTile;
-		ATileManagerRef->PlayerStartingTile_SpawnTile->DownNeighbor = StartingGridTileRef;
+		StartingGridTileRef->UpNeighbor = PlayerStartingTile_SpawnTile;
+		PlayerStartingTile_SpawnTile->DownNeighbor = StartingGridTileRef;
 		//TileManagerRef->PlayerStartingTile_SpawnTile->ConnectDownDoor(TileManagerRef->ChoosenDoorwayAsset, TileManagerRef->WallsSubFolderName, TileManagerRef->AllSpawnedWalls);
 
 		if (ATileManagerRef->DoorToStartRoom)
 		{
 			//Set up door - rn defaulted to 3 TODO: do i really need to even choose other sides to start on? is the player even gunna notice? perspective of player always starts the same
 			//should always be having the same rotation right? therefore the door should always be up while everyone else's has different orientations
-			const FString TileUpDoorName = "TileDoorConnecting_StartingRoom_to_" + FString::FromInt(ATileManagerRef->PlayerStartingTile_SpawnTile->DownNeighbor->XIndex) + "_" + FString::FromInt(ATileManagerRef->PlayerStartingTile_SpawnTile->DownNeighbor->ZIndex);
-			const FVector DownDoorSpawnLocation = ATileManagerRef->PlayerStartingTile_SpawnTile->DownDoorSpawnPoint.GetLocation() + ATileManagerRef->PlayerStartingTile_SpawnTile->GetActorLocation();
-			const FTransform Spawm = FTransform(ATileManagerRef->PlayerStartingTile_SpawnTile->DownDoorSpawnPoint.GetRotation(), DownDoorSpawnLocation);
-			ATileManagerRef->PlayerStartingTile_SpawnTile->DownDoor = GetWorld()->SpawnActor<ASTileDoor>(ATileManagerRef->TileDoorClass, Spawm, SpawnParams);
-			ATileManagerRef->DoorArray.Add(ATileManagerRef->PlayerStartingTile_SpawnTile->DownDoor);
-			ATileManagerRef->PlayerStartingTile_SpawnTile->DownDoor->SetActorLabel(TileUpDoorName);
-			ATileManagerRef->PlayerStartingTile_SpawnTile->DownDoor->SetOwner(StartingGridTileRef);
+			const FString TileUpDoorName = "TileDoorConnecting_StartingRoom_to_" + FString::FromInt(PlayerStartingTile_SpawnTile->DownNeighbor->XIndex) + "_" + FString::FromInt(PlayerStartingTile_SpawnTile->DownNeighbor->ZIndex);
+			const FVector DownDoorSpawnLocation = PlayerStartingTile_SpawnTile->DownDoorSpawnPoint.GetLocation() + PlayerStartingTile_SpawnTile->GetActorLocation();
+			const FTransform Spawm = FTransform(PlayerStartingTile_SpawnTile->DownDoorSpawnPoint.GetRotation(), DownDoorSpawnLocation);
+			PlayerStartingTile_SpawnTile->DownDoor = GetWorld()->SpawnActor<ASTileDoor>(ATileManagerRef->TileDoorClass, Spawm, SpawnParams);
+			ATileManagerRef->DoorArray.Add(PlayerStartingTile_SpawnTile->DownDoor);
+			PlayerStartingTile_SpawnTile->DownDoor->SetActorLabel(TileUpDoorName);
+			PlayerStartingTile_SpawnTile->DownDoor->SetOwner(StartingGridTileRef);
 
 #if WITH_EDITOR
-			ATileManagerRef->PlayerStartingTile_SpawnTile->DownDoor->SetFolderPath(ATileManagerRef->DoorSubFolderName);
+			PlayerStartingTile_SpawnTile->DownDoor->SetFolderPath(ATileManagerRef->DoorSubFolderName);
 #endif
-			StartingGridTileRef->UpDoor = ATileManagerRef->PlayerStartingTile_SpawnTile->DownDoor;
+			StartingGridTileRef->UpDoor = PlayerStartingTile_SpawnTile->DownDoor;
 
 			StartingGridTileRef->ConnectUpDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, ATileManagerRef->AllSpawnedWalls);
 		}
@@ -451,10 +451,10 @@ void UTilePathSetupComp::CreateSpawnRoom()
 	case 2:
 		//Right
 		SpawnPos = FVector(StartingGridTileRef->GetActorLocation().X + (StartingGridTileRef->TileLength + DoorwayAdjustment), StartingGridTileRef->GetActorLocation().Y, StartingGridTileRef->GetActorLocation().Z);
-		ATileManagerRef->PlayerStartingTile_SpawnTile = GetWorld()->SpawnActor<ASTile>(ATileManagerRef->TileBaseClass, SpawnPos, StartingGridTileRef->GetActorRotation(), SpawnParams);
+		PlayerStartingTile_SpawnTile = GetWorld()->SpawnActor<ASTile>(ATileManagerRef->TileBaseClass, SpawnPos, StartingGridTileRef->GetActorRotation(), SpawnParams);
 		ATileManagerRef->PlayerSpawnPresentTile = GetWorld()->SpawnActor<ASTile>(MyLocalLevelRef->PresetStartingTile, SpawnPos, StartingGridTileRef->GetActorRotation(), SpawnParams); //rotate 90
-		StartingGridTileRef->RightNeighbor = ATileManagerRef->PlayerStartingTile_SpawnTile;
-		ATileManagerRef->PlayerStartingTile_SpawnTile->LeftNeighbor = StartingGridTileRef;
+		StartingGridTileRef->RightNeighbor = PlayerStartingTile_SpawnTile;
+		PlayerStartingTile_SpawnTile->LeftNeighbor = StartingGridTileRef;
 		ATileManagerRef->PlayerSpawnPresentTile->SetActorRotation(FRotator(ATileManagerRef->PlayerSpawnPresentTile->GetActorRotation().Euler().X, 90, ATileManagerRef->PlayerSpawnPresentTile->GetActorRotation().Euler().Z));
 		//TileManagerRef->PlayerStartingTile_SpawnTile->ConnectRightDoor(TileManagerRef->ChoosenDoorwayAsset, TileManagerRef->WallsSubFolderName, TileManagerRef->AllSpawnedWalls);
 		
@@ -462,18 +462,18 @@ void UTilePathSetupComp::CreateSpawnRoom()
 		{
 			//Set up door - rn defaulted to 3 TODO: do i really need to even choose other sides to start on? is the player even gunna notice? perspective of player always starts the same
 			//should always be having the same rotation right? therefore the door should always be up while everyone else's has different orientations
-			const FString TileRightDoorName = "TileDoorConnecting_StartingRoom_to_" + FString::FromInt(ATileManagerRef->PlayerStartingTile_SpawnTile->LeftNeighbor->XIndex) + "_" + FString::FromInt(ATileManagerRef->PlayerStartingTile_SpawnTile->LeftNeighbor->ZIndex);
-			const FVector RightDoorSpawnLocation = ATileManagerRef->PlayerStartingTile_SpawnTile->LeftDoorSpawnPoint.GetLocation() + ATileManagerRef->PlayerStartingTile_SpawnTile->GetActorLocation();
-			const FTransform Spawm = FTransform(ATileManagerRef->PlayerStartingTile_SpawnTile->LeftDoorSpawnPoint.GetRotation(), RightDoorSpawnLocation);
-			ATileManagerRef->PlayerStartingTile_SpawnTile->LeftDoor = GetWorld()->SpawnActor<ASTileDoor>(ATileManagerRef->TileDoorClass, Spawm, SpawnParams);
-			ATileManagerRef->DoorArray.Add(ATileManagerRef->PlayerStartingTile_SpawnTile->LeftDoor);
-			ATileManagerRef->PlayerStartingTile_SpawnTile->LeftDoor->SetActorLabel(TileRightDoorName);
-			ATileManagerRef->PlayerStartingTile_SpawnTile->LeftDoor->SetOwner(StartingGridTileRef);
+			const FString TileRightDoorName = "TileDoorConnecting_StartingRoom_to_" + FString::FromInt(PlayerStartingTile_SpawnTile->LeftNeighbor->XIndex) + "_" + FString::FromInt(PlayerStartingTile_SpawnTile->LeftNeighbor->ZIndex);
+			const FVector RightDoorSpawnLocation = PlayerStartingTile_SpawnTile->LeftDoorSpawnPoint.GetLocation() + PlayerStartingTile_SpawnTile->GetActorLocation();
+			const FTransform Spawm = FTransform(PlayerStartingTile_SpawnTile->LeftDoorSpawnPoint.GetRotation(), RightDoorSpawnLocation);
+			PlayerStartingTile_SpawnTile->LeftDoor = GetWorld()->SpawnActor<ASTileDoor>(ATileManagerRef->TileDoorClass, Spawm, SpawnParams);
+			ATileManagerRef->DoorArray.Add(PlayerStartingTile_SpawnTile->LeftDoor);
+			PlayerStartingTile_SpawnTile->LeftDoor->SetActorLabel(TileRightDoorName);
+			PlayerStartingTile_SpawnTile->LeftDoor->SetOwner(StartingGridTileRef);
 
 #if WITH_EDITOR
-			ATileManagerRef->PlayerStartingTile_SpawnTile->LeftDoor->SetFolderPath(ATileManagerRef->DoorSubFolderName);
+			PlayerStartingTile_SpawnTile->LeftDoor->SetFolderPath(ATileManagerRef->DoorSubFolderName);
 #endif
-			StartingGridTileRef->RightDoor = ATileManagerRef->PlayerStartingTile_SpawnTile->LeftDoor;
+			StartingGridTileRef->RightDoor = PlayerStartingTile_SpawnTile->LeftDoor;
 
 			StartingGridTileRef->ConnectRightDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, ATileManagerRef->AllSpawnedWalls);
 		}
@@ -482,28 +482,28 @@ void UTilePathSetupComp::CreateSpawnRoom()
 	case 3:
 		//DOWN
 		SpawnPos = FVector(StartingGridTileRef->GetActorLocation().X, StartingGridTileRef->GetActorLocation().Y + (StartingGridTileRef->TileLength + DoorwayAdjustment), StartingGridTileRef->GetActorLocation().Z);
-		ATileManagerRef->PlayerStartingTile_SpawnTile = GetWorld()->SpawnActor<ASTile>(ATileManagerRef->TileBaseClass, SpawnPos, StartingGridTileRef->GetActorRotation(), SpawnParams); //rotate 180
+		PlayerStartingTile_SpawnTile = GetWorld()->SpawnActor<ASTile>(ATileManagerRef->TileBaseClass, SpawnPos, StartingGridTileRef->GetActorRotation(), SpawnParams); //rotate 180
 		ATileManagerRef->PlayerSpawnPresentTile = GetWorld()->SpawnActor<ASTile>(MyLocalLevelRef->PresetStartingTile, SpawnPos, StartingGridTileRef->GetActorRotation(), SpawnParams);
-		StartingGridTileRef->DownNeighbor = ATileManagerRef->PlayerStartingTile_SpawnTile;
-		ATileManagerRef->PlayerStartingTile_SpawnTile->UpNeighbor = StartingGridTileRef;
+		StartingGridTileRef->DownNeighbor = PlayerStartingTile_SpawnTile;
+		PlayerStartingTile_SpawnTile->UpNeighbor = StartingGridTileRef;
 		ATileManagerRef->PlayerSpawnPresentTile->SetActorRotation(FRotator(ATileManagerRef->PlayerSpawnPresentTile->GetActorRotation().Euler().X, 180.0f, ATileManagerRef->PlayerSpawnPresentTile->GetActorRotation().Euler().Z));
 
 		if (ATileManagerRef->DoorToStartRoom)
 		{
 			//Set up door - rn defaulted to 3 TODO: do i really need to even choose other sides to start on? is the player even gunna notice? perspective of player always starts the same
 			//should always be having the same rotation right? therefore the door should always be up while everyone else's has different orientations
-			const FString TileUpDoorName = "TileDoorConnecting_StartingRoom_to_" + FString::FromInt(ATileManagerRef->PlayerStartingTile_SpawnTile->UpNeighbor->XIndex) + "_" + FString::FromInt(ATileManagerRef->PlayerStartingTile_SpawnTile->UpNeighbor->ZIndex);
-			const FVector UpDoorSpawnLocation = ATileManagerRef->PlayerStartingTile_SpawnTile->UpDoorSpawnPoint.GetLocation() + ATileManagerRef->PlayerStartingTile_SpawnTile->GetActorLocation();
-			const FTransform Spawm = FTransform(ATileManagerRef->PlayerStartingTile_SpawnTile->UpDoorSpawnPoint.GetRotation(), UpDoorSpawnLocation);
-			ATileManagerRef->PlayerStartingTile_SpawnTile->UpDoor = GetWorld()->SpawnActor<ASTileDoor>(ATileManagerRef->TileDoorClass, Spawm, SpawnParams);
-			ATileManagerRef->DoorArray.Add(ATileManagerRef->PlayerStartingTile_SpawnTile->UpDoor);
-			ATileManagerRef->PlayerStartingTile_SpawnTile->UpDoor->SetActorLabel(TileUpDoorName);
-			ATileManagerRef->PlayerStartingTile_SpawnTile->UpDoor->SetOwner(StartingGridTileRef);
+			const FString TileUpDoorName = "TileDoorConnecting_StartingRoom_to_" + FString::FromInt(PlayerStartingTile_SpawnTile->UpNeighbor->XIndex) + "_" + FString::FromInt(PlayerStartingTile_SpawnTile->UpNeighbor->ZIndex);
+			const FVector UpDoorSpawnLocation = PlayerStartingTile_SpawnTile->UpDoorSpawnPoint.GetLocation() + PlayerStartingTile_SpawnTile->GetActorLocation();
+			const FTransform Spawm = FTransform(PlayerStartingTile_SpawnTile->UpDoorSpawnPoint.GetRotation(), UpDoorSpawnLocation);
+			PlayerStartingTile_SpawnTile->UpDoor = GetWorld()->SpawnActor<ASTileDoor>(ATileManagerRef->TileDoorClass, Spawm, SpawnParams);
+			ATileManagerRef->DoorArray.Add(PlayerStartingTile_SpawnTile->UpDoor);
+			PlayerStartingTile_SpawnTile->UpDoor->SetActorLabel(TileUpDoorName);
+			PlayerStartingTile_SpawnTile->UpDoor->SetOwner(StartingGridTileRef);
 
 #if WITH_EDITOR
-			ATileManagerRef->PlayerStartingTile_SpawnTile->UpDoor->SetFolderPath(ATileManagerRef->DoorSubFolderName);
+			PlayerStartingTile_SpawnTile->UpDoor->SetFolderPath(ATileManagerRef->DoorSubFolderName);
 #endif
-			StartingGridTileRef->DownDoor = ATileManagerRef->PlayerStartingTile_SpawnTile->UpDoor;
+			StartingGridTileRef->DownDoor = PlayerStartingTile_SpawnTile->UpDoor;
 			//PlayerStartingTileBase->ActivateUpDoor();
 
 			StartingGridTileRef->ConnectDownDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, ATileManagerRef->AllSpawnedWalls);
@@ -512,21 +512,21 @@ void UTilePathSetupComp::CreateSpawnRoom()
 	}
 
 	//label
-	ATileManagerRef->PlayerStartingTile_SpawnTile->SetActorLabel("StartingTile_Base");
+	PlayerStartingTile_SpawnTile->SetActorLabel("StartingTile_Base");
 	ATileManagerRef->PlayerSpawnPresentTile->SetActorLabel("StartingTile_Populate");
 #if WITH_EDITOR
-	ATileManagerRef->PlayerStartingTile_SpawnTile->SetFolderPath(ATileManagerRef->TileGenRootFolder);
+	PlayerStartingTile_SpawnTile->SetFolderPath(ATileManagerRef->TileGenRootFolder);
 	ATileManagerRef->PlayerSpawnPresentTile->SetFolderPath(ATileManagerRef->TileGenRootFolder);
 #endif
 	//Set the Preset ref to the SpawnPresetTile obj
-	ATileManagerRef->PlayerStartingTile_SpawnTile->PresetTile = ATileManagerRef->PlayerSpawnPresentTile;
+	PlayerStartingTile_SpawnTile->PresetTile = ATileManagerRef->PlayerSpawnPresentTile;
 
 	//Spawn stats from StartingTile to PlayerStartingTileBase, then we will reassign the StartingTile
 	ATileManagerRef->StartingGridTile->ShadePath();
-	ATileManagerRef->LevelPath.Insert(ATileManagerRef->PlayerStartingTile_SpawnTile, 0);
-	ATileManagerRef->AllActiveTiles.Insert(ATileManagerRef->PlayerStartingTile_SpawnTile, 0);
-	ATileManagerRef->PlayerStartingTile_SpawnTile->ShadeStartingRoom();
-	ATileManagerRef->StartingGridTile = ATileManagerRef->PlayerStartingTile_SpawnTile;
+	ATileManagerRef->LevelPath.Insert(PlayerStartingTile_SpawnTile, 0);
+	ATileManagerRef->AllActiveTiles.Insert(PlayerStartingTile_SpawnTile, 0);
+	PlayerStartingTile_SpawnTile->ShadeStartingRoom();
+	ATileManagerRef->StartingGridTile = PlayerStartingTile_SpawnTile;
 }
 
 

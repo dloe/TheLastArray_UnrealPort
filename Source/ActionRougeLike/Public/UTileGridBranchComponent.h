@@ -31,10 +31,9 @@ public:
 	// Sets default values for this component's properties
 	UTileGridBranchComponent();
 
-	//don't want things to be as statically coupled in manager so split things out with modular classes for each function of the map creation and setup
-	UPROPERTY(BlueprintAssignable)
-
-	FOnBranchFillGenerated OnGridAdditionalSetupCompletedEvent; //event to notify when path is created
+	// ---------------------------------
+	// ------- Public Functions --------
+	// ---------------------------------
 
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
 	void GameMapAdditionalSetup();
@@ -42,9 +41,23 @@ public:
 	UFUNCTION(Category = "Door Setup")
 	void SetupDoor(ASTile* tile, ETileSide SideToSpawnDoor, FString NameOfTileToConnect, ASTileDoor* door);
 
-	
+	// ---------------------------------
+	// -------- Public Variables -------
+	// ---------------------------------
+
+	UPROPERTY(EditAnywhere, Category = "Tile Generation")
+	ASTile* SecretRoom;
+
+	//don't want things to be as statically coupled in manager so split things out with modular classes for each function of the map creation and setup
+	UPROPERTY(BlueprintAssignable)
+
+	FOnBranchFillGenerated OnGridAdditionalSetupCompletedEvent; //event to notify when path is created
 
 protected:
+
+	// ---------------------------------
+	// -------- Helper Functions -------
+	// ---------------------------------
 
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
 	void RandomRoomsAndBranchesAdditions();
@@ -67,7 +80,6 @@ protected:
 	UFUNCTION(Category = "Abnormal Tile Placements")
 	void AddDoorsAndWalls(ASTile* CurrentTile, TArray<ASTileDoor*>& DoorsArray, TArray<ASTileWall*>& WallArray, TArray<FIntPointPair> SidesToCheck);
 
-
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
 	void CreateSecretRoom();
 
@@ -86,19 +98,6 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "Wall Setup")
 	UStaticMeshComponent* MergeWall(TArray<UStaticMeshComponent*> StaticMeshArrayToMerge);
 
-
-
-	//single rooms
-	UPROPERTY(EditAnywhere, Category = "Tile Generation")
-	int FillerRooms = 0;
-
-	UPROPERTY(EditAnywhere, Category = "Tile Generation")
-	ASTile* choosen;
-
-	UPROPERTY(EditAnywhere, Category = "Tile Variants")
-	TArray <ASTileVariantEnviornment*> SpawnedVariants;
-	
-
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
 	void CheckBranchTile(ASTile* TileToAdd, TArray<ASTile*>& CurrentPath, int Length, int prevDirection);
 
@@ -111,13 +110,27 @@ protected:
 	UFUNCTION(Category = "Door Setup")
 	void SpawnDoor(ASTile* tile, ETileSide SideToSpawnDoor, FString NameOfTileToConnect);
 
-	
-
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
 	void ConnectDoorBranch(ASTile* TileToAdd, int prevDirection);
 
+	// ---------------------------------
+	// -- Internal state / variables --
+	// ---------------------------------
 
-	//Cached references to external component pointers / variables
+	//single rooms
+	UPROPERTY(EditAnywhere, Category = "Tile Generation")
+	int FillerRooms = 0;
+
+	UPROPERTY(EditAnywhere, Category = "Tile Generation")
+	ASTile* choosen;
+
+	UPROPERTY(EditAnywhere, Category = "Tile Variants")
+	TArray <ASTileVariantEnviornment*> SpawnedVariants;
+	
+
+	// ---------------------------------
+	// -- Cached references to external component pointers / variables --
+	// ---------------------------------
 
 	//needs reference to STileManager for accessing Grid and other properties
 	UPROPERTY(EditAnywhere)

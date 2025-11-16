@@ -142,25 +142,17 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	FName VariantTileMapSubFolderName;
 
-	//starting tile reference - TO DO: PROTECT THIS LATER
+	//starting tile reference
 	//this is the start of the grid path, not to be confused with the Tile the player spawns on
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	ASTile* StartingGridTile;
 
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
-	ASTile* PlayerStartingTile_SpawnTile; //TODO: difference between this and StartingTile???
-
-	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	ASTile* choosen;
 
-	//starting tile reference - TO DO: PROTECT THIS LATER
+	//ending tile reference
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	ASTile* EndTile;
-
-	UPROPERTY(EditAnywhere, Category = "Tile Generation")
-	ASTile* SecretRoom;
-
-	
 
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	TArray<ASTileWall*> AllSpawnedWalls;
@@ -185,7 +177,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	TArray<ASTile*>	AvailableTiles;
 
-	//Assigned and brought in from local level
+	//Assigned and (spawned in from local level)
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	ASTile* PlayerSpawnPresentTile;
 
