@@ -356,7 +356,13 @@ bool UTileGridBranchComponent::VariantCandidateAnalysis(ASTile* CurrentTile, USF
 
 		//for bigger tiles, every direction we can place gets randomly choosen at after for loop
 		TArray<int> DirectionsAvailable;
-		CurrentVariant->RotationCheckCounter = 0;
+		CurrentVariant->RotationCheckCounter = 0; //reset every time we look at this tile for variant analysis
+
+		if (CurrentVariant->VariantPaths.IsEmpty()) //set in SetVariantPaths from SFTileVariantData.cpp
+		{
+			UE_LOG(LogTemp, Error, TEXT("Variant paths empty?"));
+		}
+
 		for (FVariantOffsetTransforms_Rotates transform : CurrentVariant->VariantPaths)
 		{
 			TArray <ASTile*> EncompassingTilesBuild;
@@ -517,6 +523,7 @@ bool UTileGridBranchComponent::VariantCandidateAnalysis(ASTile* CurrentTile, USF
 /// <returns></returns>
 bool UTileGridBranchComponent::PlugTile(FVariantOffsetTransforms_Rotates transformRotated, USFTileVariantDefinitionData* currentVariant, ASTile* CurrentTile, TArray <ASTile*>& EncompassingTilesBuild, FTileVariantSetup_PlugTileSaveInfo& transVariantPlugInfo)
 {
+//this is defualted to true when it should be false?
 	bool CantPlaceVariant = true;
 	UE_LOG(LogTemp, Log, TEXT("Start of plug tile for tile %d,%d"), CurrentTile->XIndex, CurrentTile->ZIndex);
 	//check given orientations the variant can be placed at
@@ -524,6 +531,11 @@ bool UTileGridBranchComponent::PlugTile(FVariantOffsetTransforms_Rotates transfo
 
 	//as we check through each one, build an array that we can send back if it can be inserted
 	UE_LOG(LogTemp, Log, TEXT("Rotation: %d"), transformRotated.TransformDirectionRotation);
+
+	if (transformRotated.DirectionsRotations.IsEmpty())
+	{
+		UE_LOG(LogTemp, Error, TEXT("%d: Shows transformedRotated's DirectionsRotations is empty.., please investigate."), currentVariant->EVariantSize);
+	}
 	
 	for (FIntPoint GivenOffset : transformRotated.DirectionsRotations) //each index of variant paths is passed in via transformRotated, and then each of those indexs has the transform flavors array to index through
 	{
@@ -567,12 +579,13 @@ bool UTileGridBranchComponent::PlugTile(FVariantOffsetTransforms_Rotates transfo
 	else {
 		//UE_LOG(LogTemp, Log, TEXT("counter: %d"), currentVariant->RotationCheckCounter);
 		//which  currentVariant->SidesToCheckRotation.TranformDirection == transformRotated.TransformDirection?
-		UE_LOG(LogTemp, Log, TEXT("Starting tile: %d:%d rotation side counter: %d"), CurrentTile->XIndex, CurrentTile->ZIndex, currentVariant->RotationCheckCounter);
+		UE_LOG(LogTemp, Log, TEXT("Starting tile: %d:%d rotation side counter: %d"), CurrentTile->XIndex, CurrentTile->ZIndex, currentVariant->RotationCheckCounter); //2,4
+
 		bool DebugIssueReturn = AddDoorsAndWalls(CurrentTile, transVariantPlugInfo.DoorsArray, transVariantPlugInfo.WallArray, currentVariant->SidesToCheckRotation[currentVariant->RotationCheckCounter].ConnectingSideOffset);
 	
 		if (DebugIssueReturn)
 		{
-			UE_LOG(LogTemp, Error, TEXT("Ran into null tile in offsets, please investigate."));
+			UE_LOG(LogTemp, Error, TEXT("%d: Ran into null tile in offsets, please investigate."), currentVariant->EVariantSize);
 		}
 	}
 
@@ -604,13 +617,15 @@ bool UTileGridBranchComponent::AddDoorsAndWalls(ASTile* CurrentTile, TArray<ASTi
 
 		//for now
 		if(Tile1 == NULL) {
-			UE_LOG(LogTemp, Error, TEXT("tile1 null")); //check sides to check, what direction are we going in here?
+			UE_LOG(LogTemp, Error, TEXT("tile1 null: %s"), *tile1ToCompare.ToString()); //check sides to check, what direction are we going in here?
+			UE_LOG(LogTemp, Log, TEXT("tile1 info modifier: %s"), *PairToCheck.StartCords.ToString());
 			debugIssueFor = true;
 			continue;
 		}
 
 		if (Tile2 == NULL) {
-			UE_LOG(LogTemp, Error, TEXT("tile2 null")); //check sides to check, what direction are we going in here?
+			UE_LOG(LogTemp, Error, TEXT("tile2 null: %s"), *tile2ToCompare.ToString()); //check sides to check, what direction are we going in here?
+			UE_LOG(LogTemp, Log, TEXT("tile2 info modifier: %s"), *PairToCheck.EndCords.ToString()); //shouldnt this be 2,3 instead of 2,5? (current is 2,4)
 			debugIssueFor = true;
 			continue;
 		}

@@ -150,6 +150,8 @@ struct FVariantOffsetTransforms_SidesToCheckOffsetsRotations
 {
 	GENERATED_BODY()
 
+	//Each tile in a variant will have to connect to each other or jump from one tile to another. These are the 
+	//'bridges' we have to check between each tile when forming a variant or checking if we can place a variant
 	UPROPERTY(EditAnywhere)
 	TArray<FIntPointPair> ConnectingSideOffset;
 
