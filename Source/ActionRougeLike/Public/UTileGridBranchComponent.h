@@ -78,7 +78,7 @@ protected:
 	bool PlugTile(FVariantOffsetTransforms_Rotates transformRotated, USFTileVariantDefinitionData* currentVariant, ASTile* CurrentTile, TArray <ASTile*>& EncompassingTilesBuild, FTileVariantSetup_PlugTileSaveInfo& transVariantPlugInfo);
 
 	UFUNCTION(Category = "Abnormal Tile Placements")
-	void AddDoorsAndWalls(ASTile* CurrentTile, TArray<ASTileDoor*>& DoorsArray, TArray<ASTileWall*>& WallArray, TArray<FIntPointPair> SidesToCheck);
+	bool AddDoorsAndWalls(ASTile* CurrentTile, TArray<ASTileDoor*>& DoorsArray, TArray<ASTileWall*>& WallArray, TArray<FIntPointPair> SidesToCheck);
 
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
 	void CreateSecretRoom();

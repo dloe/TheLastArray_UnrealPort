@@ -568,7 +568,12 @@ bool UTileGridBranchComponent::PlugTile(FVariantOffsetTransforms_Rotates transfo
 		//UE_LOG(LogTemp, Log, TEXT("counter: %d"), currentVariant->RotationCheckCounter);
 		//which  currentVariant->SidesToCheckRotation.TranformDirection == transformRotated.TransformDirection?
 		UE_LOG(LogTemp, Log, TEXT("Starting tile: %d:%d rotation side counter: %d"), CurrentTile->XIndex, CurrentTile->ZIndex, currentVariant->RotationCheckCounter);
-		AddDoorsAndWalls(CurrentTile, transVariantPlugInfo.DoorsArray, transVariantPlugInfo.WallArray, currentVariant->SidesToCheckRotation[currentVariant->RotationCheckCounter].ConnectingSideOffset);
+		bool DebugIssueReturn = AddDoorsAndWalls(CurrentTile, transVariantPlugInfo.DoorsArray, transVariantPlugInfo.WallArray, currentVariant->SidesToCheckRotation[currentVariant->RotationCheckCounter].ConnectingSideOffset);
+	
+		if (DebugIssueReturn)
+		{
+			UE_LOG(LogTemp, Error, TEXT("Ran into null tile in offsets, please investigate."));
+		}
 	}
 
 	return CantPlaceVariant;
@@ -583,8 +588,9 @@ bool UTileGridBranchComponent::PlugTile(FVariantOffsetTransforms_Rotates transfo
 /// <param name="CurrentTile"></param>
 /// <param name="DoorsArray"></param>
 /// <param name="WallArray"></param>
-void UTileGridBranchComponent::AddDoorsAndWalls(ASTile* CurrentTile, TArray<ASTileDoor*>& DoorsArray, TArray<ASTileWall*>& WallArray, TArray<FIntPointPair> SidesToCheck)
+bool UTileGridBranchComponent::AddDoorsAndWalls(ASTile* CurrentTile, TArray<ASTileDoor*>& DoorsArray, TArray<ASTileWall*>& WallArray, TArray<FIntPointPair> SidesToCheck)
 {
+	bool debugIssueFor = false;
 	for (FIntPointPair PairToCheck : SidesToCheck)
 	{
 		//based on the 2 sides (next to each other), determine which is the proper side
@@ -598,12 +604,14 @@ void UTileGridBranchComponent::AddDoorsAndWalls(ASTile* CurrentTile, TArray<ASTi
 
 		//for now
 		if(Tile1 == NULL) {
-			UE_LOG(LogTemp, Error, TEXT("tile1 null"));
+			UE_LOG(LogTemp, Error, TEXT("tile1 null")); //check sides to check, what direction are we going in here?
+			debugIssueFor = true;
 			continue;
 		}
 
 		if (Tile2 == NULL) {
-			UE_LOG(LogTemp, Error, TEXT("tile2 null"));
+			UE_LOG(LogTemp, Error, TEXT("tile2 null")); //check sides to check, what direction are we going in here?
+			debugIssueFor = true;
 			continue;
 		}
 
@@ -646,6 +654,7 @@ void UTileGridBranchComponent::AddDoorsAndWalls(ASTile* CurrentTile, TArray<ASTi
 		}
 
 	}
+	return debugIssueFor;
 }
 
 /// <summary>
