@@ -53,11 +53,10 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
 
-	UFUNCTION(BlueprintNativeEvent, Category = "Tile Setup")
-	void SetUpDoorTransforms();
+	// ---------------------------------
+	// ------- Public Variables --------
+	// ---------------------------------
 
 	UPROPERTY(VisibleAnywhere)
 	USceneComponent* DoorsRoot;
@@ -65,10 +64,7 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	ASTileVariantEnviornment* AttachedVariant;
 
-	UFUNCTION(BlueprintCallable, Category = "Tile Components - Walls")
-	void ActivateWalls(TSubclassOf<ASTileWall> ChoosenWallAsset, FName WallsSubFolderName, TArray<ASTileWall*>& AllSpawnedWalls);
-
-#pragma region Tile Stats
+#pragma region Tile Stats - Public Variables
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Tile Stats")
 	float TileLength;
 
@@ -91,19 +87,9 @@ public:
 
 	//UPROPERTY(EditAnywhere, Category = "Tile Variant")
 	//ETileSizeVariant VariantType = ETileSizeVariant::ET1x1;
-
-	UFUNCTION(Category = "Tile Stats")
-	bool IsBossTile() const;
-
-	UFUNCTION(Category = "Tile Stats")
-	bool IsStartingTile() const;
-
-	UFUNCTION(Category = "Tile Stats")
-	bool IsNotSpecialTile();
-
 #pragma endregion
 
-#pragma region Tile Path
+#pragma region Tile Path - Public Variables
 
 	UPROPERTY(EditAnywhere, Category = "Tile Components - Path")
 	ASTile* PreviousTile;
@@ -129,33 +115,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Tile Components - Path")
 	FString TileDescription = "";
 
-	UFUNCTION(BlueprintCallable, Category = "Tile Components - Path Debug")
-	void ShadeNull();
-
-	UFUNCTION(BlueprintCallable, Category = "Tile Components - Path Debug")
-	void ShadePath();
-
-	UFUNCTION(BlueprintCallable, Category = "Tile Components - Path Debug")
-	void ShadeActiveRoom();
-
-	UFUNCTION(BlueprintCallable, Category = "Tile Components - Path Debug")
-	void ShadeBossRoom();
-
-	UFUNCTION(BlueprintCallable, Category = "Tile Components - Path Debug")
-	void ShadeStartingRoom();
-
-	UFUNCTION(BlueprintCallable, Category = "Tile Components - Path Debug")
-	void ShadeSecretRoom();
-
-	UFUNCTION(BlueprintCallable, Category = "Tile Components - Path Debug")
-	void ShadeTestRoom();
-
-	UFUNCTION(BlueprintCallable, Category = "Tile Components - Path Debug")
-	void ShadeEndRoom();
-
 #pragma endregion
 
-#pragma region Tile Neighbors
+#pragma region Tile Neighbors - Public Variables
 	//Neighbors
 	UPROPERTY(EditAnywhere, Category = "Tile Components - Neighbors")
 	ASTile* UpNeighbor; //index above us, aka greater 
@@ -165,40 +127,9 @@ public:
 	ASTile* LeftNeighbor;
 	UPROPERTY(EditAnywhere, Category = "Tile Components - Neighbors")
 	ASTile* RightNeighbor;
-
-
-
-	UFUNCTION(Category = "Tile Components - Neighbors")
-	bool HasValidRightNeighbor();
-
-	UFUNCTION(Category = "Tile Components - Neighbors")
-	bool HasValidLeftNeighbor();
-
-	UFUNCTION(Category = "Tile Components - Neighbors")
-	bool HasValidDownNeighbor();
-
-	UFUNCTION(Category = "Tile Components - Neighbors")
-	bool HasValidUpNeighbor();
-
-	//These are neighbors that are existing that we want to connect to
-	UFUNCTION(Category = "Tile Components - Neighbors")
-	bool HasConnectedRightNeighbor();
-
-	UFUNCTION(Category = "Tile Components - Neighbors")
-	bool HasConnectedLeftNeighbor();
-
-	UFUNCTION(Category = "Tile Components - Neighbors")
-	bool HasConnectedUpNeighbor();
-
-	UFUNCTION(Category = "Tile Components - Neighbors")
-	bool HasConnectedDownNeighbor();
-
-
-
 #pragma endregion
 
-
-#pragma region Doors and Walls
+#pragma region Doors and Walls - Public Variables
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Components - Neighbors")
 	ASTileDoor* UpDoor;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite,Category = "Tile Components - Neighbors")
@@ -244,7 +175,92 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Walls")
 	int bossRoomRotationDirection = -1;
-	
+	#pragma endregion
+
+	// ---------------------------------
+	// -------- Public Functions -------
+	// ---------------------------------
+
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
+
+	UFUNCTION(BlueprintNativeEvent, Category = "Tile Setup")
+	void SetUpDoorTransforms();
+
+UFUNCTION(BlueprintCallable, Category = "Tile Components - Walls")
+	void ActivateWalls(TSubclassOf<ASTileWall> ChoosenWallAsset, FName WallsSubFolderName, TArray<ASTileWall*>& AllSpawnedWalls);
+
+#pragma region Tile Stats - Public Functions
+
+	UFUNCTION(Category = "Tile Stats")
+	bool IsBossTile() const;
+
+	UFUNCTION(Category = "Tile Stats")
+	bool IsStartingTile() const;
+
+	UFUNCTION(Category = "Tile Stats")
+	bool IsNotSpecialTile();
+
+#pragma endregion
+
+#pragma region Tile Path - Public Functions
+
+	UFUNCTION(BlueprintCallable, Category = "Tile Components - Path Debug")
+	void ShadeNull();
+
+	UFUNCTION(BlueprintCallable, Category = "Tile Components - Path Debug")
+	void ShadePath();
+
+	UFUNCTION(BlueprintCallable, Category = "Tile Components - Path Debug")
+	void ShadeActiveRoom();
+
+	UFUNCTION(BlueprintCallable, Category = "Tile Components - Path Debug")
+	void ShadeBossRoom();
+
+	UFUNCTION(BlueprintCallable, Category = "Tile Components - Path Debug")
+	void ShadeStartingRoom();
+
+	UFUNCTION(BlueprintCallable, Category = "Tile Components - Path Debug")
+	void ShadeSecretRoom();
+
+	UFUNCTION(BlueprintCallable, Category = "Tile Components - Path Debug")
+	void ShadeTestRoom();
+
+	UFUNCTION(BlueprintCallable, Category = "Tile Components - Path Debug")
+	void ShadeEndRoom();
+
+#pragma endregion
+
+#pragma region Tile Neighbors - Public Functions
+
+	UFUNCTION(Category = "Tile Components - Neighbors")
+	bool HasValidRightNeighbor();
+
+	UFUNCTION(Category = "Tile Components - Neighbors")
+	bool HasValidLeftNeighbor();
+
+	UFUNCTION(Category = "Tile Components - Neighbors")
+	bool HasValidDownNeighbor();
+
+	UFUNCTION(Category = "Tile Components - Neighbors")
+	bool HasValidUpNeighbor();
+
+	//These are neighbors that are existing that we want to connect to
+	UFUNCTION(Category = "Tile Components - Neighbors")
+	bool HasConnectedRightNeighbor();
+
+	UFUNCTION(Category = "Tile Components - Neighbors")
+	bool HasConnectedLeftNeighbor();
+
+	UFUNCTION(Category = "Tile Components - Neighbors")
+	bool HasConnectedUpNeighbor();
+
+	UFUNCTION(Category = "Tile Components - Neighbors")
+	bool HasConnectedDownNeighbor();
+
+#pragma endregion
+
+#pragma region Doors and Walls - Public Functions
 	UFUNCTION(BlueprintCallable, Category = "Tile Components - Doors")
 	void ActivateDoorToPath();
 

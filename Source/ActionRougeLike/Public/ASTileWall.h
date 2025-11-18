@@ -13,17 +13,31 @@ class ACTIONROUGELIKE_API ASTileWall : public AActor
 {
 	GENERATED_BODY()
 	
-public:	
-	// Sets default values for this actor's properties
-	ASTileWall();
-
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 public:	
+
+	// Sets default values for this actor's properties
+	ASTileWall();
+
+	// ---------------------------------
+	// ------- Public Functions --------
+	// ---------------------------------
+
+	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
+	void RemoveOuter();
+
+	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
+	void RemoveInner();
+
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	// ---------------------------------
+	// ------- Public Variables --------
+	// ---------------------------------
 
 	//will store properties such as corresponding door, key, etc or other things wall related
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Walls")
@@ -55,14 +69,5 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Walls")
 	bool WillRemoveInner;
-
-	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
-	void RemoveOuter();
-
-	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
-	void RemoveInner();
-
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Walls")
-	//ETileSide WallSide;
 
 };

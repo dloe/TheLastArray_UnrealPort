@@ -22,8 +22,10 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	
+	// ---------------------------------
+	// ------- Public Variables --------
+	// ---------------------------------
 
 	//tiers of different variants in 2d array
 	UPROPERTY(EditAnywhere, Category = "Tile Variant Data")
@@ -45,6 +47,13 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Variant Data")
 	TArray <USFTileVariantDefinitionData*> Stage5_Lowest;
+
+	// ---------------------------------
+	// -------- Public Functions -------
+	// ---------------------------------
+
+	// Called every frame
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
 	void SetVariables();

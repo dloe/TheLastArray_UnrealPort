@@ -75,7 +75,7 @@ public:
 	ASTileManager();
 
 	// ---------------------------------
-	// ------- Public Functions --------
+	// ------- Public Variables --------
 	// ---------------------------------
 
 	UPROPERTY(EditAnywhere, Category = "Game Setup Generation")
