@@ -1,0 +1,312 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "GameFramework/Actor.h"
+#include "Enviornment/TileGeneration/STileDoor.h"
+#include "ASTileWall.h"
+#include "STileVariantEnviornment.h"
+#include "STile.generated.h"
+
+UENUM(BlueprintType)
+	enum class ETileStatus : uint8 {
+		ETile_NULLROOM UMETA(DisplayName = "NullRoom"),
+		ETile_PATH  UMETA(DisplayName = "Path"),
+		ETile_ROOM     UMETA(DisplayName = "Room"),
+		ETile_STARTINGROOM UMETA(DisplayName = "StartingRoom"),
+		ETile_SECRETROOM UMETA(DisplayName = "SecretRoom"),
+		ETile_BOSSROOM UMETA(DisplayName = "BossRoom"),
+	};
+
+	UENUM(BlueprintType)
+	enum class ETileSide : uint8 {
+		ETile_Up UMETA(DisplayName = "Up"),
+		ETile_Down  UMETA(DisplayName = "Down"),
+		ETile_Left     UMETA(DisplayName = "Left"),
+		ETile_Right UMETA(DisplayName = "Right"),
+	};
+
+	//class ETileSizeVariant;
+	class ASTileDoorWallConnection;
+
+UCLASS()
+class ACTIONROUGELIKE_API ASTile : public AActor
+{
+	/// <summary>
+	/// Tile
+	/// Dylan Loe
+	/// 
+	/// Notes:
+	/// - Core building block of tile map
+	/// - will contain references to doors connecting each other
+	/// 
+	/// </summary>
+	GENERATED_BODY()
+	
+public:	
+	// Sets default values for this actor's properties
+	ASTile();
+
+protected:
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+
+public:	
+
+	// ---------------------------------
+	// ------- Public Variables --------
+	// ---------------------------------
+
+	UPROPERTY(VisibleAnywhere)
+	USceneComponent* DoorsRoot;
+
+	UPROPERTY(VisibleAnywhere)
+	ASTileVariantEnviornment* AttachedVariant;
+
+#pragma region Tile Stats - Public Variables
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Tile Stats")
+	float TileLength;
+
+	//what our index is on the array
+	UPROPERTY(EditAnywhere, Category = "Tile Stats")
+	int32 XIndex = -1;
+	UPROPERTY(EditAnywhere, Category = "Tile Stats")
+	int32 ZIndex = -1;
+
+	// Contains a reference to the present used for overall Tile layout
+	UPROPERTY(EditAnywhere, Category = "Tile Stats")
+	AActor* PresetTile;
+	
+
+	UPROPERTY(EditAnywhere, Category = "Tile Stats")
+	ETileStatus TileStatus;
+
+	UPROPERTY(EditAnywhere, Category = "Tile Variant")
+	bool TileVariantInUse = false;
+
+	//UPROPERTY(EditAnywhere, Category = "Tile Variant")
+	//ETileSizeVariant VariantType = ETileSizeVariant::ET1x1;
+#pragma endregion
+
+#pragma region Tile Path - Public Variables
+
+	UPROPERTY(EditAnywhere, Category = "Tile Components - Path")
+	ASTile* PreviousTile;
+
+	UPROPERTY(EditAnywhere, Category = "Tile Components - Path")
+	bool CheckForPath = false;                                                   //Is Tile on main path
+
+	UPROPERTY(EditAnywhere, Category = "Tile Components - Path")
+	bool PartOfPath = false;
+
+	UPROPERTY(EditAnywhere, Category = "Tile Components - Path")
+	int PathNumber = -1;
+
+	UPROPERTY(EditAnywhere, Category = "Tile Components - Path")
+	bool EndOfPath = false;
+
+	UPROPERTY(EditAnywhere, Category = "Tile Components - Path")
+	bool EndOfBranchPath = false;
+
+	UPROPERTY(EditAnywhere, Category = "Tile Components - Path")
+	bool ConnectedToPath = false;
+
+	UPROPERTY(EditAnywhere, Category = "Tile Components - Path")
+	FString TileDescription = "";
+
+#pragma endregion
+
+#pragma region Tile Neighbors - Public Variables
+	//Neighbors
+	UPROPERTY(EditAnywhere, Category = "Tile Components - Neighbors")
+	ASTile* UpNeighbor; //index above us, aka greater 
+	UPROPERTY(EditAnywhere, Category = "Tile Components - Neighbors")
+	ASTile* DownNeighbor;
+	UPROPERTY(EditAnywhere, Category = "Tile Components - Neighbors")
+	ASTile* LeftNeighbor;
+	UPROPERTY(EditAnywhere, Category = "Tile Components - Neighbors")
+	ASTile* RightNeighbor;
+#pragma endregion
+
+#pragma region Doors and Walls - Public Variables
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Components - Neighbors")
+	ASTileDoor* UpDoor;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite,Category = "Tile Components - Neighbors")
+	ASTileDoor* DownDoor;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Components - Neighbors")
+	ASTileDoor* LeftDoor;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Components - Neighbors")
+	ASTileDoor* RightDoor;
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Components - Neighbors")
+	FTransform UpDoorSpawnPoint;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Components - Neighbors")
+	FTransform DownDoorSpawnPoint;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Components - Neighbors")
+	FTransform LeftDoorSpawnPoint;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Components - Neighbors")
+	FTransform RightDoorSpawnPoint;
+
+	//turn these off when our door is active
+	//TODO: if a door is activated, we need to remove the wall placeholder, and instead spawn in a proper door and wall
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Walls")
+	FTransform SM_UpWallSpawnPoint;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Walls")
+	FTransform SM_DownWallSpawnPoint;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Walls")
+	FTransform SM_LeftWallSpawnPoint;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Walls")
+	FTransform SM_RightWallSpawnPoint;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Walls")
+	UStaticMeshComponent* Test;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Walls")
+	ASTileWall* UpWall;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Walls")
+	ASTileWall* DownWall;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Walls")
+	ASTileWall* LeftWall;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Walls")
+	ASTileWall* RightWall;
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Walls")
+	int bossRoomRotationDirection = -1;
+	#pragma endregion
+
+	// ---------------------------------
+	// -------- Public Functions -------
+	// ---------------------------------
+
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
+
+	UFUNCTION(BlueprintNativeEvent, Category = "Tile Setup")
+	void SetUpDoorTransforms();
+
+UFUNCTION(BlueprintCallable, Category = "Tile Components - Walls")
+	void ActivateWalls(TSubclassOf<ASTileWall> ChoosenWallAsset, FName WallsSubFolderName, TArray<ASTileWall*>& AllSpawnedWalls);
+
+#pragma region Tile Stats - Public Functions
+
+	UFUNCTION(Category = "Tile Stats")
+	bool IsBossTile() const;
+
+	UFUNCTION(Category = "Tile Stats")
+	bool IsStartingTile() const;
+
+	UFUNCTION(Category = "Tile Stats")
+	bool IsNotSpecialTile();
+
+#pragma endregion
+
+#pragma region Tile Path - Public Functions
+
+	UFUNCTION(BlueprintCallable, Category = "Tile Components - Path Debug")
+	void ShadeNull();
+
+	UFUNCTION(BlueprintCallable, Category = "Tile Components - Path Debug")
+	void ShadePath();
+
+	UFUNCTION(BlueprintCallable, Category = "Tile Components - Path Debug")
+	void ShadeActiveRoom();
+
+	UFUNCTION(BlueprintCallable, Category = "Tile Components - Path Debug")
+	void ShadeBossRoom();
+
+	UFUNCTION(BlueprintCallable, Category = "Tile Components - Path Debug")
+	void ShadeStartingRoom();
+
+	UFUNCTION(BlueprintCallable, Category = "Tile Components - Path Debug")
+	void ShadeSecretRoom();
+
+	UFUNCTION(BlueprintCallable, Category = "Tile Components - Path Debug")
+	void ShadeTestRoom();
+
+	UFUNCTION(BlueprintCallable, Category = "Tile Components - Path Debug")
+	void ShadeEndRoom();
+
+#pragma endregion
+
+#pragma region Tile Neighbors - Public Functions
+
+	UFUNCTION(Category = "Tile Components - Neighbors")
+	bool HasValidRightNeighbor();
+
+	UFUNCTION(Category = "Tile Components - Neighbors")
+	bool HasValidLeftNeighbor();
+
+	UFUNCTION(Category = "Tile Components - Neighbors")
+	bool HasValidDownNeighbor();
+
+	UFUNCTION(Category = "Tile Components - Neighbors")
+	bool HasValidUpNeighbor();
+
+	//These are neighbors that are existing that we want to connect to
+	UFUNCTION(Category = "Tile Components - Neighbors")
+	bool HasConnectedRightNeighbor();
+
+	UFUNCTION(Category = "Tile Components - Neighbors")
+	bool HasConnectedLeftNeighbor();
+
+	UFUNCTION(Category = "Tile Components - Neighbors")
+	bool HasConnectedUpNeighbor();
+
+	UFUNCTION(Category = "Tile Components - Neighbors")
+	bool HasConnectedDownNeighbor();
+
+#pragma endregion
+
+#pragma region Doors and Walls - Public Functions
+	UFUNCTION(BlueprintCallable, Category = "Tile Components - Doors")
+	void ActivateDoorToPath();
+
+	UFUNCTION(BlueprintCallable, Category = "Tile Components - Doors")
+	void ActivateDoorsBranch();
+
+	UFUNCTION(BlueprintCallable, Category = "Tile Components - Doors")
+	void ActivateDoorsRandom();
+
+	UFUNCTION(BlueprintCallable, Category = "Tile Components - Doors")
+	void SyncDoors();
+
+	UFUNCTION(Category = "Tile Components - Doors")
+	void TurnAllDoorsInactive();
+
+	//connect tile door to path (so not a valid tile that could be placed but a tile that already exists there)
+	UFUNCTION(Category = "Tile Components - Doors")
+	void ConnectUpDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName, TArray<ASTileWall*>& AllSpawnedWalls);
+	UFUNCTION(Category = "Tile Components - Doors")
+	void ConnectDownDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName, TArray<ASTileWall*>& AllSpawnedWalls);
+	UFUNCTION(Category = "Tile Components - Doors")
+	void ConnectLeftDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName, TArray<ASTileWall*>& AllSpawnedWalls);
+	UFUNCTION(Category = "Tile Components - Doors")
+	void ConnectRightDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName, TArray<ASTileWall*>& AllSpawnedWalls);
+
+	UFUNCTION(Category = "Tile Components - Doors")
+	void ActivateUpDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName,TArray<ASTileWall*>& AllSpawnedWalls);
+
+	UFUNCTION(Category = "Tile Components - Doors")
+	void ActivateDownDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName, TArray<ASTileWall*>& AllSpawnedWalls);
+
+	UFUNCTION(Category = "Tile Components - Doors")
+	void ActivateRightDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName, TArray<ASTileWall*>& AllSpawnedWalls);
+
+	UFUNCTION(Category = "Tile Components - Doors")
+	void ActivateLeftDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName, TArray<ASTileWall*>& AllSpawnedWalls);
+
+	UFUNCTION(Category = "Tile Components - Walls")
+	void RemoveCurrentWall(ETileSide side);
+
+	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
+	ASTileWall* SpawnDoorConnector(ETileSide side, TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName, TArray<ASTileWall*>& AllSpawnedWalls);
+
+	UFUNCTION(Category = "Tile Components - Setup")
+	void SetupSecretRoomDoorWalls(ETileSide side, TSubclassOf<ASTileWall> ChoosenWallAsset, FName WallsSubFolderName, TArray<ASTileWall*>& AllSpawnedWalls);
+
+#pragma endregion
+
+};
