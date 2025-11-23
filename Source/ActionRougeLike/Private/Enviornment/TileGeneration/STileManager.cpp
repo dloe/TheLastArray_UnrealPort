@@ -68,6 +68,8 @@ void ASTileManager::BeginPlay()
 {
 	Super::BeginPlay();
 
+	LevelSetupStartTime = FPlatformTime::Seconds();
+
 	//TO DO: Make a set var function?
 	TileVariantComponent = FindComponentByClass<UTileVariantComponent>();
 
@@ -75,6 +77,7 @@ void ASTileManager::BeginPlay()
 		UE_LOG(LogTemp, Log, TEXT("==========================================================="));
 		UE_LOG(LogTemp, Log, TEXT("================= TILE GENERATION ========================="));
 		UE_LOG(LogTemp, Log, TEXT("==========================================================="));
+
 	}
 	SeedSetup();
 
@@ -114,6 +117,14 @@ void ASTileManager::OnTilePathGeneration()
 void ASTileManager::OnBranchFillGeneration()
 {
 	RemoveUnusedOuters();
+
+	TileGenerationEndTime = FPlatformTime::Seconds();
+
+	TileSetupDuration = TileGenerationEndTime - LevelSetupStartTime;
+
+	if (bDebugPrints) {
+		UE_LOG(LogTemp, Log, TEXT("Tile Generation Setup Complete, system time: %.6f"), TileSetupDuration);
+	}
 
 	//Level asset spawn can now begin
 	LevelAssetSetupComponent->PopulateGrid();

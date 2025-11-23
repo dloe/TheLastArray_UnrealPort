@@ -88,6 +88,16 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Game Setup Generation")
 	bool bDebugPrints = false;
 
+	//For time stamping
+	UPROPERTY(EditAnywhere, Category = "Debug")
+	double LevelSetupStartTime;
+
+	UPROPERTY(EditAnywhere, Category = "Debug")
+	double TileGenerationEndTime;
+
+	UPROPERTY(EditAnywhere, Category = "Debug")
+	double TileSetupDuration;
+
 #pragma region Tile Generation Public Vars
 
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
