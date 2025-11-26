@@ -41,6 +41,9 @@ public:
 	UFUNCTION(Category = "Door Setup")
 	void SetupDoor(ASTile* tile, ETileSide SideToSpawnDoor, FString NameOfTileToConnect, ASTileDoor* door);
 
+	UFUNCTION(BlueprintCallable, Category = "Level Setup")
+	TArray <ASTileVariantEnviornment*> GetSpawnedVariantTiles() { return SpawnedVariants; };
+
 	// ---------------------------------
 	// -------- Public Variables -------
 	// ---------------------------------
@@ -52,6 +55,8 @@ public:
 	UPROPERTY(BlueprintAssignable)
 
 	FOnBranchFillGenerated OnGridAdditionalSetupCompletedEvent; //event to notify when path is created
+
+
 
 protected:
 

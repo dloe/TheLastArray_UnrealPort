@@ -23,7 +23,7 @@ void UTilePathSetupComp::TilePathGeneration()
 	//get ref to manager
 	ATileManagerRef = Cast<ASTileManager>(GetOwner());
 
-	bDebugPrintsRef = ATileManagerRef->bDebugPrints;
+	bDebugPrintsRef = ATileManagerRef->bDebugPrintsRef;
 
 	UE_LOG(LogTemp, Log, TEXT("-----------------------------------------------------------"));
 	UE_LOG(LogTemp, Log, TEXT("================= PATH GENERATION ========================="));
@@ -63,7 +63,7 @@ void UTilePathSetupComp::ChooseStartEndRooms()
 	int startX = 0, startY = 0;
 	//will pick a random side and random tile on side to start
 	if (StartRoomSide == -1)
-		StartRoomSide = ATileManagerRef->GameStream.RandRange(0, 3);
+		StartRoomSide = ATileManagerRef->GameStreamRef.RandRange(0, 3);
 	if (bDebugPrintsRef)
 		UE_LOG(LogTemp, Log, TEXT("Side Picked: %d"), StartRoomSide);
 
@@ -76,7 +76,7 @@ void UTilePathSetupComp::ChooseStartEndRooms()
 	case 0:
 		//starting
 		startY = 0;
-		startX = ATileManagerRef->GameStream.RandRange(0, levelHeightRef - 1);
+		startX = ATileManagerRef->GameStreamRef.RandRange(0, levelHeightRef - 1);
 		//UE_LOG(LogTemp, Log, TEXT("num Picked: %d"), startX);
 		//DOWN;
 
@@ -128,7 +128,7 @@ void UTilePathSetupComp::ChooseStartEndRooms()
 
 		break;
 	case 1:
-		startY = ATileManagerRef->GameStream.RandRange(0, levelWidthRef - 1);
+		startY = ATileManagerRef->GameStreamRef.RandRange(0, levelWidthRef - 1);
 		startX = 0;
 		//LEFT;
 
@@ -179,7 +179,7 @@ void UTilePathSetupComp::ChooseStartEndRooms()
 		break;
 	case 2:
 		startY = levelWidthRef - 1;
-		startX = ATileManagerRef->GameStream.RandRange(0, levelHeightRef - 1);
+		startX = ATileManagerRef->GameStreamRef.RandRange(0, levelHeightRef - 1);
 		//UP;
 
 		for (int index2 = 0; index2 < (levelWidthRef - 1) / 2; index2++) {
@@ -223,7 +223,7 @@ void UTilePathSetupComp::ChooseStartEndRooms()
 
 		break;
 	case 3:
-		startY = ATileManagerRef->GameStream.RandRange(0, levelHeightRef - 1);
+		startY = ATileManagerRef->GameStreamRef.RandRange(0, levelHeightRef - 1);
 		startX = levelWidthRef - 1;
 		//RIGHT;
 
@@ -323,7 +323,7 @@ void UTilePathSetupComp::ChooseStartEndRooms()
 
 	//end room is picked randomly from array of possible rooms
 	TArray<ASTile*> availableTiles = ATileManagerRef->GetPossibleStartingTiles();
-	ATileManagerRef->EndTile = availableTiles[ATileManagerRef->GameStream.RandRange(0, availableTiles.Num() - 1)];
+	ATileManagerRef->EndTile = availableTiles[ATileManagerRef->GameStreamRef.RandRange(0, availableTiles.Num() - 1)];
 	ATileManagerRef->EndTile->ShadeEndRoom();
 }
 
@@ -763,7 +763,7 @@ TArray <int> UTilePathSetupComp::Reshuffle(TArray <int> ar)
 	// Knuth shuffle algorithm :: courtesy of Wikipedia :)
 	for (int t = 0; t < ar.Num(); t++)
 	{
-		int r = ATileManagerRef->GameStream.RandRange(t, ar.Num() - 1);
+		int r = ATileManagerRef->GameStreamRef.RandRange(t, ar.Num() - 1);
 		ar.Swap(t, r);
 	}
 	return ar;
@@ -775,7 +775,7 @@ TArray <ASTile*> UTilePathSetupComp::ReshuffleTiles(TArray <ASTile*> ar)
 	// Knuth shuffle algorithm :: courtesy of Wikipedia :)
 	for (int t = 0; t < ar.Num(); t++)
 	{
-		int r = ATileManagerRef->GameStream.RandRange(t, ar.Num() - 1);
+		int r = ATileManagerRef->GameStreamRef.RandRange(t, ar.Num() - 1);
 		ar.Swap(t, r);
 	}
 	return ar;

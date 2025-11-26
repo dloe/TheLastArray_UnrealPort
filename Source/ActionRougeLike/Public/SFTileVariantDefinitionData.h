@@ -290,8 +290,9 @@ class ACTIONROUGELIKE_API USFTileVariantDefinitionData : public UDataAsset
 
 	//possible variants that get choosen randomly when spawned (not spawned yet and pulled from locallevel)
 	//the prefabs themselves to spawn
+	//THIS GETS OVERRIDEN EACH TIME (LOCAL)
 	UPROPERTY(EditAnywhere)
-	TArray<TSubclassOf<ASTileVariantEnviornment>>  TileVariantEnviornments;
+	TArray<TSubclassOf<ASTileVariantEnviornment>>  TileVariantEnviornmentsLocal;
 
 	UPROPERTY(EditAnywhere)
 	TArray<FVariantOffsetTransforms_Rotates> VariantPaths;

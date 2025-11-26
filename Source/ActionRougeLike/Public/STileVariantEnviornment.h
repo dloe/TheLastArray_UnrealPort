@@ -27,6 +27,16 @@ public:
 	// -------- Public Variables -------
 	// ---------------------------------
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Level Population")
+	TArray <UStaticMeshComponent*> PickupPlacements;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Level Population")
+	TArray <UStaticMeshComponent*> EnemyPlacements;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Level Population")
+	TArray <UStaticMeshComponent*> ObjectivePlacements;
+
+
 	UPROPERTY(EditAnywhere, Category = "Tile")
 	TArray <ASTile*> VariantEncompassingTiles;
 
@@ -43,7 +53,7 @@ public:
 	TArray<ASTileWall*> RightWalls;
 
 
-	//Fully combined walls (Still WIP TBD if this is useful)
+	//Fully combined walls (Still WIP TBD if this is useful) - could make these privatre and have getters and setters
 	UPROPERTY(EditAnywhere, Category = "Walls")
 	UStaticMeshComponent* SMUpWallWhole;
 

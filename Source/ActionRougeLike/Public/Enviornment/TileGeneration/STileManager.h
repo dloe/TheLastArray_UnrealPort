@@ -78,15 +78,15 @@ public:
 	// ------- Public Variables --------
 	// ---------------------------------
 
-	UPROPERTY(EditAnywhere, Category = "Game Setup Generation")
-	uint32 GameSeed = 0; 
+	//UPROPERTY(EditAnywhere, Category = "Game Setup Generation")
+	//uint32 GameSeed = 0; 
 
 	//managing random numbers and seeds
 	UPROPERTY(EditAnywhere, Category = "Game Setup Generation")
-	FRandomStream GameStream;
+	FRandomStream GameStreamRef;
 
 	UPROPERTY(EditAnywhere, Category = "Game Setup Generation")
-	bool bDebugPrints = false;
+	bool bDebugPrintsRef = false;
 
 	//For time stamping
 	UPROPERTY(EditAnywhere, Category = "Debug")
@@ -261,7 +261,13 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	TArray <int> Reshuffle2(TArray <int> ar);
+
+	//UFUNCTION(BlueprintCallable, Category = "Tile Generation")
+	//TArray <ASTileVariantEnviornment*> GetSpawnedVariantTiles() { return GridBranchSetupComponent->SpawnedVariants; }
 	
+	UFUNCTION(BlueprintCallable, Category = "Tile Generation")
+	UTileGridBranchComponent* GetGridBranchComp() { return GridBranchSetupComponent; }
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -301,7 +307,10 @@ protected:
 	UPROPERTY()
 	UTileGridBranchComponent* GridBranchSetupComponent;
 
-	UPROPERTY()
+	/// <summary>
+	/// Handles level asset population logic for level (works with local level to get and figure out where to place)
+	/// </summary>
+	UPROPERTY(EditAnywhere, Category = "Level Setup")
 	ULevelAssetSetupComponent* LevelAssetSetupComponent;
 
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
@@ -327,9 +336,6 @@ protected:
 
 	UFUNCTION()
 	void OnBranchFillGeneration();
-
-	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
-	void SeedSetup();
 
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
 	void Create2DTileArray();

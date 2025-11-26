@@ -18,28 +18,56 @@ void ALocalLevel::BeginPlay()
 {
 	Super::BeginPlay();
 
-	//get level tier from save
+	SeedSetup();
 
+	//get level tier / seed from save
+
+
+	//based on what tier we are, use that levelvariantpresets (the tiles)
+	AssignVariantDefData();
+
+	//assign weight tables for items from data object
+
+	//assign weight tables and enemies from data objects
+
+	//assign weight tables and possible objectives from data objects
+
+
+}
+
+/// <summary>
+/// Assign local variant references based on what lvl, this get assigned to data objects that are used
+/// in the tile generation
+/// </summary>
+void ALocalLevel::AssignVariantDefData()
+{
 	//assign data for variants (using lvl 1 for now every time)
-	//TODO: use other levels based on level choosen (using lvl 2 for secret room addtions for now)
-	OnexOneEnvVariants_local = LevelVariantsPresets->OnexOneEnvVariants_lvl1;
-	TwoxOneEnvVariants_local = LevelVariantsPresets->TwoxOneEnvVariants_lvl1;
-	TwoxTwoEnvVariants_local = LevelVariantsPresets->TwoxTwoEnvVariants_lvl1;
-	ThreexOneEnvVariants_local = LevelVariantsPresets->ThreexOneEnvVariants_lvl1;
-	ThreexTwoEnvVariants_local = LevelVariantsPresets->ThreexTwoEnvVariants_lvl1;
-	FourxTwoEnvVariants_local = LevelVariantsPresets->FourxTwoEnvVariants_lvl1;
-	FourxThreeEnvVariants_local = LevelVariantsPresets->FourxThreeEnvVariants_lvl1;
-	FourxFourEnvVariants_local = LevelVariantsPresets->FourxFourEnvVariants_lvl1;
+	//TODO: use other levels based on level choosen (using lvl 2 for secret room additions for now)
 
-	OnexOneDefData->TileVariantEnviornments = OnexOneEnvVariants_local;
-	TwoxOneDefData->TileVariantEnviornments = TwoxOneEnvVariants_local;
-	TwoxTwoDefData->TileVariantEnviornments = TwoxTwoEnvVariants_local;
-	ThreexOneDefData->TileVariantEnviornments = ThreexOneEnvVariants_local;
-	ThreexTwoDefData->TileVariantEnviornments = ThreexTwoEnvVariants_local;
-	FourxTwoDefData->TileVariantEnviornments = FourxTwoEnvVariants_local;
-	FourxThreeDefData->TileVariantEnviornments = FourxThreeEnvVariants_local;
-	FourxFourDefData->TileVariantEnviornments = FourxFourEnvVariants_local;
 
+	//have to cast at int to use as indexing
+	int32 CurrentLevelIndex = static_cast<int32>(CurrentLevelTier);
+	OnexOneEnvVariants_local = LevelVariantsPresets->LevelPresetInfo[CurrentLevelIndex + 1].OnexOneEnvVariants;
+	TwoxOneEnvVariants_local = LevelVariantsPresets->LevelPresetInfo[CurrentLevelIndex + 1].TwoxOneEnvVariants;
+	TwoxTwoEnvVariants_local = LevelVariantsPresets->LevelPresetInfo[CurrentLevelIndex + 1].TwoxTwoEnvVariants;
+	ThreexOneEnvVariants_local = LevelVariantsPresets->LevelPresetInfo[CurrentLevelIndex + 1].ThreexOneEnvVariants;
+	ThreexTwoEnvVariants_local = LevelVariantsPresets->LevelPresetInfo[CurrentLevelIndex + 1].ThreexTwoEnvVariants;
+	FourxTwoEnvVariants_local = LevelVariantsPresets->LevelPresetInfo[CurrentLevelIndex + 1].FourxTwoEnvVariants;
+	FourxThreeEnvVariants_local = LevelVariantsPresets->LevelPresetInfo[CurrentLevelIndex + 1].FourxThreeEnvVariants;
+	FourxFourEnvVariants_local = LevelVariantsPresets->LevelPresetInfo[CurrentLevelIndex + 1].FourxFourEnvVariants;
+	PickupSpawnLevelThreshold_local = LevelVariantsPresets->LevelPresetInfo[CurrentLevelIndex + 1].PickupSpawnLevelThreshold;
+	EnemySpawnLevelThreshold_local = LevelVariantsPresets->LevelPresetInfo[CurrentLevelIndex + 1].EnemySpawnLevelThreshold;
+
+
+	//TODO: need to check that the data objects getting assigned different lvl variant don't mess anything up
+	OnexOneDefData->TileVariantEnviornmentsLocal = OnexOneEnvVariants_local;
+	TwoxOneDefData->TileVariantEnviornmentsLocal = TwoxOneEnvVariants_local;
+	TwoxTwoDefData->TileVariantEnviornmentsLocal = TwoxTwoEnvVariants_local;
+	ThreexOneDefData->TileVariantEnviornmentsLocal = ThreexOneEnvVariants_local;
+	ThreexTwoDefData->TileVariantEnviornmentsLocal = ThreexTwoEnvVariants_local;
+	FourxTwoDefData->TileVariantEnviornmentsLocal = FourxTwoEnvVariants_local;
+	FourxThreeDefData->TileVariantEnviornmentsLocal = FourxThreeEnvVariants_local;
+	FourxFourDefData->TileVariantEnviornmentsLocal = FourxFourEnvVariants_local;
 }
 
 // Called every frame
@@ -54,10 +82,34 @@ TSubclassOf<ASTile> ALocalLevel::GetPresetStartingTile()
 	return PresetStartingTile;
 }
 
+void ALocalLevel::SeedSetup()
+{
+	if (GameSeed == 0)
+	{
+		if (bDebugPrints)
+			UE_LOG(LogTemp, Log, TEXT("Setting Up Seed..."));
+
+		GameStream.Initialize("GameSeed");
+		GameStream.GenerateNewSeed();
+	}
+	else {
+		if (bDebugPrints)
+			UE_LOG(LogTemp, Log, TEXT("Using Supplied Seed..."));
+		GameStream.Initialize(GameSeed);
+
+	}
+
+	if (bDebugPrints)
+		UE_LOG(LogTemp, Log, TEXT("Seed: %d"), GameStream.GetCurrentSeed());
+}
+
 /// <summary>
 /// - list of objectives
 /// - remove previous obj from list
 /// - pick randomly from updated list
+/// 
+/// Each objective will have a weight to it, as we go deeper in the game, the easier objectives will be less likely
+/// - Lvl4 will be a boss lvl so that one is already decided
 /// </summary>
 void ALocalLevel::ChooseObjective()
 {

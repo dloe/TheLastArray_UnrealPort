@@ -25,7 +25,7 @@ void UTileGridBranchComponent::GameMapAdditionalSetup()
 {
 	TileManagerRef = Cast<ASTileManager>(GetOwner());
 	LocalLevelRef = TileManagerRef->MyLocalLevel;
-	DebugPrintsRef = TileManagerRef->bDebugPrints;
+	DebugPrintsRef = TileManagerRef->bDebugPrintsRef;
 	DoorsActiveRef = TileManagerRef->DoorsActive;
 
 	UE_LOG(LogTemp, Log, TEXT("-----------------------------------------------------------"));
@@ -116,7 +116,7 @@ void UTileGridBranchComponent::RandomRoomsAndBranchesAdditions()
 
 	int oldWay = (levelWidthRef - TileManagerRef->LevelPath.Num() / levelWidthRef) + 1;
 	//for some randomness
-	int TotalBranchesMax = TileManagerRef->GameStream.RandRange(1, TotalBranchesMax1);
+	int TotalBranchesMax = TileManagerRef->GameStreamRef.RandRange(1, TotalBranchesMax1);
 
 	if (DebugPrintsRef)
 		UE_LOG(LogTemp, Log, TEXT("Total amount of branches to create: %d"), TotalBranchesMax);
@@ -124,7 +124,7 @@ void UTileGridBranchComponent::RandomRoomsAndBranchesAdditions()
 	for (int CurrentBranch = 0; CurrentBranch < TotalBranchesMax && TileManagerRef->AvailableTiles.Num() > 1; CurrentBranch++)
 	{
 		//for now using length of level, might change this later, not sure how else but not a super important detail
-		int BranchLength = TileManagerRef->GameStream.RandRange(1, levelWidthRef);
+		int BranchLength = TileManagerRef->GameStreamRef.RandRange(1, levelWidthRef);
 		if (DebugPrintsRef)
 			UE_LOG(LogTemp, Log, TEXT("Making Branch: %d with length %d"), CurrentBranch, BranchLength);
 
@@ -133,7 +133,7 @@ void UTileGridBranchComponent::RandomRoomsAndBranchesAdditions()
 		//this tile is now the start of a branch
 
 		//starting tile for branch
-		int indexChoosen = TileManagerRef->GameStream.RandRange(0, TileManagerRef->AvailableTiles.Num() - 1);
+		int indexChoosen = TileManagerRef->GameStreamRef.RandRange(0, TileManagerRef->AvailableTiles.Num() - 1);
 		ASTile* StartingBranchTile = TileManagerRef->AvailableTiles[indexChoosen];
 
 		TArray<ASTile*>	BranchArray;
@@ -200,7 +200,7 @@ void UTileGridBranchComponent::AddSingleRooms()
 	//when we add a room, remove it from AvailableTiles, add to AllActiveTiles
 
 	//default to half the rooms left over
-	FillerRooms = TileManagerRef->GameStream.RandRange(1, (levelWidthRef - TileManagerRef->AvailableTiles.Num() - 1) - ((levelHeightRef - TileManagerRef->AvailableTiles.Num() - 1) / 4));
+	FillerRooms = TileManagerRef->GameStreamRef.RandRange(1, (levelWidthRef - TileManagerRef->AvailableTiles.Num() - 1) - ((levelHeightRef - TileManagerRef->AvailableTiles.Num() - 1) / 4));
 	if (DebugPrintsRef)
 		UE_LOG(LogTemp, Log, TEXT("Total Random Single Rooms: %d"), FillerRooms);
 
@@ -212,7 +212,7 @@ void UTileGridBranchComponent::AddSingleRooms()
 		//if (LevelWidth - AllActiveTiles.Num() >= LevelHeight / (LevelWidth * 2))
 		if (TileManagerRef->gridDensity >= TileManagerRef->GetCurrentGridDensity())
 		{
-			ASTile* Current = TileManagerRef->AvailableTiles[TileManagerRef->GameStream.RandRange(0, TileManagerRef->AvailableTiles.Num() - 1)];
+			ASTile* Current = TileManagerRef->AvailableTiles[TileManagerRef->GameStreamRef.RandRange(0, TileManagerRef->AvailableTiles.Num() - 1)];
 			//UE_LOG(LogTemp, Log, TEXT("Room selected: %d:%d"), Current->XIndex, Current->ZIndex);
 			if (Current->TileStatus == ETileStatus::ETile_NULLROOM)
 			{
@@ -267,7 +267,7 @@ void UTileGridBranchComponent::GridScanForCustomTileSizedVariants()
 			UE_LOG(LogTemp, Log, TEXT("Currently on tile tier: %d - number of columns: %d"), tileVariantTier, tier.Columns.Num());
 
 		//each tier of variants has a certain amount (so like 1 of the really big ones and higher number of the smaller sized groups of variants)
-		int VariantTierTotalAmountToPlace = TileManagerRef->GameStream.RandRange(tier.Min, tier.Max);
+		int VariantTierTotalAmountToPlace = TileManagerRef->GameStreamRef.RandRange(tier.Min, tier.Max);
 		int VariantsPlaced = 0;
 
 		//each type (so 2x2, 4x4, etc) of variant
@@ -286,7 +286,7 @@ void UTileGridBranchComponent::GridScanForCustomTileSizedVariants()
 				//SingleVariantData = currentVariant;
 				}
 			else {
-				LocalVariantTotalAmount = TileManagerRef->GameStream.RandRange(currentVariant->MinorMin, currentVariant->MinorMax);
+				LocalVariantTotalAmount = TileManagerRef->GameStreamRef.RandRange(currentVariant->MinorMin, currentVariant->MinorMax);
 			}
 			int localVariantsPlaced = 0;
 
@@ -329,7 +329,7 @@ TArray <ASTile*> UTileGridBranchComponent::ReshuffleTiles(TArray <ASTile*> ar)
 	// Knuth shuffle algorithm :: courtesy of Wikipedia :)
 	for (int t = 0; t < ar.Num(); t++)
 	{
-		int r = TileManagerRef->GameStream.RandRange(t, ar.Num() - 1);
+		int r = TileManagerRef->GameStreamRef.RandRange(t, ar.Num() - 1);
 		ar.Swap(t, r);
 	}
 	return ar;
@@ -383,20 +383,20 @@ bool UTileGridBranchComponent::VariantCandidateAnalysis(ASTile* CurrentTile, USF
 		//choose which direction (if non-empty and non single tile)
 		if (!DirectionsAvailable.IsEmpty() || isSingleTile)
 		{
-			int choosenIndex = TileManagerRef->GameStream.RandRange(0, 3);
+			int choosenIndex = TileManagerRef->GameStreamRef.RandRange(0, 3);
 			int directionPlacement = choosenIndex;
 			FTileVariantSetup_PlugTileSaveInfo choosenInfo;
 
 			if(!DirectionsAvailable.IsEmpty()) {
-				choosenIndex = TileManagerRef->GameStream.RandRange(0, DirectionsAvailable.Num() - 1);
+				choosenIndex = TileManagerRef->GameStreamRef.RandRange(0, DirectionsAvailable.Num() - 1);
 				directionPlacement = DirectionsAvailable[choosenIndex];
 				choosenInfo = VariantPlugTileInfo[choosenIndex]; //TODO: Verify the choosen index info matches our direction placement
 			}
 			
 
 			//which type of abnormal tile variant are we going to place? (like the preset, which preset?)
-			int variantIndex = TileManagerRef->GameStream.RandRange(0, CurrentVariant->TileVariantEnviornments.Num() - 1);
-			TSubclassOf<ASTileVariantEnviornment> ChoosenVariant = CurrentVariant->TileVariantEnviornments[variantIndex];
+			int variantIndex = TileManagerRef->GameStreamRef.RandRange(0, CurrentVariant->TileVariantEnviornmentsLocal.Num() - 1);
+			TSubclassOf<ASTileVariantEnviornment> ChoosenVariant = CurrentVariant->TileVariantEnviornmentsLocal[variantIndex];
 			FVector SpawnPos;
 			FRotator SpawnRot = FRotator(0.0f, 0.0f, 0.0f);
 
@@ -744,7 +744,7 @@ void UTileGridBranchComponent::CreateSecretRoom()
 	}
 
 	//now randomly pick a tile to put our secret room at (this tiles neighbor will be the secret room)
-	int tileNum = TileManagerRef->GameStream.RandRange(0, TileManagerRef->OutskirtTiles.Num() - 1);
+	int tileNum = TileManagerRef->GameStreamRef.RandRange(0, TileManagerRef->OutskirtTiles.Num() - 1);
 
 	FTileInfoStruct selected = TileManagerRef->OutskirtTiles[tileNum];
 	ASTile* test = outskirtsCheck[tileNum];
@@ -754,7 +754,7 @@ void UTileGridBranchComponent::CreateSecretRoom()
 	selected.neighborArray = TileManagerRef->Reshuffle2(selected.neighborArray);
 
 	//int index for selection from available tiles
-	int loc = TileManagerRef->GameStream.RandRange(0, selected.neighborArray.Num() - 1);
+	int loc = TileManagerRef->GameStreamRef.RandRange(0, selected.neighborArray.Num() - 1);
 
 	//we now have our room we selected and the neighbor in which we are using for our secret room
 	FVector SpawnPos;
@@ -888,8 +888,8 @@ void UTileGridBranchComponent::CreateSecretRoom()
 
 	TSubclassOf<ASTileVariantEnviornment> ChoosenSecretRoomVariant;
 	//TODO: This secret room environment data needs to be updated for the secret room variants
-	int variantIndex = TileManagerRef->GameStream.RandRange(0, singleVariantData->TileVariantEnviornments.Num() - 1);
-	ChoosenSecretRoomVariant = singleVariantData->TileVariantEnviornments[variantIndex];
+	int variantIndex = TileManagerRef->GameStreamRef.RandRange(0, singleVariantData->TileVariantEnviornmentsLocal.Num() - 1);
+	ChoosenSecretRoomVariant = singleVariantData->TileVariantEnviornmentsLocal[variantIndex];
 
 	//rotation is dependent on prev tile
 	FRotator SpawnRotPrefab = FRotator(0.0f, 0.0f, 0.0f);
@@ -945,12 +945,12 @@ void UTileGridBranchComponent::SpawnEndRoom()
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
 	TSubclassOf<ASTileVariantEnviornment> ChoosenEndRoomVariant;
-	int rotationToSpawn = TileManagerRef->GameStream.RandRange(0, 3);
+	int rotationToSpawn = TileManagerRef->GameStreamRef.RandRange(0, 3);
 	if (true) //if not boss fight
 	{
 		//normal 1x1 variant
-		int variantIndex = TileManagerRef->GameStream.RandRange(0, singleVariantData->TileVariantEnviornments.Num() - 1);
-		ChoosenEndRoomVariant = singleVariantData->TileVariantEnviornments[variantIndex];
+		int variantIndex = TileManagerRef->GameStreamRef.RandRange(0, singleVariantData->TileVariantEnviornmentsLocal.Num() - 1);
+		ChoosenEndRoomVariant = singleVariantData->TileVariantEnviornmentsLocal[variantIndex];
 	}
 	else {
 		rotationToSpawn = TileManagerRef->EndTile->bossRoomRotationDirection;

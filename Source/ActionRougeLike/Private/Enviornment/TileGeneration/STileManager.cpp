@@ -27,35 +27,12 @@ ASTileManager::ASTileManager()
 	GridBranchSetupComponent = CreateDefaultSubobject<UTileGridBranchComponent>(TEXT("BranchSetupComponent"));
 	GridBranchSetupComponent->OnGridAdditionalSetupCompletedEvent.AddDynamic(this, &ASTileManager::OnBranchFillGeneration);
 
-	LevelAssetSetupComponent = CreateDefaultSubobject<ULevelAssetSetupComponent>(TEXT("LevelAssetSetupComponent"));
-	LevelAssetSetupComponent->TileManagerRef = this;
+	//LevelAssetSetupComponent = CreateDefaultSubobject<ULevelAssetSetupComponent>(TEXT("LevelAssetSetupComponent"));
+	//LevelAssetSetupComponent->TileManagerRef = this;
+	
 
 	//TODO: dont think i need this? will use if i end up finding a better way than bp
 	//TileVariantComponent = CreateDefaultSubobject<UTileVariantComponent>(TEXT("TileVariantComponent"));
-}
-
-
-
-void ASTileManager::SeedSetup()
-{
-	if (GameSeed == 0)
-	{
-		if (bDebugPrints)
-			UE_LOG(LogTemp, Log, TEXT("Setting Up Seed..."));
-
-		GameStream.Initialize("GameSeed");
-		GameStream.GenerateNewSeed();
-	}
-	else {
-		if (bDebugPrints)
-			UE_LOG(LogTemp, Log, TEXT("Using Supplied Seed..."));
-		//GameStream.Initialize("GameSeed");
-		GameStream.Initialize(GameSeed);
-
-	}
-
-	if (bDebugPrints)
-		UE_LOG(LogTemp, Log, TEXT("Seed: %d"), GameStream.GetCurrentSeed());
 }
 
 /// <summary>
@@ -67,19 +44,24 @@ void ASTileManager::SeedSetup()
 void ASTileManager::BeginPlay()
 {
 	Super::BeginPlay();
-
+	bDebugPrintsRef = MyLocalLevel->bDebugPrints;
 	LevelSetupStartTime = FPlatformTime::Seconds();
 
 	//TO DO: Make a set var function?
 	TileVariantComponent = FindComponentByClass<UTileVariantComponent>();
+	LevelAssetSetupComponent = FindComponentByClass<ULevelAssetSetupComponent>();
 
-	if (bDebugPrints) {
+	//TODO: Move this out of here
+	//LevelAssetSetupComponent->TileManagerRef = this;
+
+	if (bDebugPrintsRef) {
 		UE_LOG(LogTemp, Log, TEXT("==========================================================="));
 		UE_LOG(LogTemp, Log, TEXT("================= TILE GENERATION ========================="));
 		UE_LOG(LogTemp, Log, TEXT("==========================================================="));
 
 	}
-	SeedSetup();
+	
+	GameStreamRef = MyLocalLevel->GameStream;
 
 	SetVariables();
 
@@ -122,12 +104,12 @@ void ASTileManager::OnBranchFillGeneration()
 
 	TileSetupDuration = TileGenerationEndTime - LevelSetupStartTime;
 
-	if (bDebugPrints) {
+	if (bDebugPrintsRef) {
 		UE_LOG(LogTemp, Log, TEXT("Tile Generation Setup Complete, system time: %.6f"), TileSetupDuration);
 	}
 
 	//Level asset spawn can now begin
-	LevelAssetSetupComponent->PopulateGrid();
+	LevelAssetSetupComponent->PopulateGridAssets();
 }
 
 /// <summary>
@@ -139,7 +121,7 @@ void ASTileManager::OnBranchFillGeneration()
 void ASTileManager::Create2DTileArray()
 {
 
-	if (bDebugPrints)
+	if (bDebugPrintsRef)
 		UE_LOG(LogTemp, Log, TEXT("=================== Creating 2D array! =============================="));
 
 	int floatingWallBuffer = ChoosenWallAssetClass->GetDefaultObject<ASTileWall>()->WallsBuffer;
@@ -185,7 +167,7 @@ void ASTileManager::Create2DTileArray()
 	}
 	totalGridTilesAvailable = (LevelHeight * LevelWidth) * gridDensity;
 
-	if (bDebugPrints)
+	if (bDebugPrintsRef)
 		UE_LOG(LogTemp, Log, TEXT("=================== 2D array CREATED! =============================="));
 }
 
@@ -708,7 +690,7 @@ TArray <int> ASTileManager::Reshuffle2(TArray <int> ar)
 	// Knuth shuffle algorithm :: courtesy of Wikipedia :)
 	for (int t = 0; t < ar.Num(); t++)
 	{
-		int r = GameStream.RandRange(t, ar.Num() - 1);
+		int r = GameStreamRef.RandRange(t, ar.Num() - 1);
 		ar.Swap(t, r);
 	}
 	return ar;

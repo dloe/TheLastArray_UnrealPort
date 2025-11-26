@@ -9,12 +9,12 @@
 
 UENUM(BlueprintType)
 	enum class ELevelTier : uint8 {
-		ELevel_Null UMETA(DisplayName = "NullLevelTier"),
-		ELevel_1 UMETA(DisplayName = "Level1"),
-		ELevel_2  UMETA(DisplayName = "Level2"),
-		ELevel_3     UMETA(DisplayName = "Level3"),
-		ELevel_4 UMETA(DisplayName = "Level4"),
-		ELevel_Train UMETA(DisplayName = "TrainLevel")
+		ELevel_Null UMETA(DisplayName = "NullLevelTier"),     //1
+		ELevel_1 UMETA(DisplayName = "Level1"),               //2
+		ELevel_2  UMETA(DisplayName = "Level2"),              //3
+		ELevel_3     UMETA(DisplayName = "Level3"),           //4
+		ELevel_4 UMETA(DisplayName = "Level4"),               //5
+		ELevel_Train UMETA(DisplayName = "TrainLevel")        //6 - training level tutorial
 	};
 
 	class ULevelVariantPresetsData;
@@ -46,6 +46,20 @@ public:
 	// Sets default values for this actor's properties
 	ALocalLevel();
 
+	// ---------------------------------
+	// ------- Public Variables --------
+	// ---------------------------------
+
+	UPROPERTY(EditAnywhere, Category = "Game Setup Generation")
+	uint32 GameSeed = 0; 
+
+	//managing random numbers and seeds
+	UPROPERTY(EditAnywhere, Category = "Game Setup Generation")
+	FRandomStream GameStream;
+
+	UPROPERTY(EditAnywhere, Category = "Game Setup Generation")
+	bool bDebugPrints = false;
+
 	//this is assigned via LocalLevel
 	UPROPERTY(EditAnywhere, Category = "Tile Configuration")
 	TSubclassOf<ASTile> PresetStartingTile;
@@ -58,13 +72,17 @@ public:
 
 	//reference level asset data and presets
 
+	//each level should have some type of data object that holds this info, then will assign this this guy
+	UPROPERTY(EditAnywhere, Category = "Tile Stats")
+	float LevelItemPlacementThresholds; 
+
 	//player data?
 
 	//objective
 
 	//reference to player
 
-	//presets for each level tier (move this to new location for storage)
+	//presets for each level tier (TODO: move this to new location for storage)
 
 	//reference to data object that contains all the possible variants for each level
 	//at start based on what level, we assign those variants to their corresponding TileVariantDefData data object
@@ -94,6 +112,12 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Tile Variants")
 	TArray<TSubclassOf<ASTileVariantEnviornment>> FourxFourEnvVariants_local;
+
+	UPROPERTY(EditAnywhere, Category = "Tile Variants")
+	float PickupSpawnLevelThreshold_local;
+
+	UPROPERTY(EditAnywhere, Category = "Tile Variants")
+	float EnemySpawnLevelThreshold_local;
 
 	UPROPERTY(EditAnywhere, Category = "Local Level Data")
 	ULevelVariantPresetsData* LevelVariantsPresets;
@@ -125,14 +149,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Local Level Data")
 	USFTileVariantDefinitionData* FourxFourDefData;
 
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-	//UFUNCTION(BlueprintCallable, Category = "Level Objective")
-	//TArray<TSubclassOf<ASTileVariantEnviornment>> SetVariantEnvVars(TArray<TSubclassOf<ASTileVariantEnviornment>> VariantsEnvArray);
-
-public:	
+	// ---------------------------------
+	// -------- Public Functions -------
+	// ---------------------------------
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
@@ -143,7 +162,31 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Level Objective")
 	void ChooseObjective();
 
+protected:
 
-	
+	// ---------------------------------
+	// -------- Helper Functions -------
+	// ---------------------------------
+
+	UFUNCTION(BlueprintCallable, Category = "Level setup")
+	void SeedSetup();
+
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+
+	//UFUNCTION(BlueprintCallable, Category = "Level Objective")
+	//TArray<TSubclassOf<ASTileVariantEnviornment>> SetVariantEnvVars(TArray<TSubclassOf<ASTileVariantEnviornment>> VariantsEnvArray);
+
+	UFUNCTION(BlueprintCallable, Category = "Level Objective")
+	void AssignVariantDefData();
+
+
+
+	// ---------------------------------
+	// -- Internal state / variables --
+	// ---------------------------------
+
 
 };
+
+
