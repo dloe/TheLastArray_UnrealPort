@@ -27,3 +27,30 @@ void ASTileVariantEnviornment::Tick(float DeltaTime)
 
 }
 
+//destroys all component markers (for level enemy/asset placement)
+void ASTileVariantEnviornment::HandleMarkerCleanup()
+{
+	//remove pickup markers
+	for (UStaticMeshComponent* PickupMarker : PickupPlacements)
+	{
+		PickupMarker->DestroyComponent();
+	}
+	PickupPlacements.Empty();
+
+	//remove enemy markers
+	for (UStaticMeshComponent* EnemyMarker : EnemyPlacements)
+	{
+		EnemyMarker->DestroyComponent();
+	}
+	EnemyPlacements.Empty();
+
+	//remove obj markers
+	for (UStaticMeshComponent* ObjMarker : ObjectivePlacements)
+	{
+		ObjMarker->DestroyComponent();
+	}
+	ObjectivePlacements.Empty();
+
+
+}
+

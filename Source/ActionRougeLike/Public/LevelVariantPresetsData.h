@@ -21,13 +21,14 @@ struct FLevelInfoStats
 
 public:
 
-	UPROPERTY()
+	//this isnt needed or used, but i should have this to label the data
+	UPROPERTY(EditAnywhere, Category = "Lvl Info Data")
 	ELevelTier LevelTier;
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, Category = "Lvl Info Data")
 	float PickupSpawnLevelThreshold; //density of pickup spawns
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, Category = "Lvl Info Data")
 	float EnemySpawnLevelThreshold; //density of enemy spawns
 
 	UPROPERTY(EditAnywhere, Category = "Lvl Tile Variants")
@@ -53,6 +54,12 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Lvl Tile Variants")
 	TArray<TSubclassOf<ASTileVariantEnviornment>> FourxFourEnvVariants;
+
+	UPROPERTY(EditAnywhere, Category = "Lvl Tile Variants")
+	TArray<TSubclassOf<ASStartingSpawnTile>> StartingTileVariants;
+
+	UPROPERTY(EditAnywhere, Category = "Lvl Tile Variants")
+	TArray<TSubclassOf<ASTileVariantEnviornment>> SecretVariants;
 };
 
 /**

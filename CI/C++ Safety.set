@@ -1,0 +1,271 @@
+﻿{
+  "name": "C++ Safety",
+  "collapsed_groups": [],
+  "checkers": {
+    "bugprone-integer-division": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "bugprone-misplaced-operator-in-strlen-in-alloc": {
+      "enabled": true,
+      "level": 768,
+      "options": {}
+    },
+    "bugprone-misplaced-pointer-arithmetic-in-alloc": {
+      "enabled": true,
+      "level": 768,
+      "options": {}
+    },
+    "bugprone-shared-ptr-array-mismatch": {
+      "enabled": true,
+      "level": 768,
+      "options": {}
+    },
+    "bugprone-stringview-nullptr": {
+      "enabled": true,
+      "level": 768,
+      "options": {}
+    },
+    "bugprone-suspicious-memory-comparison": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "bugprone-suspicious-memset-usage": {
+      "enabled": true,
+      "level": 768,
+      "options": {}
+    },
+    "bugprone-suspicious-realloc-usage": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "bugprone-undefined-memory-manipulation": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "bugprone-unhandled-self-assignment": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "bugprone-unique-ptr-array-mismatch": {
+      "enabled": true,
+      "level": 768,
+      "options": {}
+    },
+    "bugprone-use-after-move": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "cert-err33-c": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "cert-err58-cpp": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "cert-msc50-cpp": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "cert-msc51-cpp": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "clang-analyzer-core.CallAndMessage": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "clang-analyzer-core.DivideZero": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "clang-analyzer-core.NonNullParamChecker": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "clang-analyzer-core.NullDereference": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "clang-analyzer-core.UndefinedBinaryOperatorResult": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "clang-analyzer-core.uninitialized.Assign": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "clang-analyzer-core.uninitialized.Branch": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "clang-analyzer-core.uninitialized.UndefReturn": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "clang-analyzer-cplusplus.InnerPointer": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "clang-analyzer-cplusplus.Move": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "clang-analyzer-cplusplus.NewDelete": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "clang-analyzer-cplusplus.NewDeleteLeaks": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "clang-analyzer-cplusplus.PureVirtualCall": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "clang-analyzer-cplusplus.SelfAssignment": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "clang-analyzer-nullability.NullableDereferenced": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "clang-analyzer-nullability.NullReturnedFromNonnull": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "cppcoreguidelines-init-variables": {
+      "enabled": true,
+      "level": 768,
+      "options": {}
+    },
+    "cppcoreguidelines-narrowing-conversions": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "cppcoreguidelines-no-malloc": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "cppcoreguidelines-owning-memory": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "cppcoreguidelines-pro-type-reinterpret-cast": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "cppcoreguidelines-pro-type-static-cast-downcast": {
+      "enabled": true,
+      "level": 768,
+      "options": {}
+    },
+    "cppcoreguidelines-special-member-functions": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "misc-new-delete-overloads": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "misc-non-copyable-objects": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "misc-static-assert": {
+      "enabled": true,
+      "level": 768,
+      "options": {}
+    },
+    "misc-throw-by-value-catch-by-reference": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "misc-unused-parameters": {
+      "enabled": true,
+      "level": 768,
+      "options": {}
+    },
+    "modernize-avoid-c-arrays": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "modernize-use-default-member-init": {
+      "enabled": true,
+      "level": 768,
+      "options": {}
+    },
+    "modernize-use-equals-default": {
+      "enabled": true,
+      "level": 768,
+      "options": {}
+    },
+    "modernize-use-noexcept": {
+      "enabled": true,
+      "level": 768,
+      "options": {}
+    },
+    "modernize-use-nullptr": {
+      "enabled": true,
+      "level": 768,
+      "options": {}
+    },
+    "performance-noexcept-destructor": {
+      "enabled": true,
+      "level": 768,
+      "options": {}
+    },
+    "performance-noexcept-move-constructor": {
+      "enabled": true,
+      "level": 768,
+      "options": {}
+    },
+    "performance-noexcept-swap": {
+      "enabled": true,
+      "level": 768,
+      "options": {}
+    },
+    "performance-trivially-destructible": {
+      "enabled": true,
+      "level": 768,
+      "options": {}
+    }
+  }
+}

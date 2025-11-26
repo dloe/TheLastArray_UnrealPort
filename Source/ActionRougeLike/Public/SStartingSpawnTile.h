@@ -10,11 +10,13 @@
  * 
  */
 UCLASS()
-class ACTIONROUGELIKE_API ASStartingSpawnTile : public ASTile
+class ACTIONROUGELIKE_API ASStartingSpawnTile : public ASTileVariantEnviornment
 {
 	GENERATED_BODY()
 
 	//tutorial related things
-
+	public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Components - Neighbors")
+	FTransform DoorSpawnPoint;
 	
 };

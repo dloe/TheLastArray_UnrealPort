@@ -382,6 +382,10 @@ void UTilePathSetupComp::CreateSpawnRoom()
 
 	float DoorwayAdjustment = ATileManagerRef->ChoosenWallAssetClass->GetDefaultObject<ASTileWall>()->WallsBuffer;
 
+	TArray<TSubclassOf<ASStartingSpawnTile>> PossibleStartingTiles = MyLocalLevelRef->GetStartingEnvVariants_local();
+	int variantIndex = ATileManagerRef->GameStreamRef.RandRange(0, PossibleStartingTiles.Num() - 1);
+	TSubclassOf<ASStartingSpawnTile> StartingTileSubclass = PossibleStartingTiles[variantIndex];
+
 	//There are going to be 2 tiles basically spawned, one is the base, the base structure of the tile
 	// The other tile (which i don't think needs to be a tile at all), is the environment to be populated on the tile
 	// Since the environment will be rotated, its neighbors will be changed theretofore for now it will be faster to have its own base that stays static)
@@ -391,7 +395,7 @@ void UTilePathSetupComp::CreateSpawnRoom()
 		//left
 		SpawnPos = FVector(StartingGridTileRef->GetActorLocation().X - (StartingGridTileRef->TileLength + DoorwayAdjustment), StartingGridTileRef->GetActorLocation().Y, StartingGridTileRef->GetActorLocation().Z);
 		PlayerStartingTile_SpawnTile = GetWorld()->SpawnActor<ASTile>(ATileManagerRef->TileBaseClass, SpawnPos, StartingGridTileRef->GetActorRotation(), SpawnParams);
-		ATileManagerRef->PlayerSpawnPresentTile = GetWorld()->SpawnActor<ASTile>(MyLocalLevelRef->PresetStartingTile, SpawnPos, StartingGridTileRef->GetActorRotation(), SpawnParams); //rotate -90
+		ATileManagerRef->PlayerSpawnPresentTile = GetWorld()->SpawnActor<ASStartingSpawnTile>(StartingTileSubclass, SpawnPos, StartingGridTileRef->GetActorRotation(), SpawnParams); //rotate -90
 		StartingGridTileRef->LeftNeighbor = PlayerStartingTile_SpawnTile;
 		PlayerStartingTile_SpawnTile->RightNeighbor = StartingGridTileRef;
 		ATileManagerRef->PlayerSpawnPresentTile->SetActorRotation(FRotator(ATileManagerRef->PlayerSpawnPresentTile->GetActorRotation().Euler().X, -90.0f, ATileManagerRef->PlayerSpawnPresentTile->GetActorRotation().Euler().Z));
@@ -422,7 +426,7 @@ void UTilePathSetupComp::CreateSpawnRoom()
 		//UP
 		SpawnPos = FVector(StartingGridTileRef->GetActorLocation().X, StartingGridTileRef->GetActorLocation().Y - (StartingGridTileRef->TileLength + DoorwayAdjustment), StartingGridTileRef->GetActorLocation().Z);
 		PlayerStartingTile_SpawnTile = GetWorld()->SpawnActor<ASTile>(ATileManagerRef->TileBaseClass, SpawnPos, StartingGridTileRef->GetActorRotation(), SpawnParams);
-		ATileManagerRef->PlayerSpawnPresentTile = GetWorld()->SpawnActor<ASTile>(MyLocalLevelRef->PresetStartingTile, SpawnPos, StartingGridTileRef->GetActorRotation(), SpawnParams);
+		ATileManagerRef->PlayerSpawnPresentTile = GetWorld()->SpawnActor<ASStartingSpawnTile>(StartingTileSubclass, SpawnPos, StartingGridTileRef->GetActorRotation(), SpawnParams);
 		StartingGridTileRef->UpNeighbor = PlayerStartingTile_SpawnTile;
 		PlayerStartingTile_SpawnTile->DownNeighbor = StartingGridTileRef;
 		//TileManagerRef->PlayerStartingTile_SpawnTile->ConnectDownDoor(TileManagerRef->ChoosenDoorwayAsset, TileManagerRef->WallsSubFolderName, TileManagerRef->AllSpawnedWalls);
@@ -452,7 +456,7 @@ void UTilePathSetupComp::CreateSpawnRoom()
 		//Right
 		SpawnPos = FVector(StartingGridTileRef->GetActorLocation().X + (StartingGridTileRef->TileLength + DoorwayAdjustment), StartingGridTileRef->GetActorLocation().Y, StartingGridTileRef->GetActorLocation().Z);
 		PlayerStartingTile_SpawnTile = GetWorld()->SpawnActor<ASTile>(ATileManagerRef->TileBaseClass, SpawnPos, StartingGridTileRef->GetActorRotation(), SpawnParams);
-		ATileManagerRef->PlayerSpawnPresentTile = GetWorld()->SpawnActor<ASTile>(MyLocalLevelRef->PresetStartingTile, SpawnPos, StartingGridTileRef->GetActorRotation(), SpawnParams); //rotate 90
+		ATileManagerRef->PlayerSpawnPresentTile = GetWorld()->SpawnActor<ASStartingSpawnTile>(StartingTileSubclass, SpawnPos, StartingGridTileRef->GetActorRotation(), SpawnParams); //rotate 90
 		StartingGridTileRef->RightNeighbor = PlayerStartingTile_SpawnTile;
 		PlayerStartingTile_SpawnTile->LeftNeighbor = StartingGridTileRef;
 		ATileManagerRef->PlayerSpawnPresentTile->SetActorRotation(FRotator(ATileManagerRef->PlayerSpawnPresentTile->GetActorRotation().Euler().X, 90, ATileManagerRef->PlayerSpawnPresentTile->GetActorRotation().Euler().Z));
@@ -483,7 +487,7 @@ void UTilePathSetupComp::CreateSpawnRoom()
 		//DOWN
 		SpawnPos = FVector(StartingGridTileRef->GetActorLocation().X, StartingGridTileRef->GetActorLocation().Y + (StartingGridTileRef->TileLength + DoorwayAdjustment), StartingGridTileRef->GetActorLocation().Z);
 		PlayerStartingTile_SpawnTile = GetWorld()->SpawnActor<ASTile>(ATileManagerRef->TileBaseClass, SpawnPos, StartingGridTileRef->GetActorRotation(), SpawnParams); //rotate 180
-		ATileManagerRef->PlayerSpawnPresentTile = GetWorld()->SpawnActor<ASTile>(MyLocalLevelRef->PresetStartingTile, SpawnPos, StartingGridTileRef->GetActorRotation(), SpawnParams);
+		ATileManagerRef->PlayerSpawnPresentTile = GetWorld()->SpawnActor<ASStartingSpawnTile>(StartingTileSubclass, SpawnPos, StartingGridTileRef->GetActorRotation(), SpawnParams);
 		StartingGridTileRef->DownNeighbor = PlayerStartingTile_SpawnTile;
 		PlayerStartingTile_SpawnTile->UpNeighbor = StartingGridTileRef;
 		ATileManagerRef->PlayerSpawnPresentTile->SetActorRotation(FRotator(ATileManagerRef->PlayerSpawnPresentTile->GetActorRotation().Euler().X, 180.0f, ATileManagerRef->PlayerSpawnPresentTile->GetActorRotation().Euler().Z));

@@ -10,10 +10,6 @@ UTileVariantComponent::UTileVariantComponent()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
-	UE_LOG(LogTemp, Log, TEXT("test b"));
-	// ...
-	
-	UE_LOG(LogTemp, Log, TEXT("test a"));
 }
 
 

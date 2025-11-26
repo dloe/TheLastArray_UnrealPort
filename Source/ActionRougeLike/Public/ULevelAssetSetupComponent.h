@@ -9,6 +9,8 @@
 #include "Enviornment/PickupAssetData.h"
 #include "ULevelAssetSetupComponent.generated.h"
 
+//delegate for sub / pub system for removing pickups after spawn
+DECLARE_MULTICAST_DELEGATE(FOnCleanupPickups);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class ACTIONROUGELIKE_API ULevelAssetSetupComponent : public UActorComponent
@@ -25,6 +27,15 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Level Asset Population")
 	void PopulateGridAssets();
+
+
+	//idea for pickup markers cleanup
+	FOnCleanupPickups OnCleanupPickups;
+
+	void CleanupAllItemPickups()
+	{
+		OnCleanupPickups.Broadcast();
+	}
 
 	// ---------------------------------
 	// ------- Public Variables --------

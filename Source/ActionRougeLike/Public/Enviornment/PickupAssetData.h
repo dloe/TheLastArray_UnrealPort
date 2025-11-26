@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
+#include "Pickup/SPickupBase.h"
 #include "PickupAssetData.generated.h"
 
 USTRUCT()
@@ -20,8 +21,9 @@ public:
 	FString ItemName;
 
 	//asset to spawn
-
-}
+	UPROPERTY(EditAnywhere, Category = "Item Info")
+	TSubclassOf<ASPickupBase> PickupPrefab;
+};
 
 /**
  * 

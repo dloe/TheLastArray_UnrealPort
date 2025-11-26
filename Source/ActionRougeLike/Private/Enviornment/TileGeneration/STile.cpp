@@ -434,9 +434,9 @@ void ASTile::RemoveCurrentWall(ETileSide side)
 	}
 	if(wall != NULL)
 		wall->Destroy();
-	else {
-		UE_LOG(LogTemp, Log, TEXT("Wall is null for %s"), *GetNameSafe(this));
-	}
+	//else {
+		//UE_LOG(LogTemp, Log, TEXT("Wall is null for %s"), *GetNameSafe(this));
+	//}
 }
 
 /// <summary>

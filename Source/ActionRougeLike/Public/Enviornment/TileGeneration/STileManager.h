@@ -189,7 +189,7 @@ public:
 
 	//Assigned and (spawned in from local level)
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
-	ASTile* PlayerSpawnPresentTile;
+	ASTileVariantEnviornment* PlayerSpawnPresentTile;
 
 	UPROPERTY(EditAnywhere, Category = "Start Room")
 	bool DoorToStartRoom = true;

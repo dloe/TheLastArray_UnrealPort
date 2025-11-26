@@ -1,0 +1,627 @@
+﻿{
+  "name": "Combined",
+  "collapsed_groups": [],
+  "checkers": {
+    "bugprone-argument-comment": {
+      "enabled": true,
+      "level": 1024,
+      "options": {
+        "CommentBoolLiterals": {
+          "index": 1
+        },
+        "IgnoreSingleArgument": {
+          "index": 1
+        },
+        "CommentCharacterLiterals": {
+          "index": 1
+        },
+        "CommentIntegerLiterals": {
+          "index": 1
+        },
+        "CommentFloatLiterals": {
+          "index": 1
+        },
+        "CommentStringLiterals": {
+          "index": 1
+        },
+        "CommentNullPtrs": {
+          "index": 1
+        },
+        "StrictMode": {
+          "index": 1
+        },
+        "CommentUserDefinedLiterals": {
+          "index": 1
+        }
+      }
+    },
+    "bugprone-bool-pointer-implicit-conversion": {
+      "enabled": true,
+      "level": 768,
+      "options": {}
+    },
+    "bugprone-inaccurate-erase": {
+      "enabled": true,
+      "level": 768,
+      "options": {}
+    },
+    "bugprone-integer-division": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "bugprone-misplaced-operator-in-strlen-in-alloc": {
+      "enabled": true,
+      "level": 768,
+      "options": {}
+    },
+    "bugprone-misplaced-pointer-arithmetic-in-alloc": {
+      "enabled": true,
+      "level": 768,
+      "options": {}
+    },
+    "bugprone-shared-ptr-array-mismatch": {
+      "enabled": true,
+      "level": 768,
+      "options": {}
+    },
+    "bugprone-string-constructor": {
+      "enabled": true,
+      "level": 768,
+      "options": {}
+    },
+    "bugprone-string-integer-assignment": {
+      "enabled": true,
+      "level": 768,
+      "options": {}
+    },
+    "bugprone-stringview-nullptr": {
+      "enabled": true,
+      "level": 768,
+      "options": {}
+    },
+    "bugprone-suspicious-memory-comparison": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "bugprone-suspicious-memset-usage": {
+      "enabled": true,
+      "level": 768,
+      "options": {}
+    },
+    "bugprone-suspicious-realloc-usage": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "bugprone-suspicious-semicolon": {
+      "enabled": true,
+      "level": 768,
+      "options": {}
+    },
+    "bugprone-suspicious-string-compare": {
+      "enabled": true,
+      "level": 768,
+      "options": {
+        "WarnOnLogicalNotComparison": {
+          "index": 0
+        },
+        "WarnOnImplicitComparison": {
+          "index": 0
+        }
+      }
+    },
+    "bugprone-swapped-arguments": {
+      "enabled": true,
+      "level": 1024,
+      "options": {}
+    },
+    "bugprone-undefined-memory-manipulation": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "bugprone-unhandled-self-assignment": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "bugprone-unique-ptr-array-mismatch": {
+      "enabled": true,
+      "level": 768,
+      "options": {}
+    },
+    "bugprone-use-after-move": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "cert-err33-c": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "cert-err58-cpp": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "cert-msc50-cpp": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "cert-msc51-cpp": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "clang-analyzer-core.CallAndMessage": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "clang-analyzer-core.DivideZero": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "clang-analyzer-core.NonNullParamChecker": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "clang-analyzer-core.NullDereference": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "clang-analyzer-core.UndefinedBinaryOperatorResult": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "clang-analyzer-core.uninitialized.Assign": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "clang-analyzer-core.uninitialized.Branch": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "clang-analyzer-core.uninitialized.UndefReturn": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "clang-analyzer-cplusplus.InnerPointer": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "clang-analyzer-cplusplus.Move": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "clang-analyzer-cplusplus.NewDelete": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "clang-analyzer-cplusplus.NewDeleteLeaks": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "clang-analyzer-cplusplus.PureVirtualCall": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "clang-analyzer-cplusplus.SelfAssignment": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "clang-analyzer-nullability.NullableDereferenced": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "clang-analyzer-nullability.NullReturnedFromNonnull": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "cppcoreguidelines-init-variables": {
+      "enabled": true,
+      "level": 768,
+      "options": {}
+    },
+    "cppcoreguidelines-narrowing-conversions": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "cppcoreguidelines-no-malloc": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "cppcoreguidelines-owning-memory": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "cppcoreguidelines-pro-type-member-init": {
+      "enabled": true,
+      "level": 512,
+      "options": {
+        "UseAssignment": {
+          "index": 1
+        }
+      }
+    },
+    "cppcoreguidelines-pro-type-reinterpret-cast": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "cppcoreguidelines-pro-type-static-cast-downcast": {
+      "enabled": true,
+      "level": 768,
+      "options": {}
+    },
+    "cppcoreguidelines-special-member-functions": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "misc-include-cleaner": {
+      "enabled": true,
+      "level": 768,
+      "options": {
+        "MissingIncludes": {
+          "index": 1
+        },
+        "DeduplicateFindings": {
+          "index": 0
+        },
+        "IgnoreHeaders": {
+          "value": ""
+        }
+      }
+    },
+    "misc-new-delete-overloads": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "misc-non-copyable-objects": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "misc-static-assert": {
+      "enabled": true,
+      "level": 768,
+      "options": {}
+    },
+    "misc-throw-by-value-catch-by-reference": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "misc-unused-parameters": {
+      "enabled": true,
+      "level": 768,
+      "options": {}
+    },
+    "modernize-avoid-c-arrays": {
+      "enabled": true,
+      "level": 512,
+      "options": {}
+    },
+    "modernize-deprecated-headers": {
+      "enabled": true,
+      "level": 768,
+      "options": {}
+    },
+    "modernize-loop-convert": {
+      "enabled": true,
+      "level": 768,
+      "options": {
+        "VA.PreferType": {
+          "index": 0
+        },
+        "MinConfidence": {
+          "index": 2
+        }
+      }
+    },
+    "modernize-make-shared": {
+      "enabled": true,
+      "level": 768,
+      "options": {
+        "VA.AllowArrays": {
+          "index": 0
+        }
+      }
+    },
+    "modernize-make-unique": {
+      "enabled": true,
+      "level": 768,
+      "options": {
+        "VA.AllowArrays": {
+          "index": 0
+        }
+      }
+    },
+    "modernize-raw-string-literal": {
+      "enabled": true,
+      "level": 768,
+      "options": {
+        "ReplaceShorterLiterals": {
+          "index": 1
+        }
+      }
+    },
+    "modernize-redundant-void-arg": {
+      "enabled": true,
+      "level": 1280,
+      "options": {}
+    },
+    "modernize-replace-random-shuffle": {
+      "enabled": true,
+      "level": 768,
+      "options": {}
+    },
+    "modernize-return-braced-init-list": {
+      "enabled": true,
+      "level": 768,
+      "options": {}
+    },
+    "modernize-shrink-to-fit": {
+      "enabled": true,
+      "level": 768,
+      "options": {}
+    },
+    "modernize-use-auto": {
+      "enabled": true,
+      "level": 1280,
+      "options": {
+        "RemoveStars": {
+          "index": 1
+        },
+        "MinTypeNameLength": {
+          "index": 1
+        }
+      }
+    },
+    "modernize-use-bool-literals": {
+      "enabled": true,
+      "level": 768,
+      "options": {
+        "VA.AllowedMacros": {
+          "index": 2
+        }
+      }
+    },
+    "modernize-use-default-member-init": {
+      "enabled": true,
+      "level": 768,
+      "options": {}
+    },
+    "modernize-use-emplace": {
+      "enabled": true,
+      "level": 768,
+      "options": {
+        "IgnoreImplicitConstructors": {
+          "index": 1
+        }
+      }
+    },
+    "modernize-use-equals-default": {
+      "enabled": true,
+      "level": 768,
+      "options": {}
+    },
+    "modernize-use-equals-delete": {
+      "enabled": true,
+      "level": 768,
+      "options": {}
+    },
+    "modernize-use-noexcept": {
+      "enabled": true,
+      "level": 768,
+      "options": {}
+    },
+    "modernize-use-nullptr": {
+      "enabled": true,
+      "level": 768,
+      "options": {}
+    },
+    "modernize-use-override": {
+      "enabled": true,
+      "level": 768,
+      "options": {
+        "VA.VirtualHandling": {
+          "index": 2
+        },
+        "VA.IgnoreDestructors": {
+          "index": 1
+        }
+      }
+    },
+    "modernize-use-transparent-functors": {
+      "enabled": true,
+      "level": 768,
+      "options": {
+        "SafeMode": {
+          "index": 0
+        }
+      }
+    },
+    "modernize-use-using": {
+      "enabled": true,
+      "level": 768,
+      "options": {
+        "VA.OriginalTypeText": {
+          "index": 0
+        },
+        "VA.AllowArrays": {
+          "index": 0
+        }
+      }
+    },
+    "performance-faster-string-find": {
+      "enabled": true,
+      "level": 768,
+      "options": {}
+    },
+    "performance-for-range-copy": {
+      "enabled": true,
+      "level": 768,
+      "options": {
+        "WarnOnAllAutoCopies": {
+          "index": 1
+        }
+      }
+    },
+    "performance-inefficient-algorithm": {
+      "enabled": true,
+      "level": 768,
+      "options": {}
+    },
+    "performance-inefficient-vector-operation": {
+      "enabled": true,
+      "level": 768,
+      "options": {
+        "EnableProto": {
+          "index": 1
+        }
+      }
+    },
+    "performance-move-const-arg": {
+      "enabled": true,
+      "level": 768,
+      "options": {
+        "CheckMoveToConstRef": {
+          "index": 0
+        },
+        "CheckTriviallyCopyableMove": {
+          "index": 0
+        }
+      }
+    },
+    "performance-noexcept-destructor": {
+      "enabled": true,
+      "level": 768,
+      "options": {}
+    },
+    "performance-noexcept-move-constructor": {
+      "enabled": true,
+      "level": 768,
+      "options": {}
+    },
+    "performance-noexcept-swap": {
+      "enabled": true,
+      "level": 768,
+      "options": {}
+    },
+    "performance-trivially-destructible": {
+      "enabled": true,
+      "level": 768,
+      "options": {}
+    },
+    "performance-unnecessary-copy-initialization": {
+      "enabled": true,
+      "level": 768,
+      "options": {
+        "VA.DontRemove": {
+          "index": 1
+        }
+      }
+    },
+    "readability-container-size-empty": {
+      "enabled": true,
+      "level": 1280,
+      "options": {}
+    },
+    "readability-else-after-return": {
+      "enabled": true,
+      "level": 1280,
+      "options": {}
+    },
+    "readability-magic-numbers": {
+      "enabled": true,
+      "level": 1280,
+      "options": {
+        "IgnoreAllFloatingPointValues": {
+          "index": 1
+        },
+        "IgnoreBitFieldsWidths": {
+          "index": 0
+        },
+        "IgnoredIntegerValues": {
+          "value": "1;2;3;4;"
+        },
+        "IgnoreUserDefinedLiterals": {
+          "index": 1
+        },
+        "IgnoredFloatingPointValues": {
+          "value": "1.0;100.0;"
+        },
+        "IgnorePowersOf2IntegerValues": {
+          "index": 1
+        },
+        "IgnoreTypeAliases": {
+          "index": 1
+        }
+      }
+    },
+    "readability-redundant-control-flow": {
+      "enabled": true,
+      "level": 1280,
+      "options": {}
+    },
+    "readability-redundant-member-init": {
+      "enabled": true,
+      "level": 1280,
+      "options": {
+        "IgnoreBaseInCopyConstructors": {
+          "index": 1
+        }
+      }
+    },
+    "readability-redundant-smartptr-get": {
+      "enabled": true,
+      "level": 1280,
+      "options": {}
+    },
+    "readability-redundant-string-cstr": {
+      "enabled": true,
+      "level": 1024,
+      "options": {}
+    },
+    "readability-redundant-string-init": {
+      "enabled": true,
+      "level": 1024,
+      "options": {}
+    },
+    "readability-string-compare": {
+      "enabled": true,
+      "level": 1024,
+      "options": {}
+    },
+    "readability-uniqueptr-delete-release": {
+      "enabled": true,
+      "level": 768,
+      "options": {}
+    }
+  }
+}

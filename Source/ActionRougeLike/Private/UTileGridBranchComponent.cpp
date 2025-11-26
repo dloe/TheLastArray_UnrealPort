@@ -525,12 +525,12 @@ bool UTileGridBranchComponent::PlugTile(FVariantOffsetTransforms_Rotates transfo
 {
 //this is defualted to true when it should be false?
 	bool CantPlaceVariant = true;
-	UE_LOG(LogTemp, Log, TEXT("Start of plug tile for tile %d,%d"), CurrentTile->XIndex, CurrentTile->ZIndex);
+	//UE_LOG(LogTemp, Log, TEXT("Start of plug tile for tile %d,%d"), CurrentTile->XIndex, CurrentTile->ZIndex);
 	//check given orientations the variant can be placed at
 	//for each in offset in array
 
 	//as we check through each one, build an array that we can send back if it can be inserted
-	UE_LOG(LogTemp, Log, TEXT("Rotation: %d"), transformRotated.TransformDirectionRotation);
+	//UE_LOG(LogTemp, Log, TEXT("Rotation: %d"), transformRotated.TransformDirectionRotation);
 
 	if (transformRotated.DirectionsRotations.IsEmpty())
 	{
@@ -564,8 +564,8 @@ bool UTileGridBranchComponent::PlugTile(FVariantOffsetTransforms_Rotates transfo
 			//currentVariant->RotationCheckCounter++;
 			break;
 		}
-		if (OffsetTileToCheck != NULL)
-			UE_LOG(LogTemp, Log, TEXT("Retrieved tile: %d,%d"), OffsetTileToCheck->XIndex, OffsetTileToCheck->ZIndex);
+		//if (OffsetTileToCheck != NULL)
+		//	UE_LOG(LogTemp, Log, TEXT("Retrieved tile: %d,%d"), OffsetTileToCheck->XIndex, OffsetTileToCheck->ZIndex);
 		transVariantPlugInfo.TileArray.Add(OffsetTileToCheck);
 	}
 
@@ -579,7 +579,7 @@ bool UTileGridBranchComponent::PlugTile(FVariantOffsetTransforms_Rotates transfo
 	else {
 		//UE_LOG(LogTemp, Log, TEXT("counter: %d"), currentVariant->RotationCheckCounter);
 		//which  currentVariant->SidesToCheckRotation.TranformDirection == transformRotated.TransformDirection?
-		UE_LOG(LogTemp, Log, TEXT("Starting tile: %d:%d rotation side counter: %d"), CurrentTile->XIndex, CurrentTile->ZIndex, currentVariant->RotationCheckCounter); //2,4
+		//UE_LOG(LogTemp, Log, TEXT("Starting tile: %d:%d rotation side counter: %d"), CurrentTile->XIndex, CurrentTile->ZIndex, currentVariant->RotationCheckCounter); //2,4
 
 		bool DebugIssueReturn = AddDoorsAndWalls(CurrentTile, transVariantPlugInfo.DoorsArray, transVariantPlugInfo.WallArray, currentVariant->SidesToCheckRotation[currentVariant->RotationCheckCounter].ConnectingSideOffset);
 	
@@ -611,21 +611,21 @@ bool UTileGridBranchComponent::AddDoorsAndWalls(ASTile* CurrentTile, TArray<ASTi
 		
 		FIntPoint tile1ToCompare = PairToCheck.StartCords + StartingTileCords;
 		FIntPoint tile2ToCompare = PairToCheck.EndCords + StartingTileCords;
-		UE_LOG(LogTemp, Log, TEXT("Connection between %d,%d and %d,%d "), tile1ToCompare.X, tile1ToCompare.Y, tile2ToCompare.X, tile2ToCompare.Y);
+		//UE_LOG(LogTemp, Log, TEXT("Connection between %d,%d and %d,%d "), tile1ToCompare.X, tile1ToCompare.Y, tile2ToCompare.X, tile2ToCompare.Y);
 		ASTile* Tile1 = TileManagerRef->GetGridTilePair(tile1ToCompare);
 		ASTile* Tile2 = TileManagerRef->GetGridTilePair(tile2ToCompare);
 
 		//for now
 		if(Tile1 == NULL) {
 			UE_LOG(LogTemp, Error, TEXT("tile1 null: %s"), *tile1ToCompare.ToString()); //check sides to check, what direction are we going in here?
-			UE_LOG(LogTemp, Log, TEXT("tile1 info modifier: %s"), *PairToCheck.StartCords.ToString());
+			//UE_LOG(LogTemp, Log, TEXT("tile1 info modifier: %s"), *PairToCheck.StartCords.ToString());
 			debugIssueFor = true;
 			continue;
 		}
 
 		if (Tile2 == NULL) {
 			UE_LOG(LogTemp, Error, TEXT("tile2 null: %s"), *tile2ToCompare.ToString()); //check sides to check, what direction are we going in here?
-			UE_LOG(LogTemp, Log, TEXT("tile2 info modifier: %s"), *PairToCheck.EndCords.ToString()); //shouldnt this be 2,3 instead of 2,5? (current is 2,4)
+			//UE_LOG(LogTemp, Log, TEXT("tile2 info modifier: %s"), *PairToCheck.EndCords.ToString()); //shouldnt this be 2,3 instead of 2,5? (current is 2,4)
 			debugIssueFor = true;
 			continue;
 		}
@@ -681,6 +681,8 @@ bool UTileGridBranchComponent::AddDoorsAndWalls(ASTile* CurrentTile, TArray<ASTi
 void UTileGridBranchComponent::CreateSecretRoom()
 {
 	USFTileVariantDefinitionData* singleVariantData = TileManagerRef->SingleVariantData;
+
+	
 
 	TArray<ASTile*> outskirtsCheck;
 	for (int tileCount = 0; tileCount < TileManagerRef->AllActiveTiles.Num(); tileCount++)
@@ -772,6 +774,11 @@ void UTileGridBranchComponent::CreateSecretRoom()
 
 	int selectedRotation = 0;
 
+	int floatingWallBuffer = TileManagerRef->ChoosenWallAssetClass->GetDefaultObject<ASTileWall>()->WallsBuffer;
+	int distanceToNextTile = floatingWallBuffer * 2;
+
+	//TSubclassOf<ASTileVariantEnviornment> ChoosenSecretRoomVariant = 
+
 	//TODO: weird but with center of tile being at the top, causing a 240 offset. Will need to investigate later
 	switch (selected.neighborArray[loc])
 	{
@@ -779,7 +786,7 @@ void UTileGridBranchComponent::CreateSecretRoom()
 		//TODO: may need to fix rotation? 
 		if (selected.tile->UpNeighbor == NULL) //if no neighbor, we spawn a tile and add the 3 walls + door
 		{
-			SpawnPos = FVector(selected.tile->GetActorLocation().X, selected.tile->GetActorLocation().Y - (TileManagerRef->StartingGridTile->TileLength), selected.tile->GetActorLocation().Z); //+ 240
+			SpawnPos = FVector(selected.tile->GetActorLocation().X, selected.tile->GetActorLocation().Y - (TileManagerRef->StartingGridTile->TileLength + distanceToNextTile), selected.tile->GetActorLocation().Z); //+ 240
 			//UE_LOG(LogTemp, Log, TEXT("SpawnPas: %s"), *SpawnPos.ToString());
 			//SpawnRot = FRotator(selected.tile->GetActorRotation().Euler().X, 180.0f, selected.tile->GetActorRotation().Euler().Z);
 			SecretRoom = GetWorld()->SpawnActor<ASTile>(TileManagerRef->TileBaseClass, SpawnPos, SpawnRot, SpawnParams);
@@ -805,7 +812,7 @@ void UTileGridBranchComponent::CreateSecretRoom()
 		//TODO: may need to fix rotation? 
 		if (selected.tile->DownNeighbor == NULL)
 		{
-			SpawnPos = FVector(selected.tile->GetActorLocation().X, selected.tile->GetActorLocation().Y + (TileManagerRef->StartingGridTile->TileLength), selected.tile->GetActorLocation().Z);
+			SpawnPos = FVector(selected.tile->GetActorLocation().X, selected.tile->GetActorLocation().Y + (TileManagerRef->StartingGridTile->TileLength + distanceToNextTile), selected.tile->GetActorLocation().Z);
 			//UE_LOG(LogTemp, Log, TEXT("SpawnPas: %s"), *SpawnPos.ToString());
 			SpawnRot = FRotator(selected.tile->GetActorRotation().Euler().X, 180.0f, selected.tile->GetActorRotation().Euler().Z);
 			SecretRoom = GetWorld()->SpawnActor<ASTile>(TileManagerRef->TileBaseClass, SpawnPos, SpawnRot, SpawnParams);
@@ -829,7 +836,7 @@ void UTileGridBranchComponent::CreateSecretRoom()
 		//TODO: may need to fix rotation? 
 		if (selected.tile->LeftNeighbor == NULL)
 		{
-			SpawnPos = FVector(selected.tile->GetActorLocation().X - (selected.tile->TileLength), selected.tile->GetActorLocation().Y, selected.tile->GetActorLocation().Z); //+ 240;
+			SpawnPos = FVector(selected.tile->GetActorLocation().X - (selected.tile->TileLength + distanceToNextTile), selected.tile->GetActorLocation().Y, selected.tile->GetActorLocation().Z); //+ 240;
 			//UE_LOG(LogTemp, Log, TEXT("SpawnPas: %s"), *SpawnPos.ToString());
 			SpawnRot = FRotator(TileManagerRef->PlayerSpawnPresentTile->GetActorRotation().Euler().X, 90.0f, TileManagerRef->PlayerSpawnPresentTile->GetActorRotation().Euler().Z);
 			SecretRoom = GetWorld()->SpawnActor<ASTile>(TileManagerRef->TileBaseClass, SpawnPos, SpawnRot, SpawnParams);
@@ -853,7 +860,7 @@ void UTileGridBranchComponent::CreateSecretRoom()
 		//TODO: may need to fix rotation? 
 		if (selected.tile->RightNeighbor == NULL)
 		{
-			SpawnPos = FVector(selected.tile->GetActorLocation().X + (selected.tile->TileLength), selected.tile->GetActorLocation().Y, selected.tile->GetActorLocation().Z);
+			SpawnPos = FVector(selected.tile->GetActorLocation().X + (selected.tile->TileLength + distanceToNextTile), selected.tile->GetActorLocation().Y, selected.tile->GetActorLocation().Z);
 			SpawnRot = FRotator(TileManagerRef->PlayerSpawnPresentTile->GetActorRotation().Euler().X, -90.0f, TileManagerRef->PlayerSpawnPresentTile->GetActorRotation().Euler().Z);
 			SecretRoom = GetWorld()->SpawnActor<ASTile>(TileManagerRef->TileBaseClass, SpawnPos, SpawnRot, SpawnParams);
 			SpawnDoor(SecretRoom, ETileSide::ETile_Left, "SecretRoom");
@@ -887,9 +894,12 @@ void UTileGridBranchComponent::CreateSecretRoom()
 	SpawnParamsPrefab.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
 	TSubclassOf<ASTileVariantEnviornment> ChoosenSecretRoomVariant;
+
+	TArray<TSubclassOf<ASTileVariantEnviornment>> SecretRoomOptions = LocalLevelRef->GetSecretRoomEnvVariants_local();
+
 	//TODO: This secret room environment data needs to be updated for the secret room variants
-	int variantIndex = TileManagerRef->GameStreamRef.RandRange(0, singleVariantData->TileVariantEnviornmentsLocal.Num() - 1);
-	ChoosenSecretRoomVariant = singleVariantData->TileVariantEnviornmentsLocal[variantIndex];
+	int variantIndex = TileManagerRef->GameStreamRef.RandRange(0, SecretRoomOptions.Num() - 1);
+	ChoosenSecretRoomVariant = SecretRoomOptions[variantIndex];
 
 	//rotation is dependent on prev tile
 	FRotator SpawnRotPrefab = FRotator(0.0f, 0.0f, 0.0f);
@@ -1300,7 +1310,7 @@ void UTileGridBranchComponent::SingleRoomsDoorSetup(ASTile* CurrentTile)
 	//pick direction and begin CheckTile
 	for (int DirectionCount = 0; DirectionCount < DirectionsToCheck.Num(); DirectionCount++)
 	{
-		UE_LOG(LogTemp, Log, TEXT("Number: %d"), DirectionsToCheck[DirectionCount]);
+		//UE_LOG(LogTemp, Log, TEXT("Number: %d"), DirectionsToCheck[DirectionCount]);
 		switch (DirectionsToCheck[DirectionCount])
 		{
 		case 1:

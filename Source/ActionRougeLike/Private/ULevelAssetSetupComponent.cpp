@@ -104,12 +104,13 @@ void ULevelAssetSetupComponent::ActivateItems()
 	//for each placed variant tile
 	for (ASTileVariantEnviornment* TilePlaced : SpawnedVariantsRef)
 	{
-		//check each preplaced pickup
+		//a one time add TilePlaced cleanup to OnCleanupDelegate
+		OnCleanupPickups.AddUObject(TilePlaced, &ASTileVariantEnviornment::HandleMarkerCleanup);
+
+		//check each pre-placed pickup
 		for (UStaticMeshComponent* PossiblePickup : TilePlaced->PickupPlacements)
 		{
-			//check(Child);
-			//const FVector relativeLocation = Child->GetRelativeLocation();
-			check(PossiblePickup);
+			check(PossiblePickup); //trying this check 
 			const FVector relativeLocation = PossiblePickup->GetRelativeLocation();
 			UE_LOG(LogTemp, Log, TEXT("Cords: %s"), *relativeLocation.ToString());
 			//check noise 
@@ -117,9 +118,10 @@ void ULevelAssetSetupComponent::ActivateItems()
 			UE_LOG(LogTemp, Log, TEXT("Noise lookup: %f"), noiseMeasurement);
 
 			//threshold check TODO: This will be assigned from 
-			float itemThreshold = LocalLevel->PickupSpawnLevelThreshold_local;
+			float itemThreshold = LocalLevel->GetLocalPickupSpawnLevelThreshold();
 			//if meeds threshold, spawn item function for weight lookup and spawn procedure
-			if (noiseMeasurement >= itemThreshold)
+			UE_LOG(LogTemp, Log, TEXT("Comparing: %f to threshold: %f"), noiseMeasurement, itemThreshold);
+			if (noiseMeasurement <= itemThreshold)
 			{
 				//can spawn!
 				PlaceItemPickup(PossiblePickup); //TODO: make blocked out tiles for rest of variants and assign
@@ -153,7 +155,7 @@ void ULevelAssetSetupComponent::PlaceItemPickup(UStaticMeshComponent* PickupMark
 	FVector spawnLocation = PickupMarker->GetComponentLocation();
 
 	//choose random number between 1 and TotalItemWeight
-	int choosenItem = LocalLevel->GameStream.RandRange(1, LevelItemDropWeightTable.Num());
+	int choosenItem = LocalLevel->GameStream.RandRange(0, LevelItemDropWeightTable.Num() - 1);
 
 	FItemPickupAsset ChoosenAsset = LevelItemDropWeightTable[choosenItem];
 
@@ -165,13 +167,13 @@ void ULevelAssetSetupComponent::PlaceItemPickup(UStaticMeshComponent* PickupMark
 
 
 
-	spawnLocation.Y += 20.0f;
+	spawnLocation.Z += 700.0f;
 	DrawDebugSphere(GetWorld(), spawnLocation, 200.0f, 20, FColor::Emerald, false, 100);
 }
 
 /// <summary>
 /// Some preplaced enemy locations allow for cluster spawning for patrols in bigger tiles
-/// - Minibosses can spawn on some objectives
+/// - Mini bosses can spawn on some objectives
 /// </summary>
 void ULevelAssetSetupComponent::ActivateEnemies()
 {
@@ -182,7 +184,7 @@ void ULevelAssetSetupComponent::ActivateEnemies()
 /// Inputs a local transform and returns their noise eligibility?
 /// 
 /// -Set thresholds, spawn items with very high noise values, creating more rare or high priority 
-/// hotspots. Low thresholds, spawn more with broader coverage 
+/// hot spots. Low thresholds, spawn more with broader coverage 
 ///Perlin noise
 ///calculated offsets
 ///highest values are choosen from the outputs of plugging in x,y into Perlin noise
@@ -219,7 +221,7 @@ float ULevelAssetSetupComponent::GetNoiseVec(FVector inputCords)
 	//UE_LOG(LogTemp, Log, TEXT("Input cords with offset and scale: %s"), *inputConvertionSeedOffset.ToString());
 	
 	float noiseOutput = FMath::PerlinNoise2D(inputConvertionSeedOffset);
-	//UE_LOG(LogTemp, Log, TEXT("not normallized: %f"), noiseOutput);
+	//UE_LOG(LogTemp, Log, TEXT("not normalized: %f"), noiseOutput);
 	//normalize (so between 0 and 1) not within -1,1
 	//float normalizedOutput = UKismetMathLibrary::NormalizeToRange(noiseOutput, 0.0f, 1.0f); //is this not what i thought it was?
 	
@@ -272,6 +274,7 @@ void ULevelAssetSetupComponent::PopulateGridAssets()
 
 	ActivateEnemies();
 
+	CleanupAllItemPickups();
 
 	//Finished grid branch creation
 	UE_LOG(LogTemp, Log, TEXT("\n\n================= Finished ========================="));

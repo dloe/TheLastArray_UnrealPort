@@ -47,6 +47,14 @@ void ALocalLevel::AssignVariantDefData()
 
 	//have to cast at int to use as indexing
 	int32 CurrentLevelIndex = static_cast<int32>(CurrentLevelTier);
+	//print enum display name?
+	UEnum* EnumPtr = StaticEnum<ELevelTier>(); //enum object for LevelTier enum (to look up values?)
+	FText DisplayName = EnumPtr->GetDisplayNameTextByValue(CurrentLevelIndex);
+	UE_LOG(LogTemp, Log, TEXT("Current Level Type: %s"), *DisplayName.ToString());
+
+	//level tier is not set right
+	ensure(CurrentLevelTier != ELevelTier::ELevel_Null);
+
 	OnexOneEnvVariants_local = LevelVariantsPresets->LevelPresetInfo[CurrentLevelIndex + 1].OnexOneEnvVariants;
 	TwoxOneEnvVariants_local = LevelVariantsPresets->LevelPresetInfo[CurrentLevelIndex + 1].TwoxOneEnvVariants;
 	TwoxTwoEnvVariants_local = LevelVariantsPresets->LevelPresetInfo[CurrentLevelIndex + 1].TwoxTwoEnvVariants;
@@ -57,6 +65,8 @@ void ALocalLevel::AssignVariantDefData()
 	FourxFourEnvVariants_local = LevelVariantsPresets->LevelPresetInfo[CurrentLevelIndex + 1].FourxFourEnvVariants;
 	PickupSpawnLevelThreshold_local = LevelVariantsPresets->LevelPresetInfo[CurrentLevelIndex + 1].PickupSpawnLevelThreshold;
 	EnemySpawnLevelThreshold_local = LevelVariantsPresets->LevelPresetInfo[CurrentLevelIndex + 1].EnemySpawnLevelThreshold;
+	SecretRoomEnvVariants_local = LevelVariantsPresets->LevelPresetInfo[CurrentLevelIndex + 1].SecretVariants;
+	StartingEnvVariants_local = LevelVariantsPresets->LevelPresetInfo[CurrentLevelIndex + 1].StartingTileVariants;
 
 
 	//TODO: need to check that the data objects getting assigned different lvl variant don't mess anything up

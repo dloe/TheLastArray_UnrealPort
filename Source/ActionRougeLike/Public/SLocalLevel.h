@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "STileVariantEnviornment.h"
+#include "SStartingSpawnTile.h"
 #include "SLocalLevel.generated.h"
 
 UENUM(BlueprintType)
@@ -73,8 +74,8 @@ public:
 	//reference level asset data and presets
 
 	//each level should have some type of data object that holds this info, then will assign this this guy
-	UPROPERTY(EditAnywhere, Category = "Tile Stats")
-	float LevelItemPlacementThresholds; 
+	//UPROPERTY(EditAnywhere, Category = "Tile Stats")
+	//float LevelItemPlacementThresholds; 
 
 	//player data?
 
@@ -84,40 +85,14 @@ public:
 
 	//presets for each level tier (TODO: move this to new location for storage)
 
-	//reference to data object that contains all the possible variants for each level
-	//at start based on what level, we assign those variants to their corresponding TileVariantDefData data object
-	UPROPERTY(EditAnywhere, Category = "Tile Variants")
-	TArray<TSubclassOf<ASTileVariantEnviornment>> OnexOneEnvVariants_local;
+	
 
 	//UPROPERTY(EditAnywhere, Category = "Tile Variants")
 	//TArray<ASTileVariantEnviornment> OnexOneEnvVariants_local_test;
 
-	UPROPERTY(EditAnywhere, Category = "Tile Variants")
-	TArray<TSubclassOf<ASTileVariantEnviornment>> TwoxOneEnvVariants_local;
+	
 
-	UPROPERTY(EditAnywhere, Category = "Tile Variants")
-	TArray<TSubclassOf<ASTileVariantEnviornment>> TwoxTwoEnvVariants_local;
-
-	UPROPERTY(EditAnywhere, Category = "Tile Variants")
-	TArray<TSubclassOf<ASTileVariantEnviornment>> ThreexOneEnvVariants_local;
-
-	UPROPERTY(EditAnywhere, Category = "Tile Variants")
-	TArray<TSubclassOf<ASTileVariantEnviornment>> ThreexTwoEnvVariants_local;
-
-	UPROPERTY(EditAnywhere, Category = "Tile Variants")
-	TArray<TSubclassOf<ASTileVariantEnviornment>> FourxTwoEnvVariants_local;
-
-	UPROPERTY(EditAnywhere, Category = "Tile Variants")
-	TArray<TSubclassOf<ASTileVariantEnviornment>>FourxThreeEnvVariants_local;
-
-	UPROPERTY(EditAnywhere, Category = "Tile Variants")
-	TArray<TSubclassOf<ASTileVariantEnviornment>> FourxFourEnvVariants_local;
-
-	UPROPERTY(EditAnywhere, Category = "Tile Variants")
-	float PickupSpawnLevelThreshold_local;
-
-	UPROPERTY(EditAnywhere, Category = "Tile Variants")
-	float EnemySpawnLevelThreshold_local;
+	
 
 	UPROPERTY(EditAnywhere, Category = "Local Level Data")
 	ULevelVariantPresetsData* LevelVariantsPresets;
@@ -162,6 +137,47 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Level Objective")
 	void ChooseObjective();
 
+	// ============================
+	// ==== Getters / Setters =====
+	// ============================
+
+	float GetLocalPickupSpawnLevelThreshold() const { return PickupSpawnLevelThreshold_local; };
+	void SetLocalPickupSpawnLevelThreshold(float Threshold) { PickupSpawnLevelThreshold_local = Threshold; };
+
+	float GetLocalEnemySpawnLevelThreshold() const { return EnemySpawnLevelThreshold_local; };
+	void SetLocalEnemySpawnLevelThreshold(float Threshold) { EnemySpawnLevelThreshold_local = Threshold; };
+
+	TArray<TSubclassOf<ASTileVariantEnviornment>> GetOnexOneEnvVariants_local() const { return OnexOneEnvVariants_local; };
+	void SetOnexOneEnvVariants_local(TArray<TSubclassOf<ASTileVariantEnviornment>> EnvArray) { OnexOneEnvVariants_local = EnvArray; };
+
+	TArray<TSubclassOf<ASTileVariantEnviornment>> GetTwoxOneEnvVariants_local() const { return TwoxOneEnvVariants_local; };
+	void SetTwoxOneEnvVariants_local(TArray<TSubclassOf<ASTileVariantEnviornment>> EnvArray) { TwoxOneEnvVariants_local = EnvArray; };
+
+	TArray<TSubclassOf<ASTileVariantEnviornment>> GetTwoxTwoEnvVariants_local() const { return TwoxTwoEnvVariants_local; };
+	void SetTwoxTwoEnvVariants_local(TArray<TSubclassOf<ASTileVariantEnviornment>> EnvArray) { TwoxTwoEnvVariants_local = EnvArray; };
+
+	TArray<TSubclassOf<ASTileVariantEnviornment>> GetThreexOneEnvVariants_local() const { return ThreexOneEnvVariants_local; };
+	void SetThreexOneEnvVariants_local(TArray<TSubclassOf<ASTileVariantEnviornment>> EnvArray) { ThreexOneEnvVariants_local = EnvArray; };
+
+	TArray<TSubclassOf<ASTileVariantEnviornment>> GetThreexTwoEnvVariants_local() const { return ThreexTwoEnvVariants_local; };
+	void SetThreexTwoEnvVariants_local(TArray<TSubclassOf<ASTileVariantEnviornment>> EnvArray) { ThreexTwoEnvVariants_local = EnvArray; };
+
+	TArray<TSubclassOf<ASTileVariantEnviornment>> GetFourxTwoEnvVariants_local() const { return FourxTwoEnvVariants_local; };
+	void SetFourxTwoEnvVariants_local(TArray<TSubclassOf<ASTileVariantEnviornment>> EnvArray) { FourxTwoEnvVariants_local = EnvArray; };
+
+	TArray<TSubclassOf<ASTileVariantEnviornment>> GetFourxThreeEnvVariants_local() const { return FourxThreeEnvVariants_local; };
+	void SetFourxThreeEnvVariants_local(TArray<TSubclassOf<ASTileVariantEnviornment>> EnvArray) { FourxThreeEnvVariants_local = EnvArray; };
+
+	TArray<TSubclassOf<ASTileVariantEnviornment>> GetFourxFourEnvVariants_local() const { return FourxFourEnvVariants_local; };
+	void SetFourxFourEnvVariants_local(TArray<TSubclassOf<ASTileVariantEnviornment>> EnvArray) { FourxFourEnvVariants_local = EnvArray; };
+
+	TArray<TSubclassOf<ASTileVariantEnviornment>> GetSecretRoomEnvVariants_local() const { return SecretRoomEnvVariants_local; };
+	void SetSecretRoomEnvVariants_local(TArray<TSubclassOf<ASTileVariantEnviornment>> EnvArray) { SecretRoomEnvVariants_local = EnvArray; };
+
+	TArray<TSubclassOf<ASStartingSpawnTile>> GetStartingEnvVariants_local() const { return StartingEnvVariants_local; };
+	void SetStartingEnvVariants_local(TArray<TSubclassOf<ASStartingSpawnTile>> EnvArray) { StartingEnvVariants_local = EnvArray; };
+
+
 protected:
 
 	// ---------------------------------
@@ -186,7 +202,44 @@ protected:
 	// -- Internal state / variables --
 	// ---------------------------------
 
+	//maybe make private? and surround with getters and setters?
+	UPROPERTY(EditAnywhere, Category = "Tile Variants")
+	float PickupSpawnLevelThreshold_local = -1.0f;
 
+	UPROPERTY(EditAnywhere, Category = "Tile Variants")
+	float EnemySpawnLevelThreshold_local = -1.0f;
+
+	//reference to data object that contains all the possible variants for each level
+	//at start based on what level, we assign those variants to their corresponding TileVariantDefData data object
+	UPROPERTY(EditAnywhere, Category = "Tile Variants")
+	TArray<TSubclassOf<ASTileVariantEnviornment>> OnexOneEnvVariants_local;
+
+	UPROPERTY(EditAnywhere, Category = "Tile Variants")
+	TArray<TSubclassOf<ASTileVariantEnviornment>> TwoxOneEnvVariants_local;
+
+	UPROPERTY(EditAnywhere, Category = "Tile Variants")
+	TArray<TSubclassOf<ASTileVariantEnviornment>> TwoxTwoEnvVariants_local;
+
+	UPROPERTY(EditAnywhere, Category = "Tile Variants")
+	TArray<TSubclassOf<ASTileVariantEnviornment>> ThreexOneEnvVariants_local;
+
+	UPROPERTY(EditAnywhere, Category = "Tile Variants")
+	TArray<TSubclassOf<ASTileVariantEnviornment>> ThreexTwoEnvVariants_local;
+
+	UPROPERTY(EditAnywhere, Category = "Tile Variants")
+	TArray<TSubclassOf<ASTileVariantEnviornment>> FourxTwoEnvVariants_local;
+
+	UPROPERTY(EditAnywhere, Category = "Tile Variants")
+	TArray<TSubclassOf<ASTileVariantEnviornment>>FourxThreeEnvVariants_local;
+
+	UPROPERTY(EditAnywhere, Category = "Tile Variants")
+	TArray<TSubclassOf<ASTileVariantEnviornment>> FourxFourEnvVariants_local;
+
+	UPROPERTY(EditAnywhere, Category = "Tile Variants")
+	TArray<TSubclassOf<ASTileVariantEnviornment>> SecretRoomEnvVariants_local;
+
+	UPROPERTY(EditAnywhere, Category = "Tile Variants")
+	TArray<TSubclassOf<ASStartingSpawnTile>> StartingEnvVariants_local;
 };
 
 

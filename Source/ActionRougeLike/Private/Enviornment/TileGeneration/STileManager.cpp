@@ -146,7 +146,7 @@ void ASTileManager::Create2DTileArray()
 			FVector TileSpawnLocation((this->GetActorLocation().X + (tileLength * XIndex)), (this->GetActorLocation().Y + (tileLength * ZIndex)), this->GetActorLocation().Z);
 			
 			ASTile* T = GetWorld()->SpawnActor<ASTile>(TileBaseClass, TileSpawnLocation, this->GetActorRotation(), SpawnParams);
-			UE_LOG(LogTemp, Log, TEXT("TileName %s, OG: %s, New: %s"), *TileName, *ORLocal.ToString(), *TileSpawnLocation.ToString());
+			//UE_LOG(LogTemp, Log, TEXT("TileName %s, OG: %s, New: %s"), *TileName, *ORLocal.ToString(), *TileSpawnLocation.ToString());
 
 			T->SetActorLabel(TileName);
 			T->SetOwner(this);
@@ -285,7 +285,7 @@ void ASTileManager::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& CurrentPath)
 		}
 	}
 	else {
-		UE_LOG(LogTemp, Log, TEXT("NULL TILE DETECTED. PLEASE INVESTIGATE"));
+		UE_LOG(LogTemp, Error, TEXT("NULL TILE DETECTED. PLEASE INVESTIGATE"));
 	}
 
 	if (FailsafeCount == LevelHeight * LevelWidth * 2)
@@ -314,7 +314,7 @@ void ASTileManager::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& CurrentPath)
 
 	if (allNeighborsInvalid)
 	{
-		UE_LOG(LogTemp, Log, TEXT("Dead end found at %d,%d"), CurrentTile->XIndex, CurrentTile->ZIndex);
+		//UE_LOG(LogTemp, Log, TEXT("Dead end found at %d,%d"), CurrentTile->XIndex, CurrentTile->ZIndex);
 		CurrentTile->CheckForPath = true;
 		CurrentTile->ShadeNull();
 
