@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "STileVariantEnviornment.h"
+#include "SFTileVariantDefinitionData.h"
+#include "TileVariantComponent.h"
 #include "UTileGridBranchComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBranchFillGenerated);
@@ -142,6 +144,9 @@ protected:
 	ASTileManager* TileManagerRef;
 
 	UPROPERTY(EditAnywhere)
+	UTileVariantComponent* TileVariantCompRef;
+
+	UPROPERTY(EditAnywhere)
 	ALocalLevel* LocalLevelRef;
 
 	//doesn't need to be pointer cause its value never changes on start
@@ -152,7 +157,12 @@ protected:
 	UPROPERTY(EditAnywhere)
 	bool DoorsActiveRef;
 
-public:	
-	
-		
+	UPROPERTY(EditAnywhere)
+	FRandomStream GameStreamRef;
+
+	UPROPERTY(EditAnywhere, Category = "Tile Generation")
+	TArray<ASTile*> LevelPathRef;
+
+	UPROPERTY(EditAnywhere, Category = "Tile Generation")
+	TArray<ASTile*> AvailableTilesRef;
 };

@@ -94,7 +94,7 @@ TSubclassOf<ASTile> ALocalLevel::GetPresetStartingTile()
 
 void ALocalLevel::SeedSetup()
 {
-	if (GameSeed == 0)
+	if (GameStream.GetInitialSeed() == 0)
 	{
 		if (bDebugPrints)
 			UE_LOG(LogTemp, Log, TEXT("Setting Up Seed..."));
@@ -105,11 +105,11 @@ void ALocalLevel::SeedSetup()
 	else {
 		if (bDebugPrints)
 			UE_LOG(LogTemp, Log, TEXT("Using Supplied Seed..."));
-		GameStream.Initialize(GameSeed);
+		GameStream.Initialize(GameStream.GetInitialSeed()); //TODO: seems redundant? im to tired tonight
 
 	}
 
-	if (bDebugPrints)
+	//if (bDebugPrints)
 		UE_LOG(LogTemp, Log, TEXT("Seed: %d"), GameStream.GetCurrentSeed());
 }
 

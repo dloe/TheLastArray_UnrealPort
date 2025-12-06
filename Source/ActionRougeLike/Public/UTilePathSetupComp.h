@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Enviornment/TileGeneration/STileManager.h"
+#include "ASTileWall.h"
 #include "UTilePathSetupComp.generated.h"
 
 //forward declared
@@ -72,10 +74,14 @@ protected:
 	void CheckTile(ASTile* TileToAdd, TArray<ASTile*>& CurrentPath);
 
 	UFUNCTION(Category = "ArrayCreation")
-	void SetupMainPathConnectors();
+	bool AddTileToPathPathSetup(ASTile* TileToAdd);
+	
 
 	UFUNCTION(Category = "ArrayCreation")
-	bool AddTileToPath(ASTile* TileToAdd);
+	void SetupMainPathConnectors();
+
+	//UFUNCTION(Category = "ArrayCreation")
+	//bool AddTileToPath(ASTile* TileToAdd);
 
 	UFUNCTION(Category = "ArrayCreation")
 	TArray <int> Reshuffle(TArray <int> ar);
@@ -105,6 +111,10 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	FTransform TransformCurrentDoor;
 
+	//list of possible starting tiles
+	UPROPERTY(EditAnywhere, Category = "Tile Generation")
+	int PathNumber = 0;
+
 
 	// ---------------------------------
 	// -- Cached references to external component pointers / variables --
@@ -113,4 +123,15 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Tile Manager")
 	bool bDebugPrintsRef;
 
+	UPROPERTY(EditAnywhere, Category = "Game Setup Generation")
+	FRandomStream GameStreamRef;
+
+	UPROPERTY(EditAnywhere, Category = "Tile Generation")
+	TArray<ASTile*> LevelPathRef;
+
+	//UPROPERTY(EditAnywhere, Category = "Tile Generation")
+	TArray <FMultiTileStruct*> Grid2DArrayRef;
+
+	UPROPERTY(EditAnywhere, Category = "Tile Generation")
+	TArray<ASTileWall*> AllSpawnedWallsRef;
 };

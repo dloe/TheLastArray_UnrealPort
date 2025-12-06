@@ -25,8 +25,13 @@ void UTileGridBranchComponent::GameMapAdditionalSetup()
 {
 	TileManagerRef = Cast<ASTileManager>(GetOwner());
 	LocalLevelRef = TileManagerRef->MyLocalLevel;
-	DebugPrintsRef = TileManagerRef->bDebugPrintsRef;
-	DoorsActiveRef = TileManagerRef->DoorsActive;
+	DebugPrintsRef = TileManagerRef->GetDebugPrints();
+	DoorsActiveRef = TileManagerRef->GetDoorsActive();
+	GameStreamRef = TileManagerRef->GetGameStreamRef();
+	TileVariantCompRef = TileManagerRef->GetTileVariantComponent();
+	//update after GameMapAdditionalSetup finishes
+	LevelPathRef = TileManagerRef->GetLevelPath();
+	AvailableTilesRef = TileManagerRef->MakeAvailableTiles();
 
 	UE_LOG(LogTemp, Log, TEXT("-----------------------------------------------------------"));
 	UE_LOG(LogTemp, Log, TEXT("========== Grid Additions and Final Setup ================="));
@@ -36,9 +41,6 @@ void UTileGridBranchComponent::GameMapAdditionalSetup()
 
 	if (DebugPrintsRef)
 		UE_LOG(LogTemp, Log, TEXT("=================== Finished Random Rooms - Adding Spawn Room =============================="));
-
-
-	
 
 	AddSingleRooms();
 
@@ -81,6 +83,9 @@ void UTileGridBranchComponent::GameMapAdditionalSetup()
 	MergeWallsForVariantTiles();
 
 
+	TileManagerRef->SetLevelPath(LevelPathRef);
+	TileManagerRef->SetAvailableTiles(AvailableTilesRef);
+
 	//notify next component to run
 	OnGridAdditionalSetupCompletedEvent.Broadcast();
 }
@@ -95,14 +100,14 @@ void UTileGridBranchComponent::RandomRoomsAndBranchesAdditions()
 {
 	int levelWidthRef = TileManagerRef->GetLevelWidth();
 	int levelHeightRef = TileManagerRef->GetLevelHeight();
-
-
+	
 	if (DebugPrintsRef)
 		UE_LOG(LogTemp, Log, TEXT("Adding Branches"));
 
-	TileManagerRef->AllActiveTiles.Append(TileManagerRef->LevelPath);
+	TileManagerRef->AllActiveTiles.Append(LevelPathRef);
 
-	TileManagerRef->MakeAvailableTiles();
+	AvailableTilesRef = TileManagerRef->MakeAvailableTiles();
+	
 
 	//TODO: how long will branches be? Get better way to find this
 	//Ideas/Research: 
@@ -114,17 +119,17 @@ void UTileGridBranchComponent::RandomRoomsAndBranchesAdditions()
 	int TotalBranchesMax2 = FMath::RoundToInt(levelWidthRef * levelHeightRef * TileManagerRef->BranchDensityFactor_DependencyOnMazeSize());
 	// - Directional Bias Control: weighted probability function, where branch creation probability decreases as the main path progresses
 
-	int oldWay = (levelWidthRef - TileManagerRef->LevelPath.Num() / levelWidthRef) + 1;
+	int oldWay = (levelWidthRef - LevelPathRef.Num() / levelWidthRef) + 1;
 	//for some randomness
-	int TotalBranchesMax = TileManagerRef->GameStreamRef.RandRange(1, TotalBranchesMax1);
+	int TotalBranchesMax = GameStreamRef.RandRange(1, TotalBranchesMax1);
 
 	if (DebugPrintsRef)
 		UE_LOG(LogTemp, Log, TEXT("Total amount of branches to create: %d"), TotalBranchesMax);
 
-	for (int CurrentBranch = 0; CurrentBranch < TotalBranchesMax && TileManagerRef->AvailableTiles.Num() > 1; CurrentBranch++)
+	for (int CurrentBranch = 0; CurrentBranch < TotalBranchesMax && AvailableTilesRef.Num() > 1; CurrentBranch++)
 	{
 		//for now using length of level, might change this later, not sure how else but not a super important detail
-		int BranchLength = TileManagerRef->GameStreamRef.RandRange(1, levelWidthRef);
+		int BranchLength = GameStreamRef.RandRange(1, levelWidthRef);
 		if (DebugPrintsRef)
 			UE_LOG(LogTemp, Log, TEXT("Making Branch: %d with length %d"), CurrentBranch, BranchLength);
 
@@ -133,13 +138,13 @@ void UTileGridBranchComponent::RandomRoomsAndBranchesAdditions()
 		//this tile is now the start of a branch
 
 		//starting tile for branch
-		int indexChoosen = TileManagerRef->GameStreamRef.RandRange(0, TileManagerRef->AvailableTiles.Num() - 1);
-		ASTile* StartingBranchTile = TileManagerRef->AvailableTiles[indexChoosen];
+		int indexChoosen = GameStreamRef.RandRange(0, AvailableTilesRef.Num() - 1);
+		ASTile* StartingBranchTile = AvailableTilesRef[indexChoosen];
 
 		TArray<ASTile*>	BranchArray;
 
-		//remove starting branch tile
-		TileManagerRef->AvailableTiles.Remove(StartingBranchTile);
+		//remove starting branch tile - is this needed since availabletilesref isn't made yet?
+		AvailableTilesRef.Remove(StartingBranchTile);
 
 		//added StartingBranchTile to branch array for debug purposes
 		int branchDoorConnectorSideCheck = CheckPathSide(StartingBranchTile);
@@ -158,9 +163,9 @@ void UTileGridBranchComponent::RandomRoomsAndBranchesAdditions()
 			{
 				TileManagerRef->AllActiveTiles.AddUnique(BranchArray[BranchIndex]);
 			}
-			else if (TileManagerRef->AvailableTiles.Contains(BranchArray[BranchIndex]))
+			else if (AvailableTilesRef.Contains(BranchArray[BranchIndex]))
 			{
-				TileManagerRef->AvailableTiles.Remove(BranchArray[BranchIndex]);
+				AvailableTilesRef.Remove(BranchArray[BranchIndex]);
 			}
 
 			if (BranchIndex == BranchArray.Num() - 1)
@@ -171,7 +176,7 @@ void UTileGridBranchComponent::RandomRoomsAndBranchesAdditions()
 		}
 
 		//once we make branch, we go back through and remake the available tile spots
-		TileManagerRef->MakeAvailableTiles();
+		AvailableTilesRef = TileManagerRef->MakeAvailableTiles();
 
 		//Debug draw branch
 		if (DebugPrintsRef) {
@@ -183,6 +188,7 @@ void UTileGridBranchComponent::RandomRoomsAndBranchesAdditions()
 			}
 		}
 	}
+
 }
 
 /// <summary>
@@ -195,12 +201,15 @@ void UTileGridBranchComponent::AddSingleRooms()
 	int levelWidthRef = TileManagerRef->GetLevelWidth();
 	int levelHeightRef = TileManagerRef->GetLevelHeight();
 
+	if(AvailableTilesRef.IsEmpty())
+		UE_LOG(LogTemp, Error, TEXT("Available Tiles empty?"));
+
 	if (DebugPrintsRef)
 		UE_LOG(LogTemp, Log, TEXT("Adding Single Rooms..."));
 	//when we add a room, remove it from AvailableTiles, add to AllActiveTiles
 
 	//default to half the rooms left over
-	FillerRooms = TileManagerRef->GameStreamRef.RandRange(1, (levelWidthRef - TileManagerRef->AvailableTiles.Num() - 1) - ((levelHeightRef - TileManagerRef->AvailableTiles.Num() - 1) / 4));
+	FillerRooms = GameStreamRef.RandRange(1, (levelWidthRef - AvailableTilesRef.Num() - 1) - ((levelHeightRef - AvailableTilesRef.Num() - 1) / 4));
 	if (DebugPrintsRef)
 		UE_LOG(LogTemp, Log, TEXT("Total Random Single Rooms: %d"), FillerRooms);
 
@@ -212,12 +221,12 @@ void UTileGridBranchComponent::AddSingleRooms()
 		//if (LevelWidth - AllActiveTiles.Num() >= LevelHeight / (LevelWidth * 2))
 		if (TileManagerRef->gridDensity >= TileManagerRef->GetCurrentGridDensity())
 		{
-			ASTile* Current = TileManagerRef->AvailableTiles[TileManagerRef->GameStreamRef.RandRange(0, TileManagerRef->AvailableTiles.Num() - 1)];
+			ASTile* Current = AvailableTilesRef[GameStreamRef.RandRange(0, AvailableTilesRef.Num() - 1)];
 			//UE_LOG(LogTemp, Log, TEXT("Room selected: %d:%d"), Current->XIndex, Current->ZIndex);
 			if (Current->TileStatus == ETileStatus::ETile_NULLROOM)
 			{
 				Current->ShadeActiveRoom();
-				TileManagerRef->AvailableTiles.Remove(Current);
+				AvailableTilesRef.Remove(Current);
 				TileManagerRef->AllActiveTiles.AddUnique(Current);
 				Current->TileDescription = "Random Single Room";
 
@@ -227,13 +236,13 @@ void UTileGridBranchComponent::AddSingleRooms()
 				//Remake new available list (with this currents neighbors now added
 				//TO DO - Size small: Optimize the remake so that we only add the new tiles rooms instead of having to go through entire list
 
-				TileManagerRef->MakeAvailableTiles();
+				AvailableTilesRef = TileManagerRef->MakeAvailableTiles();
 			}
 		}
 		else
 		{
 			//stop adding random tiles
-			return;
+			break;
 		}
 	}
 }
@@ -253,21 +262,21 @@ void UTileGridBranchComponent::GridScanForCustomTileSizedVariants()
 	//only tiles that are off limits would be starting and end tile (TODO: maybe higher tiers of levels could have variants?)
 	TArray<ASTile*>	ActiveUnusedTiles = TileManagerRef->AllActiveTiles;
 
-	TileManagerRef->TileVariantComponent->SetVariables();
+	TileVariantCompRef->SetVariables();
 
 	//TODO: Possible enhancement, maybe we could weight the tiles based on proximity to main path???
 	//these candidates will be randomized (shuffle array)
 
 	//each tier of variant types (sizes are grouped into tiers)
-	for (int tileVariantTier = 0; tileVariantTier < TileManagerRef->TileVariantComponent->TileVariantTiersLocal.Num(); tileVariantTier++)
+	for (int tileVariantTier = 0; tileVariantTier < TileVariantCompRef->TileVariantTiersLocal.Num(); tileVariantTier++)
 	{
-		FTileVariantDefinitionRow tier = TileManagerRef->TileVariantComponent->TileVariantTiersLocal[tileVariantTier];
+		FTileVariantDefinitionRow tier = TileVariantCompRef->TileVariantTiersLocal[tileVariantTier];
 
 		if (DebugPrintsRef)
 			UE_LOG(LogTemp, Log, TEXT("Currently on tile tier: %d - number of columns: %d"), tileVariantTier, tier.Columns.Num());
 
 		//each tier of variants has a certain amount (so like 1 of the really big ones and higher number of the smaller sized groups of variants)
-		int VariantTierTotalAmountToPlace = TileManagerRef->GameStreamRef.RandRange(tier.Min, tier.Max);
+		int VariantTierTotalAmountToPlace = GameStreamRef.RandRange(tier.Min, tier.Max);
 		int VariantsPlaced = 0;
 
 		//each type (so 2x2, 4x4, etc) of variant
@@ -286,7 +295,7 @@ void UTileGridBranchComponent::GridScanForCustomTileSizedVariants()
 				//SingleVariantData = currentVariant;
 				}
 			else {
-				LocalVariantTotalAmount = TileManagerRef->GameStreamRef.RandRange(currentVariant->MinorMin, currentVariant->MinorMax);
+				LocalVariantTotalAmount = GameStreamRef.RandRange(currentVariant->MinorMin, currentVariant->MinorMax);
 			}
 			int localVariantsPlaced = 0;
 
@@ -329,7 +338,7 @@ TArray <ASTile*> UTileGridBranchComponent::ReshuffleTiles(TArray <ASTile*> ar)
 	// Knuth shuffle algorithm :: courtesy of Wikipedia :)
 	for (int t = 0; t < ar.Num(); t++)
 	{
-		int r = TileManagerRef->GameStreamRef.RandRange(t, ar.Num() - 1);
+		int r = GameStreamRef.RandRange(t, ar.Num() - 1);
 		ar.Swap(t, r);
 	}
 	return ar;
@@ -383,19 +392,23 @@ bool UTileGridBranchComponent::VariantCandidateAnalysis(ASTile* CurrentTile, USF
 		//choose which direction (if non-empty and non single tile)
 		if (!DirectionsAvailable.IsEmpty() || isSingleTile)
 		{
-			int choosenIndex = TileManagerRef->GameStreamRef.RandRange(0, 3);
+			int choosenIndex = GameStreamRef.RandRange(0, 3);
 			int directionPlacement = choosenIndex;
 			FTileVariantSetup_PlugTileSaveInfo choosenInfo;
 
 			if(!DirectionsAvailable.IsEmpty()) {
-				choosenIndex = TileManagerRef->GameStreamRef.RandRange(0, DirectionsAvailable.Num() - 1);
+				choosenIndex = GameStreamRef.RandRange(0, DirectionsAvailable.Num() - 1);
 				directionPlacement = DirectionsAvailable[choosenIndex];
+
+				if(isSingleTile) //if single tile, can be any rotation easily
+					directionPlacement = GameStreamRef.RandRange(0, 3);
+
 				choosenInfo = VariantPlugTileInfo[choosenIndex]; //TODO: Verify the choosen index info matches our direction placement
 			}
 			
 
 			//which type of abnormal tile variant are we going to place? (like the preset, which preset?)
-			int variantIndex = TileManagerRef->GameStreamRef.RandRange(0, CurrentVariant->TileVariantEnviornmentsLocal.Num() - 1);
+			int variantIndex = GameStreamRef.RandRange(0, CurrentVariant->TileVariantEnviornmentsLocal.Num() - 1);
 			TSubclassOf<ASTileVariantEnviornment> ChoosenVariant = CurrentVariant->TileVariantEnviornmentsLocal[variantIndex];
 			FVector SpawnPos;
 			FRotator SpawnRot = FRotator(0.0f, 0.0f, 0.0f);
@@ -428,6 +441,8 @@ bool UTileGridBranchComponent::VariantCandidateAnalysis(ASTile* CurrentTile, USF
 				break;
 			}
 			UE_LOG(LogTemp, Log, TEXT("Size Variant to place: %d:%d rotated %f degrees (aka selection %d). Place point: %d:%d"), CurrentVariant->Size.X, CurrentVariant->Size.Y, rotationModifier, directionPlacement, CurrentTile->XIndex,CurrentTile->ZIndex);
+
+
 
 			//physically spawn USFTileVariantDefinitionData->TilePrefab with transform, variant choosen at the 
 			//transform of the spawn point in the variant class
@@ -523,7 +538,7 @@ bool UTileGridBranchComponent::VariantCandidateAnalysis(ASTile* CurrentTile, USF
 /// <returns></returns>
 bool UTileGridBranchComponent::PlugTile(FVariantOffsetTransforms_Rotates transformRotated, USFTileVariantDefinitionData* currentVariant, ASTile* CurrentTile, TArray <ASTile*>& EncompassingTilesBuild, FTileVariantSetup_PlugTileSaveInfo& transVariantPlugInfo)
 {
-//this is defualted to true when it should be false?
+//this is defaulted to true when it should be false?
 	bool CantPlaceVariant = true;
 	//UE_LOG(LogTemp, Log, TEXT("Start of plug tile for tile %d,%d"), CurrentTile->XIndex, CurrentTile->ZIndex);
 	//check given orientations the variant can be placed at
@@ -549,7 +564,7 @@ bool UTileGridBranchComponent::PlugTile(FVariantOffsetTransforms_Rotates transfo
 			break;
 		}
 
-		//for each current offset flavor (aka a rotated og offset mapping)
+		//for each current offset flavor (aka a rotated OG offset mapping)
 		FIntPoint OffsetCheck = GridCordToCheck + GivenOffset;
 		//UE_LOG(LogTemp, Log, TEXT("GridCordToCheck: %d.%d - offset to apply: %d.%d - Therefore Checking tile: %d,%d"), GridCordToCheck.X, GridCordToCheck.Y, GivenOffset.X, GivenOffset.Y, OffsetCheck.X, OffsetCheck.Y);
 
@@ -680,8 +695,9 @@ bool UTileGridBranchComponent::AddDoorsAndWalls(ASTile* CurrentTile, TArray<ASTi
 /// </summary>
 void UTileGridBranchComponent::CreateSecretRoom()
 {
-	USFTileVariantDefinitionData* singleVariantData = TileManagerRef->SingleVariantData;
 
+	//TODO: use local levels secret data
+	TArray<FTileInfoStruct> OutskirtTilesRef = TileManagerRef->GetOutskirtTiles();
 	
 
 	TArray<ASTile*> outskirtsCheck;
@@ -739,16 +755,18 @@ void UTileGridBranchComponent::CreateSecretRoom()
 			//add our info struct to list
 			if (currentInfo.neighborArray.Num() != 0 && !outskirtsCheck.Contains(currentInfo.tile)) //OutskirtTiles.Contains(currentInfo))
 			{
-				TileManagerRef->OutskirtTiles.Add(currentInfo);
+				OutskirtTilesRef.Add(currentInfo);
 				outskirtsCheck.Add(currentInfo.tile);
 			}
 		}
 	}
 
-	//now randomly pick a tile to put our secret room at (this tiles neighbor will be the secret room)
-	int tileNum = TileManagerRef->GameStreamRef.RandRange(0, TileManagerRef->OutskirtTiles.Num() - 1);
+	
 
-	FTileInfoStruct selected = TileManagerRef->OutskirtTiles[tileNum];
+	//now randomly pick a tile to put our secret room at (this tiles neighbor will be the secret room)
+	int tileNum = GameStreamRef.RandRange(0, OutskirtTilesRef.Num() - 1);
+
+	FTileInfoStruct selected = OutskirtTilesRef[tileNum]; //weird pointer workaround, deref ptr then grab tileinfo
 	ASTile* test = outskirtsCheck[tileNum];
 	choosen = outskirtsCheck[tileNum];
 
@@ -756,7 +774,7 @@ void UTileGridBranchComponent::CreateSecretRoom()
 	selected.neighborArray = TileManagerRef->Reshuffle2(selected.neighborArray);
 
 	//int index for selection from available tiles
-	int loc = TileManagerRef->GameStreamRef.RandRange(0, selected.neighborArray.Num() - 1);
+	int loc = GameStreamRef.RandRange(0, selected.neighborArray.Num() - 1);
 
 	//we now have our room we selected and the neighbor in which we are using for our secret room
 	FVector SpawnPos;
@@ -777,7 +795,8 @@ void UTileGridBranchComponent::CreateSecretRoom()
 	int floatingWallBuffer = TileManagerRef->ChoosenWallAssetClass->GetDefaultObject<ASTileWall>()->WallsBuffer;
 	int distanceToNextTile = floatingWallBuffer * 2;
 
-	//TSubclassOf<ASTileVariantEnviornment> ChoosenSecretRoomVariant = 
+	ASTile* StartingTileRef = TileManagerRef->GetStartingGridTile();
+	TArray<ASTileWall*> AllSpawnedWallsRef = TileManagerRef->GetAllSpawnedWalls();
 
 	//TODO: weird but with center of tile being at the top, causing a 240 offset. Will need to investigate later
 	switch (selected.neighborArray[loc])
@@ -786,7 +805,7 @@ void UTileGridBranchComponent::CreateSecretRoom()
 		//TODO: may need to fix rotation? 
 		if (selected.tile->UpNeighbor == NULL) //if no neighbor, we spawn a tile and add the 3 walls + door
 		{
-			SpawnPos = FVector(selected.tile->GetActorLocation().X, selected.tile->GetActorLocation().Y - (TileManagerRef->StartingGridTile->TileLength + distanceToNextTile), selected.tile->GetActorLocation().Z); //+ 240
+			SpawnPos = FVector(selected.tile->GetActorLocation().X, selected.tile->GetActorLocation().Y - (StartingTileRef->TileLength + distanceToNextTile), selected.tile->GetActorLocation().Z); //+ 240
 			//UE_LOG(LogTemp, Log, TEXT("SpawnPas: %s"), *SpawnPos.ToString());
 			//SpawnRot = FRotator(selected.tile->GetActorRotation().Euler().X, 180.0f, selected.tile->GetActorRotation().Euler().Z);
 			SecretRoom = GetWorld()->SpawnActor<ASTile>(TileManagerRef->TileBaseClass, SpawnPos, SpawnRot, SpawnParams);
@@ -794,7 +813,7 @@ void UTileGridBranchComponent::CreateSecretRoom()
 			
 			
 		}
-		else if (selected.tile->UpNeighbor->TileStatus == ETileStatus::ETile_NULLROOM) { //confirmed this works now get other wey of working
+		else if (selected.tile->UpNeighbor->TileStatus == ETileStatus::ETile_NULLROOM) { //confirmed this works now get other way of working
 			//rotate tile? may need tile to be setup for easier testing of rotation
 			SecretRoom = selected.tile->UpNeighbor;
 			SetupDoor(SecretRoom, ETileSide::ETile_Down, "SecretRoom", selected.tile->UpDoor);
@@ -803,7 +822,7 @@ void UTileGridBranchComponent::CreateSecretRoom()
 		SecretRoom->DownNeighbor = selected.tile;
 		selected.tile->UpDoor = SecretRoom->DownDoor;
 		selected.tile->UpNeighbor = SecretRoom;
-		SecretRoom->DownDoor->DoorsConnector = SecretRoom->SpawnDoorConnector(ETileSide::ETile_Down, TileManagerRef->ChoosenDoorwayAssetClass, TileManagerRef->WallsSubFolderName, TileManagerRef->AllSpawnedWalls);
+		SecretRoom->DownDoor->DoorsConnector = SecretRoom->SpawnDoorConnector(ETileSide::ETile_Down, TileManagerRef->ChoosenDoorwayAssetClass, TileManagerRef->WallsSubFolderName, AllSpawnedWallsRef);
 		selectedRotation = 0; //no rotation
 		break;
 	case 2:
@@ -812,13 +831,13 @@ void UTileGridBranchComponent::CreateSecretRoom()
 		//TODO: may need to fix rotation? 
 		if (selected.tile->DownNeighbor == NULL)
 		{
-			SpawnPos = FVector(selected.tile->GetActorLocation().X, selected.tile->GetActorLocation().Y + (TileManagerRef->StartingGridTile->TileLength + distanceToNextTile), selected.tile->GetActorLocation().Z);
+			SpawnPos = FVector(selected.tile->GetActorLocation().X, selected.tile->GetActorLocation().Y + (StartingTileRef->TileLength + distanceToNextTile), selected.tile->GetActorLocation().Z);
 			//UE_LOG(LogTemp, Log, TEXT("SpawnPas: %s"), *SpawnPos.ToString());
 			SpawnRot = FRotator(selected.tile->GetActorRotation().Euler().X, 180.0f, selected.tile->GetActorRotation().Euler().Z);
 			SecretRoom = GetWorld()->SpawnActor<ASTile>(TileManagerRef->TileBaseClass, SpawnPos, SpawnRot, SpawnParams);
 			SpawnDoor(SecretRoom, ETileSide::ETile_Up, "SecretRoom");
 		}
-		else if (selected.tile->DownNeighbor->TileStatus == ETileStatus::ETile_NULLROOM) { //confirmed this works now get other wey of working
+		else if (selected.tile->DownNeighbor->TileStatus == ETileStatus::ETile_NULLROOM) { //confirmed this works now get other way of working
 			//rotate tile? may need tile to be setup for easier testing of rotation
 			SecretRoom = selected.tile->DownNeighbor;
 			SetupDoor(SecretRoom, ETileSide::ETile_Up, "SecretRoom", selected.tile->DownDoor);
@@ -827,7 +846,7 @@ void UTileGridBranchComponent::CreateSecretRoom()
 		SecretRoom->UpNeighbor = selected.tile;
 		selected.tile->DownDoor = SecretRoom->UpDoor;
 		selected.tile->DownNeighbor = SecretRoom;
-		SecretRoom->UpDoor->DoorsConnector = SecretRoom->SpawnDoorConnector(ETileSide::ETile_Up, TileManagerRef->ChoosenDoorwayAssetClass, TileManagerRef->WallsSubFolderName, TileManagerRef->AllSpawnedWalls);
+		SecretRoom->UpDoor->DoorsConnector = SecretRoom->SpawnDoorConnector(ETileSide::ETile_Up, TileManagerRef->ChoosenDoorwayAssetClass, TileManagerRef->WallsSubFolderName, AllSpawnedWallsRef);
 		selectedRotation = 2; //180
 		break;
 	case 3:
@@ -838,7 +857,7 @@ void UTileGridBranchComponent::CreateSecretRoom()
 		{
 			SpawnPos = FVector(selected.tile->GetActorLocation().X - (selected.tile->TileLength + distanceToNextTile), selected.tile->GetActorLocation().Y, selected.tile->GetActorLocation().Z); //+ 240;
 			//UE_LOG(LogTemp, Log, TEXT("SpawnPas: %s"), *SpawnPos.ToString());
-			SpawnRot = FRotator(TileManagerRef->PlayerSpawnPresentTile->GetActorRotation().Euler().X, 90.0f, TileManagerRef->PlayerSpawnPresentTile->GetActorRotation().Euler().Z);
+			SpawnRot = FRotator(StartingTileRef->GetActorRotation().Euler().X, 90.0f, StartingTileRef->GetActorRotation().Euler().Z);
 			SecretRoom = GetWorld()->SpawnActor<ASTile>(TileManagerRef->TileBaseClass, SpawnPos, SpawnRot, SpawnParams);
 			SpawnDoor(SecretRoom, ETileSide::ETile_Right, "SecretRoom");
 		}
@@ -851,7 +870,7 @@ void UTileGridBranchComponent::CreateSecretRoom()
 		SecretRoom->RightNeighbor = selected.tile;
 		selected.tile->LeftDoor = SecretRoom->RightDoor;
 		selected.tile->LeftNeighbor = SecretRoom;
-		SecretRoom->RightDoor->DoorsConnector = SecretRoom->SpawnDoorConnector(ETileSide::ETile_Right, TileManagerRef->ChoosenDoorwayAssetClass, TileManagerRef->WallsSubFolderName, TileManagerRef->AllSpawnedWalls);
+		SecretRoom->RightDoor->DoorsConnector = SecretRoom->SpawnDoorConnector(ETileSide::ETile_Right, TileManagerRef->ChoosenDoorwayAssetClass, TileManagerRef->WallsSubFolderName, AllSpawnedWallsRef);
 		selectedRotation = 3; //270
 		break;
 	case 4:
@@ -861,7 +880,7 @@ void UTileGridBranchComponent::CreateSecretRoom()
 		if (selected.tile->RightNeighbor == NULL)
 		{
 			SpawnPos = FVector(selected.tile->GetActorLocation().X + (selected.tile->TileLength + distanceToNextTile), selected.tile->GetActorLocation().Y, selected.tile->GetActorLocation().Z);
-			SpawnRot = FRotator(TileManagerRef->PlayerSpawnPresentTile->GetActorRotation().Euler().X, -90.0f, TileManagerRef->PlayerSpawnPresentTile->GetActorRotation().Euler().Z);
+			SpawnRot = FRotator(StartingTileRef->GetActorRotation().Euler().X, -90.0f, StartingTileRef->GetActorRotation().Euler().Z);
 			SecretRoom = GetWorld()->SpawnActor<ASTile>(TileManagerRef->TileBaseClass, SpawnPos, SpawnRot, SpawnParams);
 			SpawnDoor(SecretRoom, ETileSide::ETile_Left, "SecretRoom");
 		}
@@ -874,10 +893,12 @@ void UTileGridBranchComponent::CreateSecretRoom()
 		SecretRoom->LeftNeighbor = selected.tile;
 		selected.tile->RightDoor = SecretRoom->LeftDoor;
 		selected.tile->RightNeighbor = SecretRoom;
-		SecretRoom->LeftDoor->DoorsConnector = SecretRoom->SpawnDoorConnector(ETileSide::ETile_Left, TileManagerRef->ChoosenDoorwayAssetClass, TileManagerRef->WallsSubFolderName, TileManagerRef->AllSpawnedWalls);
+		SecretRoom->LeftDoor->DoorsConnector = SecretRoom->SpawnDoorConnector(ETileSide::ETile_Left, TileManagerRef->ChoosenDoorwayAssetClass, TileManagerRef->WallsSubFolderName, AllSpawnedWallsRef);
 		selectedRotation = 1; //90
 		break;
 	}
+	
+
 	// TO DO: this will need to be updated to a specific Secrete Room BP set in LocalLevel
 
 	SecretRoom->SetActorLabel("SecretRoom");
@@ -887,7 +908,7 @@ void UTileGridBranchComponent::CreateSecretRoom()
 #endif
 
 	//ACTIVATE WALLS
-	SecretRoom->ActivateWalls(TileManagerRef->ChoosenWallAssetClass, TileManagerRef->WallsSubFolderName, TileManagerRef->AllSpawnedWalls);
+	SecretRoom->ActivateWalls(TileManagerRef->ChoosenWallAssetClass, TileManagerRef->WallsSubFolderName, AllSpawnedWallsRef);
 
 	//populate secret room contents
 	FActorSpawnParameters SpawnParamsPrefab;
@@ -898,7 +919,7 @@ void UTileGridBranchComponent::CreateSecretRoom()
 	TArray<TSubclassOf<ASTileVariantEnviornment>> SecretRoomOptions = LocalLevelRef->GetSecretRoomEnvVariants_local();
 
 	//TODO: This secret room environment data needs to be updated for the secret room variants
-	int variantIndex = TileManagerRef->GameStreamRef.RandRange(0, SecretRoomOptions.Num() - 1);
+	int variantIndex = GameStreamRef.RandRange(0, SecretRoomOptions.Num() - 1);
 	ChoosenSecretRoomVariant = SecretRoomOptions[variantIndex];
 
 	//rotation is dependent on prev tile
@@ -940,7 +961,8 @@ void UTileGridBranchComponent::CreateSecretRoom()
 	SecretRoomVariant->SetFolderPath(TileManagerRef->VariantTileMapSubFolderName);
 	DrawDebugSphere(GetWorld(), SecretRoomVariant->GetActorLocation(), 225.0f, 20, FColor::Orange, false, 100);
 #endif
-
+	TileManagerRef->SetAllSpawnedWalls(AllSpawnedWallsRef);
+	TileManagerRef->SetOutskirtTiles(OutskirtTilesRef);
 }
 
 /// <summary>
@@ -950,20 +972,41 @@ void UTileGridBranchComponent::CreateSecretRoom()
 /// </summary>
 void UTileGridBranchComponent::SpawnEndRoom()
 {
-	USFTileVariantDefinitionData* singleVariantData = TileManagerRef->SingleVariantData;
+	USFTileVariantDefinitionData* singleVariantData;
+	ASTile* EndTileRef = TileManagerRef->GetEndTile();
+	bool addToTilesForItems = false;
+
+	//if not level 4 choose a random single tile
+	if (LocalLevelRef->CurrentLevelTier == ELevelTier::ELevel_4)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Hit level 4, need to make and assign boss rooms"));
+		FTileVariantDefinitionRow tier = TileVariantCompRef->TileVariantTiersLocal[4];
+		singleVariantData = tier.Columns[0];
+	}
+	else {
+
+		//could make this its own function for getter a random single tile data to spawn
+		
+		FTileVariantDefinitionRow tier = TileVariantCompRef->TileVariantTiersLocal[4];
+		//columns is empty
+		singleVariantData = tier.Columns[0];
+		addToTilesForItems = true;
+		
+	}
+
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
 	TSubclassOf<ASTileVariantEnviornment> ChoosenEndRoomVariant;
-	int rotationToSpawn = TileManagerRef->GameStreamRef.RandRange(0, 3);
-	if (true) //if not boss fight
+	int rotationToSpawn = GameStreamRef.RandRange(0, 3);
+	if (LocalLevelRef->CurrentLevelTier != ELevelTier::ELevel_4) //if not boss fight
 	{
 		//normal 1x1 variant
-		int variantIndex = TileManagerRef->GameStreamRef.RandRange(0, singleVariantData->TileVariantEnviornmentsLocal.Num() - 1);
+		int variantIndex = GameStreamRef.RandRange(0, singleVariantData->TileVariantEnviornmentsLocal.Num() - 1);
 		ChoosenEndRoomVariant = singleVariantData->TileVariantEnviornmentsLocal[variantIndex];
 	}
 	else {
-		rotationToSpawn = TileManagerRef->EndTile->bossRoomRotationDirection;
+		rotationToSpawn = EndTileRef->bossRoomRotationDirection;
 	}
 	FVector SpawnPos;
 	FRotator SpawnRot = FRotator(0.0f, 0.0f, 0.0f);
@@ -996,10 +1039,10 @@ void UTileGridBranchComponent::SpawnEndRoom()
 		break;
 	}
 
-	ASTileVariantEnviornment* EndRoomVariant = GetWorld()->SpawnActor<ASTileVariantEnviornment>(ChoosenEndRoomVariant, TileManagerRef->EndTile->GetActorLocation(), TileManagerRef->EndTile->GetActorRotation(), SpawnParams);
+	ASTileVariantEnviornment* EndRoomVariant = GetWorld()->SpawnActor<ASTileVariantEnviornment>(ChoosenEndRoomVariant, EndTileRef->GetActorLocation(), EndTileRef->GetActorRotation(), SpawnParams);
 
 	EndRoomVariant->SetActorRotation(SpawnRot);
-	FString VariantTileName = "EndRoom_VariantTileMap_" + FString::FromInt(TileManagerRef->EndTile->XIndex) + "_" + FString::FromInt(TileManagerRef->EndTile->ZIndex);
+	FString VariantTileName = "EndRoom_VariantTileMap_" + FString::FromInt(EndTileRef->XIndex) + "_" + FString::FromInt(EndTileRef->ZIndex);
 	EndRoomVariant->SetActorLabel(VariantTileName);
 #if WITH_EDITOR
 	EndRoomVariant->SetFolderPath(TileManagerRef->VariantTileMapSubFolderName);
@@ -1008,19 +1051,27 @@ void UTileGridBranchComponent::SpawnEndRoom()
 #endif
 	//if not boss fight add objective spawned with tile to objective list
 
+	//if normal tile, add to spawned variant array
+	if (addToTilesForItems)
+	{
+		SpawnedVariants.Add(EndRoomVariant);
+	}
+
 }
 
 /// <summary>
 /// Dylan Loe
 /// 
 /// - Remove all inactive doors
+/// - TODO: should this be back in TileManager?
 /// </summary>
 void UTileGridBranchComponent::FinalDoorSetupDoors()
 {
-	for (int doorIndex = 0; doorIndex < TileManagerRef->DoorArray.Num(); doorIndex++)
+	TArray<ASTileDoor*> DoorArrayRef = TileManagerRef->GetDoorArray();
+	for (int doorIndex = 0; doorIndex < DoorArrayRef.Num(); doorIndex++)
 	{
 		//remove all doors inactive (aka the ones not connecting paths)
-		ASTileDoor* door = TileManagerRef->DoorArray[doorIndex];
+		ASTileDoor* door = DoorArrayRef[doorIndex];
 
 		if (door->DestroyConnectorWalls && door->DoorsConnector != NULL)
 		{
@@ -1033,6 +1084,7 @@ void UTileGridBranchComponent::FinalDoorSetupDoors()
 			door->Destroy();
 		}
 	}
+	TileManagerRef->SetDoorArray(DoorArrayRef);
 }
 
 /// <summary>
@@ -1045,7 +1097,8 @@ void UTileGridBranchComponent::DeactiveInactiveRooms()
 	if (DebugPrintsRef)
 		UE_LOG(LogTemp, Log, TEXT("Removing Unwanted tiles..."));
 
-	for (FMultiTileStruct* row : TileManagerRef->Grid2DArray)
+	TArray <FMultiTileStruct*> GridArray = TileManagerRef->GetGrid2DArray();
+	for (FMultiTileStruct* row : GridArray)
 	{
 		for (ASTile* tile : row->TileColumn)
 		{
@@ -1053,10 +1106,11 @@ void UTileGridBranchComponent::DeactiveInactiveRooms()
 			{
 				tile->Destroy();
 			}
-			//TODO: turn on walls at borders of path handled in levelassetspawn
+			//TODO: turn on walls at borders of path handled in LevelAssetSpawn
 		}
 
 	}
+	//TODO: reassign grid array
 }
 
 /// <summary>
@@ -1307,6 +1361,8 @@ void UTileGridBranchComponent::SingleRoomsDoorSetup(ASTile* CurrentTile)
 	TArray <int> DirectionsToCheck = { 1, 2, 3, 4 };
 	DirectionsToCheck = TileManagerRef->Reshuffle2(DirectionsToCheck);
 
+	TArray<ASTileWall*> SpawnedWallsRef = TileManagerRef->GetAllSpawnedWalls();
+
 	//pick direction and begin CheckTile
 	for (int DirectionCount = 0; DirectionCount < DirectionsToCheck.Num(); DirectionCount++)
 	{
@@ -1317,34 +1373,35 @@ void UTileGridBranchComponent::SingleRoomsDoorSetup(ASTile* CurrentTile)
 			//check up side
 			if (CurrentTile->HasConnectedUpNeighbor())
 			{
-				CurrentTile->ConnectUpDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, TileManagerRef->AllSpawnedWalls);
-				return;
+				CurrentTile->ConnectUpDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, SpawnedWallsRef);
+				break;
 			}
 			break;
 			//
 		case 2:
 			if (CurrentTile->HasConnectedDownNeighbor())
 			{
-				CurrentTile->ConnectDownDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, TileManagerRef->AllSpawnedWalls);
-				return;
+				CurrentTile->ConnectDownDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, SpawnedWallsRef);
+				break;
 			}
 			break;
 		case 3:
 			if (CurrentTile->HasConnectedLeftNeighbor())
 			{
-				CurrentTile->ConnectLeftDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, TileManagerRef->AllSpawnedWalls);
-				return;
+				CurrentTile->ConnectLeftDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, SpawnedWallsRef);
+				break;
 			}
 			break;
 		case 4:
 			if (CurrentTile->HasConnectedRightNeighbor())
 			{
-				CurrentTile->ConnectRightDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, TileManagerRef->AllSpawnedWalls);
-				return;
+				CurrentTile->ConnectRightDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, SpawnedWallsRef);
+				break;
 			}
 			break;
 		}
 	}
+	TileManagerRef->SetAllSpawnedWalls(SpawnedWallsRef); //must always update before returnning
 }
 
 /// <summary>
@@ -1405,13 +1462,15 @@ void UTileGridBranchComponent::SpawnDoor(ASTile* tile, ETileSide SideToSpawnDoor
 void UTileGridBranchComponent::SetupDoor(ASTile* tile, ETileSide SideToSpawnDoor, FString NameOfTileToConnect, ASTileDoor* door)
 {
 	const FString TileDoorName = "TileDoorConnecting_" + FString::FromInt(tile->XIndex) + "_" + FString::FromInt(tile->ZIndex) + "_to_SecretRoom";
+	TArray<ASTileDoor*> DoorArrayRef = TileManagerRef->GetDoorArray();
 
 	if(door == NULL)
 		UE_LOG(LogTemp, Log, TEXT("Array isnt empty? why this run more than once on this guy?"));
 
 	door->DoorActive = true;
 	tile->RemoveCurrentWall(SideToSpawnDoor);
-	TileManagerRef->DoorArray.Add(door);
+
+	DoorArrayRef.Add(door);
 	door->SetActorLabel(TileDoorName);
 	door->SetOwner(TileManagerRef);
 #if WITH_EDITOR
@@ -1435,6 +1494,8 @@ void UTileGridBranchComponent::SetupDoor(ASTile* tile, ETileSide SideToSpawnDoor
 	default:
 		break;
 	}
+
+	TileManagerRef->SetDoorArray(DoorArrayRef);
 }
 
 /// <summary>
@@ -1446,20 +1507,22 @@ void UTileGridBranchComponent::SetupDoor(ASTile* tile, ETileSide SideToSpawnDoor
 void UTileGridBranchComponent::ConnectDoorBranch(ASTile* TileToAdd, int prevDirection)
 {
 	TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAssetRef = TileManagerRef->ChoosenDoorwayAssetClass;
+	TArray<ASTileWall*>  AllSpawnedWallsRef = TileManagerRef->GetAllSpawnedWalls();
 	FName WallsSubFolderNameRef = TileManagerRef->WallsSubFolderName;
 	switch (prevDirection) {
 	case 1: //prev was up
 		//prev tile was up direction to get here, therefore this tile's down neighbor was the up neighbor of the prev tile
-		TileToAdd->ConnectDownDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, TileManagerRef->AllSpawnedWalls);
+		TileToAdd->ConnectDownDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, AllSpawnedWallsRef);
 		break;
 	case 2: //prev was down
-		TileToAdd->ConnectUpDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, TileManagerRef->AllSpawnedWalls);
+		TileToAdd->ConnectUpDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, AllSpawnedWallsRef);
 		break;
 	case 3: //prev was left
-		TileToAdd->ConnectRightDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, TileManagerRef->AllSpawnedWalls);
+		TileToAdd->ConnectRightDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, AllSpawnedWallsRef);
 		break;
 	case 4: //prev was right
-		TileToAdd->ConnectLeftDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, TileManagerRef->AllSpawnedWalls);
+		TileToAdd->ConnectLeftDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, AllSpawnedWallsRef);
 		break;
 	}
+	TileManagerRef->SetAllSpawnedWalls(AllSpawnedWallsRef);
 }

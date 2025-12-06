@@ -112,15 +112,15 @@ void ULevelAssetSetupComponent::ActivateItems()
 		{
 			check(PossiblePickup); //trying this check 
 			const FVector relativeLocation = PossiblePickup->GetRelativeLocation();
-			UE_LOG(LogTemp, Log, TEXT("Cords: %s"), *relativeLocation.ToString());
+			//UE_LOG(LogTemp, Log, TEXT("Cords: %s"), *relativeLocation.ToString());
 			//check noise 
 			float noiseMeasurement = GetNoiseVec(relativeLocation);
-			UE_LOG(LogTemp, Log, TEXT("Noise lookup: %f"), noiseMeasurement);
+			//UE_LOG(LogTemp, Log, TEXT("Noise lookup: %f"), noiseMeasurement);
 
 			//threshold check TODO: This will be assigned from 
 			float itemThreshold = LocalLevel->GetLocalPickupSpawnLevelThreshold();
 			//if meeds threshold, spawn item function for weight lookup and spawn procedure
-			UE_LOG(LogTemp, Log, TEXT("Comparing: %f to threshold: %f"), noiseMeasurement, itemThreshold);
+			//UE_LOG(LogTemp, Log, TEXT("Comparing: %f to threshold: %f"), noiseMeasurement, itemThreshold);
 			if (noiseMeasurement <= itemThreshold)
 			{
 				//can spawn!

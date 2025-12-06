@@ -31,7 +31,7 @@ ASTileManager::ASTileManager()
 	//LevelAssetSetupComponent->TileManagerRef = this;
 	
 
-	//TODO: dont think i need this? will use if i end up finding a better way than bp
+	//TODO: don't think i need this? will use if i end up finding a better way than bp
 	//TileVariantComponent = CreateDefaultSubobject<UTileVariantComponent>(TEXT("TileVariantComponent"));
 }
 
@@ -254,185 +254,6 @@ void ASTileManager::AddWallToPerimeter(ETileSide side, ASTile* ThisTile)
 	}
 }
 
-bool ASTileManager::AddTileToPath(ASTile* TileToAdd)
-{
-	PathNumber++;
-	LevelPath.AddUnique(TileToAdd);
-	TileToAdd->CheckForPath = true;
-	TileToAdd->PathNumber = PathNumber;
-	if (!TileToAdd->IsBossTile() && !TileToAdd->IsStartingTile())
-		TileToAdd->ShadePath();
-
-	return true;
-}
-
-/// <summary>
-/// Backtracking reclusive algorithm for Main level path construction. Builds out LevelPath array.
-/// TODO: As we go, doors connecting tiles will be marked, after everything is done, unmarked doors get destroyed at the end (no need to have second pass checking)
-/// </summary>
-/// <param name="CurrentTile"></param>
-/// <param name="CurrentPath"></param>
-void ASTileManager::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& CurrentPath)
-{
-	bool CheckingTileDebug = false;
-
-
-	// For Debug Check, for now will be off since this check is no longer critical
-	if (CurrentTile) {
-		if (CheckingTileDebug)
-		{
-			UE_LOG(LogTemp, Log, TEXT("Currently on Tile: %d,%d"), CurrentTile->XIndex, CurrentTile->ZIndex);
-		}
-	}
-	else {
-		UE_LOG(LogTemp, Error, TEXT("NULL TILE DETECTED. PLEASE INVESTIGATE"));
-	}
-
-	if (FailsafeCount == LevelHeight * LevelWidth * 2)
-	{
-		UE_LOG(LogTemp, Log, TEXT("NHitting dead ends. PLEASE INVESTIGATE"));
-	}
-	else {
-		FailsafeCount++;
-	}
-
-	//first check if all neighbors are unavailable
-	//if so, make this one as checked and call on previous tiles
-
-	//check all neighbors
-	ASTile* neighbors[] = { CurrentTile->UpNeighbor, CurrentTile->DownNeighbor, CurrentTile->RightNeighbor, CurrentTile->LeftNeighbor }; //could be local param but we dont use this very much
-	bool allNeighborsInvalid = true;
-	for (ASTile* n : neighbors)
-	{
-		//check if invalid or not part of path
-		if (n && !n->CheckForPath)
-		{
-			allNeighborsInvalid = false;
-			break;
-		}
-	}
-
-	if (allNeighborsInvalid)
-	{
-		//UE_LOG(LogTemp, Log, TEXT("Dead end found at %d,%d"), CurrentTile->XIndex, CurrentTile->ZIndex);
-		CurrentTile->CheckForPath = true;
-		CurrentTile->ShadeNull();
-
-		//eventually all of these tiles will be unchecked so a different path may go through them (dead ends,etc)
-		BackTrackHistory.Add(CurrentTile);
-		CurrentPath.Remove(CurrentTile);
-
-		CurrentTile->TurnAllDoorsInactive();
-
-		//E_LOG(LogTemp, Log, TEXT("Removed Instances: %d"), CurrentPath.Remove(CurrentTile).toString());
-		CheckTile(CurrentTile->PreviousTile, CurrentPath);
-	} // boss room checks
-	else if ((CurrentTile->UpNeighbor && CurrentTile->UpNeighbor->IsBossTile()))
-	{
-		UE_LOG(LogTemp, Log, TEXT("Found Boss Room! at %d,%d"), CurrentTile->UpNeighbor->XIndex, CurrentTile->UpNeighbor->ZIndex);
-		CurrentTile->CheckForPath = true;
-		AddTileToPath(CurrentTile);
-		AddTileToPath(CurrentTile->UpNeighbor);
-
-		CurrentTile->ConnectUpDoor(ChoosenDoorwayAssetClass, WallsSubFolderName, AllSpawnedWalls);
-		doorTransform = CurrentTile->UpDoor->GetTransform();
-	}
-	else if ((CurrentTile->DownNeighbor && CurrentTile->DownNeighbor->IsBossTile()))
-	{
-		UE_LOG(LogTemp, Log, TEXT("Found Boss Room! at %d,%d"), CurrentTile->DownNeighbor->XIndex, CurrentTile->DownNeighbor->ZIndex);
-		CurrentTile->CheckForPath = true;
-		AddTileToPath(CurrentTile);
-		AddTileToPath(CurrentTile->DownNeighbor);
-		CurrentTile->ConnectDownDoor(ChoosenDoorwayAssetClass, WallsSubFolderName, AllSpawnedWalls);
-		doorTransform = CurrentTile->DownDoor->GetTransform();
-	}
-	else if ((CurrentTile->RightNeighbor && CurrentTile->RightNeighbor->IsBossTile()))
-	{
-		UE_LOG(LogTemp, Log, TEXT("Found Boss Room! at %d,%d"), CurrentTile->RightNeighbor->XIndex, CurrentTile->RightNeighbor->ZIndex);
-		CurrentTile->CheckForPath = true;
-		AddTileToPath(CurrentTile);
-		AddTileToPath(CurrentTile->RightNeighbor);
-		CurrentTile->ConnectRightDoor(ChoosenDoorwayAssetClass, WallsSubFolderName, AllSpawnedWalls);
-		doorTransform = CurrentTile->RightDoor->GetTransform();
-	}
-	else if ((CurrentTile->LeftNeighbor && CurrentTile->LeftNeighbor->IsBossTile()))
-	{
-		UE_LOG(LogTemp, Log, TEXT("Found Boss Room! at %d,%d"), CurrentTile->LeftNeighbor->XIndex, CurrentTile->LeftNeighbor->ZIndex);
-		CurrentTile->CheckForPath = true;
-		AddTileToPath(CurrentTile);
-		AddTileToPath(CurrentTile->LeftNeighbor);
-		CurrentTile->ConnectLeftDoor(ChoosenDoorwayAssetClass, WallsSubFolderName, AllSpawnedWalls);
-		doorTransform = CurrentTile->LeftDoor->GetTransform();
-	}
-	else {
-		//now that we know theres valid neighbors and none of them are the boss room, lets check our neighbors
-		//UE_LOG(LogTemp, Log, TEXT("Path Checking: %d,%d"), CurrentTile->XIndex, CurrentTile->ZIndex);
-		//direction
-		TArray <int> DirectionsToCheck = { 1, 2, 3, 4 };
-
-		DirectionsToCheck = Reshuffle2(DirectionsToCheck);
-
-		//pick direction and begin CheckTile
-		for (int DirectionCount = 0; DirectionCount < DirectionsToCheck.Num(); DirectionCount++)
-		{
-			switch (DirectionsToCheck[DirectionCount])
-			{
-			case 1:
-				//UP
-				if (CurrentTile->HasValidUpNeighbor() && !CurrentTile->UpNeighbor->CheckForPath && !CurrentTile->UpNeighbor->IsStartingTile())
-				{
-					//add this tile to path, go to up neighbor
-					CurrentTile->ActivateUpDoor(ChoosenDoorwayAssetClass, WallsSubFolderName, AllSpawnedWalls);
-					CurrentTile->UpNeighbor->PreviousTile = CurrentTile;
-					AddTileToPath(CurrentTile);
-					//no need to keep going through other directions directions
-					DirectionCount = 5;
-					doorTransform = CurrentTile->UpDoor->GetTransform();
-					CheckTile(CurrentTile->UpNeighbor, CurrentPath);
-				}
-				break;
-			case 2:
-				//DOWN
-				if (CurrentTile->HasValidDownNeighbor() && !CurrentTile->DownNeighbor->CheckForPath && !CurrentTile->DownNeighbor->IsStartingTile())
-				{
-					CurrentTile->ActivateDownDoor(ChoosenDoorwayAssetClass, WallsSubFolderName, AllSpawnedWalls);
-					CurrentTile->DownNeighbor->PreviousTile = CurrentTile;
-					AddTileToPath(CurrentTile);
-					DirectionCount = 5;
-					doorTransform = CurrentTile->DownDoor->GetTransform();
-					CheckTile(CurrentTile->DownNeighbor, CurrentPath);
-				}
-				break;
-			case 3:
-				//LEFT
-				if (CurrentTile->HasValidLeftNeighbor() && !CurrentTile->LeftNeighbor->CheckForPath && !CurrentTile->LeftNeighbor->IsStartingTile())
-				{
-					CurrentTile->ActivateLeftDoor(ChoosenDoorwayAssetClass, WallsSubFolderName, AllSpawnedWalls);
-					CurrentTile->LeftNeighbor->PreviousTile = CurrentTile;
-					AddTileToPath(CurrentTile);
-					DirectionCount = 5;
-					doorTransform = CurrentTile->LeftDoor->GetTransform();
-					CheckTile(CurrentTile->LeftNeighbor, CurrentPath);
-				}
-				break;
-			case 4:
-				//RIGHT
-				if (CurrentTile->HasValidRightNeighbor() && !CurrentTile->RightNeighbor->CheckForPath && !CurrentTile->RightNeighbor->IsStartingTile())
-				{
-					CurrentTile->ActivateRightDoor(ChoosenDoorwayAssetClass, WallsSubFolderName, AllSpawnedWalls);
-					CurrentTile->RightNeighbor->PreviousTile = CurrentTile;
-					AddTileToPath(CurrentTile);
-					DirectionCount = 5;
-					doorTransform = CurrentTile->RightDoor->GetTransform();
-					CheckTile(CurrentTile->RightNeighbor, CurrentPath);
-				}
-				break;
-			}
-		}
-	}
-}
-
-
 /// <summary>
 /// Dylan Log
 /// History is mostly for debug, removes previous backtrack history so we can reuse same variable
@@ -444,9 +265,6 @@ void ASTileManager::ClearHistory()
 		BackTrackHistory[BIndex]->CheckForPath = false;
 	}
 }
-
-
-
 
 /// <summary>
 /// Dylan Loe
@@ -645,12 +463,12 @@ int ASTileManager::CheckPathSide(ASTile* TileToCheck)
 }
 
 /// <summary>
-/// Dylan Log
-/// 
-/// - Remakes our possible available tiles for path generation purposes
+/// Remakes our possible available tiles for path generation purposes (looks at all active tiles meaning all tiles
+/// currently used. From this, we populate the available tiles
 /// </summary>
-void ASTileManager::MakeAvailableTiles()
+TArray<ASTile*> ASTileManager::MakeAvailableTiles()
 {
+
 	for (int TileC = 0; TileC < AllActiveTiles.Num() - 1; TileC++)
 	{
 		ASTile* CurrentTile = AllActiveTiles[TileC];
@@ -676,6 +494,7 @@ void ASTileManager::MakeAvailableTiles()
 			}
 		}
 	}
+	return AvailableTiles;
 }
 
 /// <summary>
@@ -695,6 +514,7 @@ TArray <int> ASTileManager::Reshuffle2(TArray <int> ar)
 	}
 	return ar;
 }
+
 
 /// <summary>
 /// Gets current grid density

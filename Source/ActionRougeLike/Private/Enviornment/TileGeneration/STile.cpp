@@ -407,10 +407,13 @@ void ASTile::ActivateLeftDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorw
 
 /// <summary>
 /// Remove Given wall
+/// return if removal of wall is possible for debugging purposes
 /// </summary>
 /// <param name="side"></param>
-void ASTile::RemoveCurrentWall(ETileSide side)
+bool ASTile::RemoveCurrentWall(ETileSide side)
 {
+	bool canProceedWithRemovalAndSpawning = false;
+
 	ASTileWall* wall;
 	switch (side)
 	{
@@ -432,11 +435,16 @@ void ASTile::RemoveCurrentWall(ETileSide side)
 		break;
 
 	}
-	if(wall != NULL)
+	if(wall != NULL && !wall->isConnector) {
 		wall->Destroy();
+	}
+	else {
+		canProceedWithRemovalAndSpawning = true;
+	}
 	//else {
 		//UE_LOG(LogTemp, Log, TEXT("Wall is null for %s"), *GetNameSafe(this));
 	//}
+	return canProceedWithRemovalAndSpawning;
 }
 
 /// <summary>

@@ -31,7 +31,6 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Tile Variant Data")
 	TArray<FTileVariantDefinitionRow> TileVariantTiersLocal;
 
-
 	//tiers
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Variant Data")
 	TArray <USFTileVariantDefinitionData*> Stage1_Highest;

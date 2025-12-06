@@ -51,15 +51,12 @@ public:
 	// ------- Public Variables --------
 	// ---------------------------------
 
-	UPROPERTY(EditAnywhere, Category = "Game Setup Generation")
-	uint32 GameSeed = 0; 
-
 	//managing random numbers and seeds
 	UPROPERTY(EditAnywhere, Category = "Game Setup Generation")
 	FRandomStream GameStream;
 
 	UPROPERTY(EditAnywhere, Category = "Game Setup Generation")
-	bool bDebugPrints = false;
+	bool bDebugPrints = true;
 
 	//this is assigned via LocalLevel
 	UPROPERTY(EditAnywhere, Category = "Tile Configuration")

@@ -299,7 +299,7 @@ UFUNCTION(BlueprintCallable, Category = "Tile Components - Walls")
 	void ActivateLeftDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName, TArray<ASTileWall*>& AllSpawnedWalls);
 
 	UFUNCTION(Category = "Tile Components - Walls")
-	void RemoveCurrentWall(ETileSide side);
+	bool RemoveCurrentWall(ETileSide side);
 
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
 	ASTileWall* SpawnDoorConnector(ETileSide side, TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName, TArray<ASTileWall*>& AllSpawnedWalls);
