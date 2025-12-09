@@ -106,10 +106,16 @@ void ULevelAssetSetupComponent::ActivateItems()
 	{
 		//a one time add TilePlaced cleanup to OnCleanupDelegate
 		OnCleanupPickups.AddUObject(TilePlaced, &ASTileVariantEnviornment::HandleMarkerCleanup);
+		int currentAssetPlacedCount = 0;
 
 		//check each pre-placed pickup
 		for (UStaticMeshComponent* PossiblePickup : TilePlaced->PickupPlacements)
 		{
+			if (currentAssetPlacedCount > TilePlaced->AssetPlacementCaP)
+			{
+				//break;
+			}
+
 			check(PossiblePickup); //trying this check 
 			const FVector relativeLocation = PossiblePickup->GetRelativeLocation();
 			//UE_LOG(LogTemp, Log, TEXT("Cords: %s"), *relativeLocation.ToString());
@@ -120,7 +126,7 @@ void ULevelAssetSetupComponent::ActivateItems()
 			//threshold check TODO: This will be assigned from 
 			float itemThreshold = LocalLevel->GetLocalPickupSpawnLevelThreshold();
 			//if meeds threshold, spawn item function for weight lookup and spawn procedure
-			//UE_LOG(LogTemp, Log, TEXT("Comparing: %f to threshold: %f"), noiseMeasurement, itemThreshold);
+			UE_LOG(LogTemp, Log, TEXT("Comparing noise val: %f to threshold: %f"), noiseMeasurement, itemThreshold);
 			if (noiseMeasurement <= itemThreshold)
 			{
 				//can spawn!
@@ -128,10 +134,11 @@ void ULevelAssetSetupComponent::ActivateItems()
 
 				//increment counter
 				PickupsPlaced++;
+				currentAssetPlacedCount++;
 			}
 
 		}
-
+		UE_LOG(LogTemp, Log, TEXT("Tile complete %s, local total: %d"), *TilePlaced->GetActorLabel(), currentAssetPlacedCount);
 	}
 	//each tile has an array of the possible preplaced items
 	//if each noise output exceeds a thresholds, we can place
@@ -142,6 +149,8 @@ void ULevelAssetSetupComponent::ActivateItems()
 	//if item meets threshold puts into array to spawn items
 
 	//spawn items?
+
+	UE_LOG(LogTemp, Log, TEXT("Done spawning! Grand Total Placed items in level: %d"), PickupsPlaced);
 }
 
 /// <summary>
@@ -167,6 +176,8 @@ void ULevelAssetSetupComponent::PlaceItemPickup(UStaticMeshComponent* PickupMark
 
 
 
+
+	//debug
 	spawnLocation.Z += 700.0f;
 	DrawDebugSphere(GetWorld(), spawnLocation, 200.0f, 20, FColor::Emerald, false, 100);
 }
@@ -213,11 +224,10 @@ float ULevelAssetSetupComponent::GetNoiseVec(FVector inputCords)
 	FVector2D inputConvertionSeedOffset(inputCords.X, inputCords.Y); 
 	//UE_LOG(LogTemp, Log, TEXT("Cords: %s"), *inputConvertionSeedOffset.ToString());
 
-	float scaleFreq = 0.01;
-
 	FVector2D seedOffset(LocalLevel->GameStream.RandRange(-1000, 1000), LocalLevel->GameStream.RandRange(-1000, 1000));
 
-    inputConvertionSeedOffset = inputConvertionSeedOffset + seedOffset * scaleFreq;
+	//multiply our cords (with applied offset) to our scale frequency
+    inputConvertionSeedOffset = (inputConvertionSeedOffset + seedOffset) * LocalLevel->assetPlacementScaleFreq;
 	//UE_LOG(LogTemp, Log, TEXT("Input cords with offset and scale: %s"), *inputConvertionSeedOffset.ToString());
 	
 	float noiseOutput = FMath::PerlinNoise2D(inputConvertionSeedOffset);
@@ -232,7 +242,7 @@ float ULevelAssetSetupComponent::GetNoiseVec(FVector inputCords)
 	//UE_LOG(LogTemp, Log, TEXT("normallized2: %f"), normalize3);
 
 	float normalizedOutput = FMath::GetMappedRangeValueUnclamped(FVector2D(-1.0f, 1.0f), FVector2D(0.0f, 1.0f), noiseOutput);
-	//UE_LOG(LogTemp, Log, TEXT("normallized3: %f"), normalize4);
+	//UE_LOG(LogTemp, Log, TEXT("normalized/clamped val: %f"), normalizedOutput);
 
 	//float normalize5 = (noiseOutput + 1.0f) / 2.0f;
 	//UE_LOG(LogTemp, Log, TEXT("normallized4: %f"), normalize5);

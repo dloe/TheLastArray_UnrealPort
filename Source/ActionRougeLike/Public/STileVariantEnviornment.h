@@ -37,6 +37,9 @@ public:
 	TArray <UStaticMeshComponent*> ObjectivePlacements;
 
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Level Population")
+	int AssetPlacementCaP;
+
 	UPROPERTY(EditAnywhere, Category = "Tile")
 	TArray <ASTile*> VariantEncompassingTiles;
 

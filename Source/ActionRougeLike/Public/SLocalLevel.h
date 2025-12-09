@@ -58,6 +58,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Game Setup Generation")
 	bool bDebugPrints = true;
 
+	UPROPERTY(EditAnywhere, Category = "Game Setup Generation")
+	float assetPlacementScaleFreq = 0.02;
+
 	//this is assigned via LocalLevel
 	UPROPERTY(EditAnywhere, Category = "Tile Configuration")
 	TSubclassOf<ASTile> PresetStartingTile;
