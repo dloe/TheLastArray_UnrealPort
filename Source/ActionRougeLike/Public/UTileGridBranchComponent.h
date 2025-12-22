@@ -43,6 +43,12 @@ public:
 	UFUNCTION(Category = "Door Setup")
 	void SetupDoor(ASTile* tile, ETileSide SideToSpawnDoor, FString NameOfTileToConnect, ASTileDoor* door);
 
+	UFUNCTION(Category = "Tile Map Setup")
+	ASTileVariantEnviornment* GetSecretRoomEnv() { return SecretRoomVariant; };
+
+	UFUNCTION(Category = "Tile Map Setup")
+	void SetSecretRoomEnv(ASTileVariantEnviornment* Room) { Room = SecretRoomVariant; };
+
 	UFUNCTION(BlueprintCallable, Category = "Level Setup")
 	TArray <ASTileVariantEnviornment*> GetSpawnedVariantTiles() { return SpawnedVariants; };
 
@@ -120,6 +126,8 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
 	void ConnectDoorBranch(ASTile* TileToAdd, int prevDirection);
 
+
+
 	// ---------------------------------
 	// -- Internal state / variables --
 	// ---------------------------------
@@ -133,7 +141,12 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Tile Variants")
 	TArray <ASTileVariantEnviornment*> SpawnedVariants;
+
+	UPROPERTY(EditAnywhere, Category = "Map Setup")
+	ASTileVariantEnviornment* SecretRoomVariant;
 	
+
+
 
 	// ---------------------------------
 	// -- Cached references to external component pointers / variables --

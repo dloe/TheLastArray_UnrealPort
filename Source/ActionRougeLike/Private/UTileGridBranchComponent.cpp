@@ -32,6 +32,7 @@ void UTileGridBranchComponent::GameMapAdditionalSetup()
 	//update after GameMapAdditionalSetup finishes
 	LevelPathRef = TileManagerRef->GetLevelPath();
 	AvailableTilesRef = TileManagerRef->MakeAvailableTiles();
+	TileVariantCompRef->SetVariables();
 
 	UE_LOG(LogTemp, Log, TEXT("-----------------------------------------------------------"));
 	UE_LOG(LogTemp, Log, TEXT("========== Grid Additions and Final Setup ================="));
@@ -262,8 +263,6 @@ void UTileGridBranchComponent::GridScanForCustomTileSizedVariants()
 	//only tiles that are off limits would be starting and end tile (TODO: maybe higher tiers of levels could have variants?)
 	TArray<ASTile*>	ActiveUnusedTiles = TileManagerRef->AllActiveTiles;
 
-	TileVariantCompRef->SetVariables();
-
 	//TODO: Possible enhancement, maybe we could weight the tiles based on proximity to main path???
 	//these candidates will be randomized (shuffle array)
 
@@ -459,6 +458,7 @@ bool UTileGridBranchComponent::VariantCandidateAnalysis(ASTile* CurrentTile, USF
 			DrawDebugSphere(GetWorld(), SpawnedVariant->GetActorLocation(), 225.0f, 20, FColor::Orange, false, 100);
 
 #endif
+			SpawnedVariant->TileVariDefinition = CurrentVariant;
 
 			//an array should be passed up of all the relevant tiles, add them to the VariantEncompassingTiles
 			//EncompassingTilesBuild
@@ -762,7 +762,6 @@ void UTileGridBranchComponent::CreateSecretRoom()
 	}
 
 	
-
 	//now randomly pick a tile to put our secret room at (this tiles neighbor will be the secret room)
 	int tileNum = GameStreamRef.RandRange(0, OutskirtTilesRef.Num() - 1);
 
@@ -916,10 +915,12 @@ void UTileGridBranchComponent::CreateSecretRoom()
 
 	TSubclassOf<ASTileVariantEnviornment> ChoosenSecretRoomVariant;
 
+	//TODO: Match format for spawning tiles as other2 aresas. so we can assign the variantdef data more efficiently
 	TArray<TSubclassOf<ASTileVariantEnviornment>> SecretRoomOptions = LocalLevelRef->GetSecretRoomEnvVariants_local();
 
 	//TODO: This secret room environment data needs to be updated for the secret room variants
 	int variantIndex = GameStreamRef.RandRange(0, SecretRoomOptions.Num() - 1);
+
 	ChoosenSecretRoomVariant = SecretRoomOptions[variantIndex];
 
 	//rotation is dependent on prev tile
@@ -952,7 +953,7 @@ void UTileGridBranchComponent::CreateSecretRoom()
 		break;
 	}
 
-	ASTileVariantEnviornment* SecretRoomVariant = GetWorld()->SpawnActor<ASTileVariantEnviornment>(ChoosenSecretRoomVariant, SecretRoom->GetActorLocation(), SecretRoom->GetActorRotation(), SpawnParamsPrefab);
+	SecretRoomVariant = GetWorld()->SpawnActor<ASTileVariantEnviornment>(ChoosenSecretRoomVariant, SecretRoom->GetActorLocation(), SecretRoom->GetActorRotation(), SpawnParamsPrefab);
 
 	SecretRoomVariant->SetActorRotation(SpawnRotPrefab);
 	FString VariantTileName = "Secret_VariantTileMap_" + FString::FromInt(SecretRoom->XIndex) + "_" + FString::FromInt(SecretRoom->ZIndex);
@@ -961,6 +962,11 @@ void UTileGridBranchComponent::CreateSecretRoom()
 	SecretRoomVariant->SetFolderPath(TileManagerRef->VariantTileMapSubFolderName);
 	DrawDebugSphere(GetWorld(), SecretRoomVariant->GetActorLocation(), 225.0f, 20, FColor::Orange, false, 100);
 #endif
+
+	//TODO: Make this format copy the other variants
+	FTileVariantDefinitionRow tier = TileVariantCompRef->TileVariantTiersLocal[4];
+	SecretRoomVariant->TileVariDefinition = tier.Columns[0];
+
 	TileManagerRef->SetAllSpawnedWalls(AllSpawnedWallsRef);
 	TileManagerRef->SetOutskirtTiles(OutskirtTilesRef);
 }
@@ -1049,6 +1055,7 @@ void UTileGridBranchComponent::SpawnEndRoom()
 	DrawDebugSphere(GetWorld(), EndRoomVariant->GetActorLocation(), 225.0f, 20, FColor::Orange, false, 100);
 
 #endif
+	EndRoomVariant->TileVariDefinition = singleVariantData;
 	//if not boss fight add objective spawned with tile to objective list
 
 	//if normal tile, add to spawned variant array

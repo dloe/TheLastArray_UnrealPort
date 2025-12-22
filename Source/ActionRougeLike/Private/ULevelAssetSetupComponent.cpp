@@ -4,6 +4,13 @@
 #include "ULevelAssetSetupComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "UTileGridBranchComponent.h"
+#include "Engine/AssetManager.h"
+#include "Actions/SActionComponent.h"
+#include "ScriptableObjects/SMonsterData.h"
+#include "Enviornment/PickupAssetData.h"
+#include "SFEnemyDataDefinition.h"
+
+//enum class ESpawnTiers : uint8;
 
 //Note: This component is purely for placement and choosing of level assets (IE Items and objectives?)
 // and enemies
@@ -18,9 +25,9 @@
 
 
 /// - TODO: These are like pickups right? Lets inherit from our pickup class we already have looked at
-/// Will for now make the spawned items populate an array of pickups. Will make blockouts for lvl2 to include
+/// Will for now make the spawned items populate an array of pickups. Will make block-outs for lvl2 to include
 /// the preplaced 'markers'.
-/// 1. Make variant blockouts for example lvl. Include the preplacements of items and enemies
+/// 1. Make variant block-outs for example lvl. Include the preplacements of items and enemies
 /// 2. Perlin noise system and how to determine which places to use.
 /// 3. weight table for which items to spawn
 /// 4. Spawn item function
@@ -46,18 +53,112 @@ void ULevelAssetSetupComponent::BeginPlay()
 /// </summary>
 void ULevelAssetSetupComponent::SetupLevelAssetComponent()
 {
+	GridBranchCompRef = TileManagerRef->GetGridBranchComp();
+	//go through all placed tiles (secret room should be separate)
+	SpawnedVariantsRef = GridBranchCompRef->GetSpawnedVariantTiles();
+
+	switch (LocalLevel->CurrentLevelTier)
+	{
+	case ELevelTier::ELevel_1:
+		LocalEnemyInfoData = EnemyData->TieredData[0];
+		LocalItemInfoData = ItemData->ItemPickupTable[0];
+		break;
+	case ELevelTier::ELevel_2:
+		LocalEnemyInfoData = EnemyData->TieredData[1];
+		LocalItemInfoData = ItemData->ItemPickupTable[1];
+		break;
+	case ELevelTier::ELevel_3:
+		LocalEnemyInfoData = EnemyData->TieredData[2];
+		LocalItemInfoData = ItemData->ItemPickupTable[2];
+		break;
+	case ELevelTier::ELevel_4:
+		LocalEnemyInfoData = EnemyData->TieredData[3];
+		LocalItemInfoData = ItemData->ItemPickupTable[3];
+		break;
+	case ELevelTier::ELevel_Null:
+	default:
+		LocalEnemyInfoData = EnemyData->TieredData[1];
+		LocalItemInfoData = ItemData->ItemPickupTable[1];
+		break;
+	}
+
+
+	TArray<FEnemySpawnInfo*> EnemySpawnItems;
+	//the string being pass in is for debugging purposes in case it breaks or fails to cast
+	EnemyData->MonsterTable->GetAllRows("", EnemySpawnItems);
+
+	//pull Ids from monster table to construct which choices are available for spawning
+	for (FEnemySpawnInfo* DataRowEnemy : EnemySpawnItems)
+	{
+		//if IDs match, add to our list
+		if (DataRowEnemy && LocalEnemyInfoData.EnemyPoolID.Contains(DataRowEnemy->MonsterId))
+		{
+			CurrentLevelEnemyList.Add(DataRowEnemy);
+		}
+
+	}
+
 	//set up the asset count array
+	TArray<FItemPickupAsset*> ItemSpawnItems;
+	//the string being pass in is for debugging purposes in case it breaks or fails to cast
+	ItemData->ItemTable->GetAllRows("", ItemSpawnItems);
 
-	//set up the big asset count array
+	//build out an array of FLocalLevelItemSpawnTiers objects (each on is a item tier specific for this level with the specific configs)
+    //trying a new way
+	CurrentLevelItemTierList = {
+		//for some reason the new keyword has issues with the FLocalLevelItemSpawnTiers being USTRUCT
+		//removed it for now cause it doesn't seem to make a difference
+		FLocalLevelItemSpawnTiers(ESpawnTiers::ECommon),      //0
+		FLocalLevelItemSpawnTiers(ESpawnTiers::EUncommon),    //1
+		FLocalLevelItemSpawnTiers(ESpawnTiers::ERare),        //2
+		FLocalLevelItemSpawnTiers(ESpawnTiers::EEpic),        //3
+		FLocalLevelItemSpawnTiers(ESpawnTiers::ELegendary),   //4
+		FLocalLevelItemSpawnTiers(ESpawnTiers::EObjective)    //5 (but not gunna populate until objectives are choosen and set
+	};
 
-	//select which tier our level is
+	//pull Ids from monster table to construct which choices are available for spawning
+	for (FItemPickupAsset* DataRowItem : ItemSpawnItems)
+	{
+		//OUT OF DATE COMMENT? if IDs match, add to our list
 
+		//items that match the TierWeightsPerLevel.ItemPoolId and ItemTable should be put into the array
+		//all tiers (since this is broken up different, will need to be slightly more complicated to build out 
+		//our structure for easy access
+		//idea here is that we want to have a tiered structure of FItemPickupAsset's for easy access per level per tier
+		
+		if (DataRowItem)
+		{
+			switch (DataRowItem->ItemTier)
+			{
+				case ESpawnTiers::ECommon:
+				//do i need a check for ID here?
+					CurrentLevelItemTierList[0].ItemPoolAsset.Add(DataRowItem);
+					break;
+				case ESpawnTiers::EUncommon:
+					CurrentLevelItemTierList[1].ItemPoolAsset.Add(DataRowItem);
+					break;
+				case ESpawnTiers::ERare:
+					CurrentLevelItemTierList[2].ItemPoolAsset.Add(DataRowItem);
+					break;
+				case ESpawnTiers::EEpic:
+					CurrentLevelItemTierList[3].ItemPoolAsset.Add(DataRowItem);
+					break;
+				case ESpawnTiers::ELegendary:
+					CurrentLevelItemTierList[4].ItemPoolAsset.Add(DataRowItem);
+					break;
+				case ESpawnTiers::EObjective:
+				default:
+					break;
+			}
+		}
+	}
 
+	//TODO: set up the big asset count array
 }
 
 void ULevelAssetSetupComponent::GridAnalysis()
 {
-
+	
 }
 
 void ULevelAssetSetupComponent::ActivateLevelKey()
@@ -67,11 +168,57 @@ void ULevelAssetSetupComponent::ActivateLevelKey()
 
 void ULevelAssetSetupComponent::ActivateSecretRoom()
 {
+	//get placed secret tile ASTileVariantEnviornment
+	ASTileVariantEnviornment* SecretRoom = GridBranchCompRef->GetSecretRoomEnv();
 
+	//a one time add TilePlaced cleanup to OnCleanupDelegate
+	OnCleanupPickups.AddUObject(SecretRoom, &ASTileVariantEnviornment::HandleMarkerCleanup);
+	int currentAssetPlacedCount = 0;
+
+	//check each pre-placed pickup
+	for (UStaticMeshComponent* PossiblePickup : SecretRoom->PickupPlacements)
+	{
+		check(PossiblePickup); //trying this check 
+		const FVector relativeLocation = PossiblePickup->GetRelativeLocation();
+			//UE_LOG(LogTemp, Log, TEXT("Cords: %s"), *relativeLocation.ToString());
+		//check noise 
+		float noiseMeasurement = GetNoiseVec(relativeLocation);
+			//UE_LOG(LogTemp, Log, TEXT("Noise lookup: %f"), noiseMeasurement);
+
+		//threshold check TODO: This will be assigned from 
+		float itemThreshold = LocalLevel->GetLocalPickupSpawnLevelThreshold();
+			//if meeds threshold, spawn item function for weight lookup and spawn procedure
+			//UE_LOG(LogTemp, Log, TEXT("Comparing noise val: %f to threshold: %f"), noiseMeasurement, itemThreshold);
+		if (noiseMeasurement <= itemThreshold - 0.1f) //slight bump for secret room
+		{
+			//can spawn!
+			PlaceItemPickup(PossiblePickup, SecretRoom); //TODO: make blocked out tiles for rest of variants and assign
+
+			//increment counter
+			PickupsPlaced++;
+			currentAssetPlacedCount++;
+		}
+
+		
+		UE_LOG(LogTemp, Log, TEXT("Tile complete %s, local total: %d"), *SecretRoom->GetActorLabel(), currentAssetPlacedCount);
+	}
 }
 
+/// <summary>
+/// 
+/// </summary>
 void ULevelAssetSetupComponent::ActivateObjectives()
 {
+	//if lvl 4, we set up boss room?
+
+	//else we choose randomly from array
+
+	//based on choice, may need to choose X placeable items to place an objective
+	//tie them to an objective object
+
+	//have the completion of each objective (kill special person, interact with object, kill x amount of enemies, etc)
+	// will broadcast an event
+
 
 }
 
@@ -79,27 +226,24 @@ void ULevelAssetSetupComponent::ActivateObjectives()
 /// So each tile has all their preplaced markers with local x and y cords
 /// Each lvl would have them in a dictionary we can easily look up? or would a 2d array lookup be better?
 /// 
+/// get noise value of each preplaced item for each tile
 /// 
-/// 
+/// TODO: Follow same format as enemy spawn for loading in enemies and DataTable
 /// </summary>
 void ULevelAssetSetupComponent::ActivateItems()
 {
-	//get noise value of each preplaced item for each tile
-	UTileGridBranchComponent* GridBranchCompRef = TileManagerRef->GetGridBranchComp();
-
-	//go through all placed tiles (secret room should be separate)
-	TArray <ASTileVariantEnviornment*> SpawnedVariantsRef = GridBranchCompRef->GetSpawnedVariantTiles();
-
+	
 	//TODO: Any modifications or different choosing of the weight tables depending on level will go here
 
+
 	//prep weight table
-	for (FItemPickupAsset Pickup : ItemData->ItemPickupTable)
-	{
-		for (int TimesToAdd = 0; TimesToAdd < Pickup.ItemWeight; TimesToAdd++)
-		{
-			LevelItemDropWeightTable.Add(Pickup);
-		}
-	}
+	//for (FItemPickupAsset Pickup : ItemData->ItemPickupTable)
+	//{
+	//	for (int TimesToAdd = 0; TimesToAdd < Pickup.ItemWeight; TimesToAdd++)
+	//	{
+	//		LevelItemDropWeightTable.Add(Pickup);
+	//	}
+	//}
 
 	//for each placed variant tile
 	for (ASTileVariantEnviornment* TilePlaced : SpawnedVariantsRef)
@@ -126,11 +270,11 @@ void ULevelAssetSetupComponent::ActivateItems()
 			//threshold check TODO: This will be assigned from 
 			float itemThreshold = LocalLevel->GetLocalPickupSpawnLevelThreshold();
 			//if meeds threshold, spawn item function for weight lookup and spawn procedure
-			UE_LOG(LogTemp, Log, TEXT("Comparing noise val: %f to threshold: %f"), noiseMeasurement, itemThreshold);
+			//UE_LOG(LogTemp, Log, TEXT("Comparing noise val: %f to threshold: %f"), noiseMeasurement, itemThreshold);
 			if (noiseMeasurement <= itemThreshold)
 			{
 				//can spawn!
-				PlaceItemPickup(PossiblePickup); //TODO: make blocked out tiles for rest of variants and assign
+				PlaceItemPickup(PossiblePickup, TilePlaced); //TODO: make blocked out tiles for rest of variants and assign
 
 				//increment counter
 				PickupsPlaced++;
@@ -148,9 +292,10 @@ void ULevelAssetSetupComponent::ActivateItems()
 
 	//if item meets threshold puts into array to spawn items
 
-	//spawn items?
+	//spawn items in secret room (separate amount, no cap)
+	ActivateSecretRoom();
 
-	UE_LOG(LogTemp, Log, TEXT("Done spawning! Grand Total Placed items in level: %d"), PickupsPlaced);
+	UE_LOG(LogTemp, Log, TEXT("Done spawning pickup items! Grand Total Placed items in level: %d"), PickupsPlaced);
 }
 
 /// <summary>
@@ -159,36 +304,217 @@ void ULevelAssetSetupComponent::ActivateItems()
 /// then spawn item at location
 /// 
 /// </summary>
-void ULevelAssetSetupComponent::PlaceItemPickup(UStaticMeshComponent* PickupMarker)
+void ULevelAssetSetupComponent::PlaceItemPickup(UStaticMeshComponent* PickupMarker, ASTileVariantEnviornment* AttachedTile)
 {
 	FVector spawnLocation = PickupMarker->GetComponentLocation();
 
 	//choose random number between 1 and TotalItemWeight
-	int choosenItem = LocalLevel->GameStream.RandRange(0, LevelItemDropWeightTable.Num() - 1);
+	//int choosenItem = LocalLevel->GameStream.RandRange(0, LevelItemDropWeightTable.Num() - 1);
+	float tierChoosenPercent = LocalLevel->GameStream.RandRange(0.0f, 1.0f);
 
-	FItemPickupAsset ChoosenAsset = LevelItemDropWeightTable[choosenItem];
+	//percentage ties to tier, get tier and pull randomly from that tier'd item array
+	ESpawnTiers ChoosenTier = GetTierOnPercent(tierChoosenPercent);
+
+	//get array of items based on tiers (common has a list of items, uncommon has a list, etc)
+	TArray<FItemPickupAsset*> TierItemPool;
+
+	//all assets are in a local var called CurrentLevelItemTierList
+
+	// gunna try this super shorthand via FindByPredicate since its a complicated object (kinda)
+	//reference this in the future!
+	if (FLocalLevelItemSpawnTiers* FoundMatchingStruct = 
+		CurrentLevelItemTierList.FindByPredicate([&](FLocalLevelItemSpawnTiers look) 
+		{ 
+			return look.CurrentTier == ChoosenTier; })
+		)
+	{
+		TierItemPool = FoundMatchingStruct->ItemPoolAsset;
+	}
+	else {
+		UE_LOG(LogTemp, Error, TEXT("ERROR!"));
+	}
+
+	int ChoosenAssetIndex = LocalLevel->GameStream.RandRange(0, TierItemPool.Num() - 1);
+	FItemPickupAsset* AssetToSpawn = TierItemPool[ChoosenAssetIndex];
+
+	TSubclassOf<ASPickupBase> ChoosenAsset = AssetToSpawn->PickupPrefab;
 
 	
 	//TODO: spawn on spawnLocation
 	//could take a crazy approach to pickups... What if instead of a floating item in game space,
 	//the item is simply in the environment resting on the floor or leaning on a wall, etc. But within
 	//a sphere around the intended spawn point. Randomly placed.
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
+	//TODO: Use other way like with enemy to spawn
+	ASPickupBase* SpawnedAsset = GetWorld()->SpawnActor<ASPickupBase>(ChoosenAsset, spawnLocation, PickupMarker->GetComponentRotation(), SpawnParams);
 
-
+	FString AssetName = AssetToSpawn->ItemName + "-" + UEnum::GetValueAsString(AttachedTile->TileVariDefinition->EVariantSize) + "_" + FString::FromInt(PickupsPlaced);
+	SpawnedAsset->SetActorLabel(AssetName);
+#if WITH_EDITOR
+	SpawnedAsset->SetFolderPath(TileManagerRef->AssetSubFolderName);
 
 	//debug
 	spawnLocation.Z += 700.0f;
 	DrawDebugSphere(GetWorld(), spawnLocation, 200.0f, 20, FColor::Emerald, false, 100);
+#endif
+
+	
+}
+
+void ULevelAssetSetupComponent::PlaceEnemy(UStaticMeshComponent* PickupMarker, ASTileVariantEnviornment* AttachedTile)
+{
+	FVector spawnLocation = PickupMarker->GetComponentLocation();
+	//spawn enemy
+	FEnemySpawnInfo* EnemyToSpawnInfo = GetWeightedRandomEnemy();
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	//TODO: Use delegate way from GameModeBase code
+	//AActor* SpawnedEnemy = GetWorld()->SpawnActor<AActor>(EnemyToSpawnInfo->EnemySubclass, spawnLocation, PickupMarker->GetComponentRotation(), SpawnParams);
+
+	TArray<FName> Bundles;
+	//calls OnMonsterLoad when loaded, pass along AssetData and FVector to this OnMonsterLoaded function
+	FStreamableDelegate Delegate = FStreamableDelegate::CreateUObject(this, &ULevelAssetSetupComponent::OnEnemyLoaded, EnemyToSpawnInfo, spawnLocation);
+
+	UAssetManager* Manager = UAssetManager::GetIfValid();
+	Manager->LoadPrimaryAsset(EnemyToSpawnInfo->MonsterId, Bundles, Delegate);
+	
+#if WITH_EDITOR
+	//debug
+	spawnLocation.Z += 700.0f;
+	DrawDebugSphere(GetWorld(), spawnLocation, 200.0f, 20, FColor::Magenta, false, 70);
+#endif
+	//link to tile?
+
+
+}
+
+/// <summary>
+/// Input the random float to output the corresponding tier for items (common, uncommon, etc)
+/// 
+/// Note: The EObjective will only be set directly and not randomly from the objective setup
+/// </summary>
+/// <param name="inputFloat"></param>
+/// <returns></returns>
+ESpawnTiers ULevelAssetSetupComponent::GetTierOnPercent(float inputFloat)
+{
+	if (inputFloat >= 0.0f && inputFloat <= 0.58f) //first 58%
+	{
+		return ESpawnTiers::ECommon;
+	}
+	else if (inputFloat < 0.58f && inputFloat <= 0.83f) //next 25%
+	{
+		return ESpawnTiers::EUncommon;
+	} 
+	if (inputFloat < 0.83f && inputFloat <= 0.93f) //next 10%
+	{
+		return ESpawnTiers::ERare;
+	}
+	if (inputFloat < 0.93f && inputFloat <= 0.98f) //next 5%
+	{
+		return ESpawnTiers::EEpic;
+	}
+	if (inputFloat < 0.98f && inputFloat <= 1.0f) //last 2%
+	{
+		return ESpawnTiers::ELegendary;
+	}
+	return ESpawnTiers::ECommon;
 }
 
 /// <summary>
 /// Some preplaced enemy locations allow for cluster spawning for patrols in bigger tiles
-/// - Mini bosses can spawn on some objectives
+/// - Mini bosses can spawn on some objectives (done in objective function)
+/// 
+/// - Enemies are weighted
+/// - 
 /// </summary>
 void ULevelAssetSetupComponent::ActivateEnemies()
 {
+	//based on which lvl
 
+	//60 - 40 if we spawn a group vs a single individual enemy (might tie this to lvls as we go on)?
+	//TODO: build up squad
+
+	//will use a point system for determining who to place (taking a different approach than the item spawn)
+	//different difficulties will use high budgets
+	int remainingSpawnBudget = 20; //this should be tied to local level data
+
+
+	//for each placed variant tile
+	for (ASTileVariantEnviornment* TilePlaced : SpawnedVariantsRef)
+	{
+		//a one time add TilePlaced cleanup to OnCleanupDelegate
+		OnCleanupPickups.AddUObject(TilePlaced, &ASTileVariantEnviornment::HandleMarkerCleanup);
+		
+		//check each pre-placed pickup
+		for (UStaticMeshComponent* PossibleEnemySpawn : TilePlaced->EnemyPlacements)
+		{
+			FEnemySpawnInfo* CurrentEnemy = GetWeightedRandomEnemy();
+			if ( remainingSpawnBudget > remainingSpawnBudget)
+			{
+				break;
+			}
+
+			const FVector relativeLocation = PossibleEnemySpawn->GetRelativeLocation();
+			//UE_LOG(LogTemp, Log, TEXT("Cords: %s"), *relativeLocation.ToString());
+			//check noise 
+			float noiseMeasurement = GetNoiseVec(relativeLocation);
+
+			//threshold check TODO: This will be assigned from 
+			float enemyThreshold = LocalLevel->GetLocalEnemySpawnLevelThreshold();
+			//if meeds threshold, spawn item function for weight lookup and spawn procedure
+			if (noiseMeasurement <= enemyThreshold)
+			{
+				//can spawn!
+				PlaceEnemy(PossibleEnemySpawn, TilePlaced); 
+				
+				remainingSpawnBudget -= CurrentEnemy->SpawnCost;
+				EnemiesPlaced++;
+				
+			}
+
+		}
+		UE_LOG(LogTemp, Log, TEXT("Tile complete %s, local total: %d"), *TilePlaced->GetActorLabel(), remainingSpawnBudget);
+	}
+
+
+	UE_LOG(LogTemp, Log, TEXT("Done spawning enemies! Grand Total Spawned Enemies in level: %d"), EnemiesPlaced);
+}
+
+/// <summary>
+/// Enemy pool lookup
+/// 
+/// TODO: give option for building out mini patrol
+/// </summary>
+/// <returns></returns>
+FEnemySpawnInfo* ULevelAssetSetupComponent::GetWeightedRandomEnemy()
+{
+	FEnemySpawnInfo* possibleEnemy = nullptr;
+	//calculate total weight
+	float totalWeight = 0.0f;
+	//go through entire pool and add them up
+	for (FEnemySpawnInfo* Enemy : CurrentLevelEnemyList)
+	{
+		totalWeight += Enemy->Weight;
+	}
+
+	//choose random val within totalWeight
+	float randomVal = LocalLevel->GameStream.RandRange(0.0f, totalWeight);
+	//build a number we can choose TODO: build this out more
+	float accumulated = 0.0f;
+
+	for (FEnemySpawnInfo* Enemy : CurrentLevelEnemyList)
+	{
+		accumulated += Enemy->Weight;
+		if (randomVal <= accumulated)
+		{
+			possibleEnemy = Enemy;
+			break;
+		}
+	}
+	return possibleEnemy;
 }
 
 /// <summary>
@@ -250,6 +576,41 @@ float ULevelAssetSetupComponent::GetNoiseVec(FVector inputCords)
 	return normalizedOutput;
 }
 
+void ULevelAssetSetupComponent::OnEnemyLoaded(FEnemySpawnInfo* EnemySpawnInfo, FVector SpawnLocation)
+{
+	//LogOnScreen(this, "Finished Loading Monster...", FColor::Green);
+
+	UAssetManager* Manager = UAssetManager::GetIfValid();
+	if (Manager)
+	{
+		USMonsterData* MonsterData = Cast<USMonsterData>(Manager->GetPrimaryAssetObject(EnemySpawnInfo->MonsterId));
+		if (MonsterData)
+		{
+			AActor* NewBot = GetWorld()->SpawnActor<AActor>(MonsterData->MonsterClass, SpawnLocation, FRotator::ZeroRotator);
+			if (NewBot)
+			{
+				FString EnemyName = EnemySpawnInfo->EnemyName + "_" + FString::FromInt(EnemiesPlaced);
+				NewBot->SetActorLabel(EnemyName);
+
+#if WITH_EDITOR
+				NewBot->SetFolderPath(TileManagerRef->EnemySubFolderName);
+#endif
+
+				//LogOnScreen(this, FString::Printf(TEXT("Spawned Enemy: %s (%s)"), *GetNameSafe(NewBot), *GetNameSafe(MonsterData)));
+
+				USActionComponent* ActionComp = Cast<USActionComponent>(NewBot->GetComponentByClass(USActionComponent::StaticClass()));
+				if (ActionComp)
+				{
+					for (TSubclassOf<USAction>ActionClass : MonsterData->Actions)
+					{
+						ActionComp->AddAction(NewBot, ActionClass);
+					}
+				}
+			}
+		}
+	}
+}
+
 /// <summary>
 /// Populate grid with assets, called from TileGeneration once it is done setting up
 /// 
@@ -271,7 +632,7 @@ float ULevelAssetSetupComponent::GetNoiseVec(FVector inputCords)
 /// </summary>
 void ULevelAssetSetupComponent::PopulateGridAssets()
 {
-
+	SetupLevelAssetComponent();
 	
 	//UE_LOG(LogTemp, Log, TEXT("noise test (1, 1): %d"), GetNoiseVec((1, 1)));
 	//UE_LOG(LogTemp, Log, TEXT("noise test2 (1, 4): %d"), GetNoiseVec((1, 4)));

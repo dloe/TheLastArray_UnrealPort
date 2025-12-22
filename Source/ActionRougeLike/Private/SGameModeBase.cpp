@@ -208,12 +208,12 @@ void ASGameModeBase::OnQueryBotSpawnCompleted(UEnvQueryInstanceBlueprintWrapper*
 	{
 		if (MonsterTable)
 		{
-			TArray<FMonsterInfoRow*> Rows;
+			TArray<FMonsterInfoRowOld*> Rows;
 			MonsterTable->GetAllRows("", Rows);
 
 			//get random enemy
 			int32 RandomIndex = FMath::RandRange(0, Rows.Num() - 1);
-			FMonsterInfoRow* SelectedRow = Rows[RandomIndex];
+			FMonsterInfoRowOld* SelectedRow = Rows[RandomIndex];
 
 			//SelectedRow->SpawnCost
 

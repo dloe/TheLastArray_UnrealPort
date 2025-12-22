@@ -20,13 +20,13 @@ class USMonsterData;
 
 //datatable row for spawning monsters in gamemode
 USTRUCT(BlueprintType)
-struct FMonsterInfoRow : public FTableRowBase
+struct FMonsterInfoRowOld : public FTableRowBase
 {
 	GENERATED_BODY()
 
 public:
 
-	FMonsterInfoRow()
+	FMonsterInfoRowOld()
 	{
 		Weight = 1.0f;
 		SpawnCost = 5.0f;

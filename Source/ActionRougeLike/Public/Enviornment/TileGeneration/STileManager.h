@@ -114,26 +114,32 @@ public:
 	
 
 	//folder name for where tiles are placed when spawned
-	UPROPERTY(EditAnywhere, Category = "Tile Generation")
+	UPROPERTY(EditAnywhere, Category = "Level Setup")
 	FName TileSubFolderName;
 
 	//folder name for where doors are placed when spawned
-	UPROPERTY(EditAnywhere, Category = "Tile Generation")
+	UPROPERTY(EditAnywhere, Category = "Level Setup")
 	FName DoorSubFolderName;
 
 	//folder name for where doors are placed when spawned
-	UPROPERTY(EditAnywhere, Category = "Tile Generation")
+	UPROPERTY(EditAnywhere, Category = "Level Setup")
 	FName TileGenRootFolder;
 
-	UPROPERTY(EditAnywhere, Category = "Tile Generation")
+	UPROPERTY(EditAnywhere, Category = "Level Setup")
 	FName WallsSubFolderName;
 
 	//folder name for where variant tile maps are placed when spawned
-	UPROPERTY(EditAnywhere, Category = "Tile Generation")
+	UPROPERTY(EditAnywhere, Category = "Level Setup")
 	FName VariantTileMapSubFolderName;
 
+	UPROPERTY(EditAnywhere, Category = "Level Setup")
+	FName AssetSubFolderName;
+
+	UPROPERTY(EditAnywhere, Category = "Level Setup")
+	FName EnemySubFolderName;
+
 	//list of current active tiles
-	UPROPERTY(EditAnywhere, Category = "Tile Generation")
+	UPROPERTY(EditAnywhere, Category = "Level Setup")
 	TArray<ASTile*>	AllActiveTiles;
 
 	UPROPERTY(EditAnywhere, Category = "Start Room")

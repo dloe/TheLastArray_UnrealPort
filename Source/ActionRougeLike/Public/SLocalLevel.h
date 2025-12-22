@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "STileVariantEnviornment.h"
 #include "SStartingSpawnTile.h"
+//#include "Enviornment/PickupAssetData.h"
 #include "SLocalLevel.generated.h"
 
 UENUM(BlueprintType)
@@ -20,6 +21,7 @@ UENUM(BlueprintType)
 
 	class ULevelVariantPresetsData;
 	class STile;
+
 
 UCLASS()
 class ACTIONROUGELIKE_API ALocalLevel : public AActor
@@ -74,8 +76,6 @@ public:
 	//reference level asset data and presets
 
 	//each level should have some type of data object that holds this info, then will assign this this guy
-	//UPROPERTY(EditAnywhere, Category = "Tile Stats")
-	//float LevelItemPlacementThresholds; 
 
 	//player data?
 
@@ -85,18 +85,9 @@ public:
 
 	//presets for each level tier (TODO: move this to new location for storage)
 
-	
-
-	//UPROPERTY(EditAnywhere, Category = "Tile Variants")
-	//TArray<ASTileVariantEnviornment> OnexOneEnvVariants_local_test;
-
-	
-
-	
 
 	UPROPERTY(EditAnywhere, Category = "Local Level Data")
 	ULevelVariantPresetsData* LevelVariantsPresets;
-
 
 	//each variant data structure
 	//(contains the array of potential variants we assign above)

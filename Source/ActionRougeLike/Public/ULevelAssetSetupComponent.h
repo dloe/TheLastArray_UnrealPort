@@ -7,7 +7,33 @@
 #include "Enviornment/TileGeneration/STileManager.h"
 #include "SLocalLevel.h"
 #include "Enviornment/PickupAssetData.h"
+#include "SFEnemyDataDefinition.h"
 #include "ULevelAssetSetupComponent.generated.h"
+
+
+/// <summary>
+/// This is local structure that is built off the ItemData table and the UPickupAssetData TieredItem info we build 
+/// and configure
+/// </summary>
+//USTRUCT(BlueprintType)
+struct FLocalLevelItemSpawnTiers {
+	//GENERATED_BODY()
+
+public:
+	FLocalLevelItemSpawnTiers() {
+
+	}
+
+	FLocalLevelItemSpawnTiers(ESpawnTiers tier) {
+		CurrentTier = tier;
+	}
+
+	//UPROPERTY(EditAnywhere, Category = "Item Info")
+	ESpawnTiers CurrentTier;
+
+	//UPROPERTY(EditAnywhere, Category = "Enemy Info")
+	TArray<FItemPickupAsset*> ItemPoolAsset;
+};
 
 //delegate for sub / pub system for removing pickups after spawn
 DECLARE_MULTICAST_DELEGATE(FOnCleanupPickups);
@@ -50,8 +76,14 @@ public:
 	UPROPERTY(EditAnywhere) //how many items have we placed?
 	int PickupsPlaced;
 
+	UPROPERTY(EditAnywhere) //how many items have we placed?
+	int EnemiesPlaced;
+
 	UPROPERTY(EditAnywhere)
 	UPickupAssetData* ItemData;
+
+	UPROPERTY(EditAnywhere)
+	USFEnemyDataDefinition* EnemyData;
 
 protected:
 
@@ -60,8 +92,29 @@ protected:
 	// ---------------------------------
 
 	//idea is that we add by item weight then choose randomly and the weights should be good
+	//UPROPERTY(EditAnywhere, Category = "Level Asset Population")
+	//TArray<FItemPickupAsset> LevelItemDropWeightTable;
+
+	UPROPERTY(EditAnywhere, Category = "Component References")
+	UTileGridBranchComponent* GridBranchCompRef;
+
 	UPROPERTY(EditAnywhere, Category = "Level Asset Population")
-	TArray<FItemPickupAsset> LevelItemDropWeightTable;
+	TArray <ASTileVariantEnviornment*> SpawnedVariantsRef;
+
+	UPROPERTY(EditAnywhere, Category = "Level Asset Population")
+	FLevelTiersEnemyInfo LocalEnemyInfoData;
+
+	UPROPERTY(EditAnywhere, Category = "Level Asset Population")
+	FLevelTiersItemInfo LocalItemInfoData;
+
+
+	//UPROPERTY(EditAnywhere, Category = "Enemies")
+	TArray <FEnemySpawnInfo*> CurrentLevelEnemyList;
+
+	TArray <FLocalLevelItemSpawnTiers> CurrentLevelItemTierList;
+
+
+
 
 	// ---------------------------------
 	// -------- Helper Functions -------
@@ -89,12 +142,25 @@ protected:
 	void ActivateItems();
 
 	UFUNCTION(BlueprintCallable, Category = "Level Asset Population")
-	void PlaceItemPickup(UStaticMeshComponent* PickupMarker);
+	void PlaceItemPickup(UStaticMeshComponent* PickupMarker, ASTileVariantEnviornment* AttachedTile);
+
+	UFUNCTION(BlueprintCallable, Category = "Level Asset Population")
+	void PlaceEnemy(UStaticMeshComponent* PickupMarker, ASTileVariantEnviornment* AttachedTile);
+
+	UFUNCTION(BlueprintCallable, Category = "Level Asset Population")
+	ESpawnTiers GetTierOnPercent(float inputFloat);
+
 
 	UFUNCTION(BlueprintCallable, Category = "Level Asset Population")
 	void ActivateEnemies();
 
+	//UFUNCTION(BlueprintCallable, Category = "Level Asset Population")
+	FEnemySpawnInfo* GetWeightedRandomEnemy();
+
 	UFUNCTION(BlueprintCallable)
 	float GetNoiseVec(FVector inputCords);
 	
+	//For loading enemies
+	void OnEnemyLoaded(FEnemySpawnInfo* EnemySpawnInfo, FVector SpawnLocation);
 };
+
