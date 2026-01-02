@@ -101,7 +101,6 @@ void ASTileManager::OnBranchFillGeneration()
 	RemoveUnusedOuters();
 
 	TileGenerationEndTime = FPlatformTime::Seconds();
-
 	TileSetupDuration = TileGenerationEndTime - LevelSetupStartTime;
 
 	if (bDebugPrintsRef) {
@@ -110,6 +109,13 @@ void ASTileManager::OnBranchFillGeneration()
 
 	//Level asset spawn can now begin
 	LevelAssetSetupComponent->PopulateGridAssets();
+
+	PopulateWithNoiseMapEndTime = FPlatformTime::Seconds();
+	PopulateWithNoiseMapDuration = PopulateWithNoiseMapEndTime - TileGenerationEndTime;
+
+	if (bDebugPrintsRef) {
+		UE_LOG(LogTemp, Log, TEXT("Populate Setup Complete, system time spent: %.6f"), PopulateWithNoiseMapDuration);
+	}
 }
 
 /// <summary>

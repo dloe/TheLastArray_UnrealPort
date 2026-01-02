@@ -8,6 +8,7 @@
 #include "SLocalLevel.h"
 #include "Enviornment/PickupAssetData.h"
 #include "SFEnemyDataDefinition.h"
+#include "STileVariantEnviornment.h"
 #include "ULevelAssetSetupComponent.generated.h"
 
 
@@ -85,10 +86,22 @@ public:
 	UPROPERTY(EditAnywhere)
 	USFEnemyDataDefinition* EnemyData;
 
+	UPROPERTY(EditAnywhere)
+	bool ActivateDebugFloorPerlinNoise = false;
+
+	UPROPERTY(EditAnywhere)
+	AActor* DebugPerlinNoiseFloor;
+
+	UPROPERTY(EditAnywhere)
+	float MaxNoise = 0;
+
+	UPROPERTY(EditAnywhere)
+	float MinNoise = 0;
+
 protected:
 
 	// ---------------------------------
-	// -- Internal state / variables --
+	// -- Internal state / variables  --
 	// ---------------------------------
 
 	//idea is that we add by item weight then choose randomly and the weights should be good
@@ -113,7 +126,9 @@ protected:
 
 	TArray <FLocalLevelItemSpawnTiers> CurrentLevelItemTierList;
 
-
+	//same offset for all checks on asset spawning with Perlin noise
+	UPROPERTY(EditAnywhere, Category = "Level Asset Population")
+	FVector2D seedOffset;
 
 
 	// ---------------------------------
@@ -162,5 +177,14 @@ protected:
 	
 	//For loading enemies
 	void OnEnemyLoaded(FEnemySpawnInfo* EnemySpawnInfo, FVector SpawnLocation);
+
+	void OnPickupLoaded(FItemPickupAsset* ItemSpawnInfo, FVector SpawnLocation, FRotator spawnRotation, ASTileVariantEnviornment* AttachedTile);
+
+	UFUNCTION(BlueprintCallable)
+	void SetUpDebugPerlinNoise();
+
+	//debug see texture on floors 
+	UFUNCTION(BlueprintCallable)
+	UTexture2D* DebugCreatePerlinNoiseTexture(int32 size, FBoxSphereBounds Bounds);
 };
 

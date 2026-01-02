@@ -53,6 +53,9 @@ void ULevelAssetSetupComponent::BeginPlay()
 /// </summary>
 void ULevelAssetSetupComponent::SetupLevelAssetComponent()
 {
+	seedOffset.X = LocalLevel->GameStream.RandRange(-1000, 1000);
+	seedOffset.Y = LocalLevel->GameStream.RandRange(-1000, 1000);
+
 	GridBranchCompRef = TileManagerRef->GetGridBranchComp();
 	//go through all placed tiles (secret room should be separate)
 	SpawnedVariantsRef = GridBranchCompRef->GetSpawnedVariantTiles();
@@ -119,8 +122,6 @@ void ULevelAssetSetupComponent::SetupLevelAssetComponent()
 	//pull Ids from monster table to construct which choices are available for spawning
 	for (FItemPickupAsset* DataRowItem : ItemSpawnItems)
 	{
-		//OUT OF DATE COMMENT? if IDs match, add to our list
-
 		//items that match the TierWeightsPerLevel.ItemPoolId and ItemTable should be put into the array
 		//all tiers (since this is broken up different, will need to be slightly more complicated to build out 
 		//our structure for easy access
@@ -153,7 +154,27 @@ void ULevelAssetSetupComponent::SetupLevelAssetComponent()
 		}
 	}
 
-	//TODO: set up the big asset count array
+	//set up texture sizing for perlin noise map
+	for (int y = 0; y < LocalLevel->GameMapTextureSize; y++)
+	{
+		for (int x = 0; x < LocalLevel->GameMapTextureSize; x++)
+		{
+			//see comments below for more detail
+			float cordX = (x + seedOffset.X) / float(LocalLevel->GameMapTextureSize - 1);
+			float cordY = (y + seedOffset.Y) / float(LocalLevel->GameMapTextureSize - 1);
+			float NoiseCheck = FMath::PerlinNoise2D(FVector2D(cordX, cordY) * LocalLevel->PerlinScaleFreq);
+			MinNoise = FMath::Min(MinNoise, NoiseCheck);
+			MaxNoise = FMath::Max(MaxNoise, NoiseCheck);
+		}
+	}
+	UE_LOG(LogTemp, Log, TEXT("min: %f, max: %f"), MinNoise, MaxNoise);
+
+
+	//debug perlin noise texture for easy visualization
+	if (ActivateDebugFloorPerlinNoise)
+	{
+		SetUpDebugPerlinNoise();
+	}
 }
 
 void ULevelAssetSetupComponent::GridAnalysis()
@@ -199,8 +220,7 @@ void ULevelAssetSetupComponent::ActivateSecretRoom()
 			currentAssetPlacedCount++;
 		}
 
-		
-		UE_LOG(LogTemp, Log, TEXT("Tile complete %s, local total: %d"), *SecretRoom->GetActorLabel(), currentAssetPlacedCount);
+		UE_LOG(LogTemp, Log, TEXT("Secret Tile complete %s, local total: %d"), *SecretRoom->GetActorLabel(), currentAssetPlacedCount);
 	}
 }
 
@@ -228,22 +248,11 @@ void ULevelAssetSetupComponent::ActivateObjectives()
 /// 
 /// get noise value of each preplaced item for each tile
 /// 
-/// TODO: Follow same format as enemy spawn for loading in enemies and DataTable
 /// </summary>
 void ULevelAssetSetupComponent::ActivateItems()
 {
-	
+	UE_LOG(LogTemp, Log, TEXT(" --- Spawning Pickups! --- "));
 	//TODO: Any modifications or different choosing of the weight tables depending on level will go here
-
-
-	//prep weight table
-	//for (FItemPickupAsset Pickup : ItemData->ItemPickupTable)
-	//{
-	//	for (int TimesToAdd = 0; TimesToAdd < Pickup.ItemWeight; TimesToAdd++)
-	//	{
-	//		LevelItemDropWeightTable.Add(Pickup);
-	//	}
-	//}
 
 	//for each placed variant tile
 	for (ASTileVariantEnviornment* TilePlaced : SpawnedVariantsRef)
@@ -270,7 +279,8 @@ void ULevelAssetSetupComponent::ActivateItems()
 			//threshold check TODO: This will be assigned from 
 			float itemThreshold = LocalLevel->GetLocalPickupSpawnLevelThreshold();
 			//if meeds threshold, spawn item function for weight lookup and spawn procedure
-			//UE_LOG(LogTemp, Log, TEXT("Comparing noise val: %f to threshold: %f"), noiseMeasurement, itemThreshold);
+			
+			bool debug = false;
 			if (noiseMeasurement <= itemThreshold)
 			{
 				//can spawn!
@@ -279,10 +289,11 @@ void ULevelAssetSetupComponent::ActivateItems()
 				//increment counter
 				PickupsPlaced++;
 				currentAssetPlacedCount++;
+				debug = true;
 			}
-
+			UE_LOG(LogTemp, Log, TEXT("Comparing noise val: %f <= threshold: %f -- Status: %d"), noiseMeasurement, itemThreshold, debug);
 		}
-		UE_LOG(LogTemp, Log, TEXT("Tile complete %s, local total: %d"), *TilePlaced->GetActorLabel(), currentAssetPlacedCount);
+		UE_LOG(LogTemp, Log, TEXT(" --- Tile complete %s, local total: %d --- "), *TilePlaced->GetActorLabel(), currentAssetPlacedCount);
 	}
 	//each tile has an array of the possible preplaced items
 	//if each noise output exceeds a thresholds, we can place
@@ -307,6 +318,7 @@ void ULevelAssetSetupComponent::ActivateItems()
 void ULevelAssetSetupComponent::PlaceItemPickup(UStaticMeshComponent* PickupMarker, ASTileVariantEnviornment* AttachedTile)
 {
 	FVector spawnLocation = PickupMarker->GetComponentLocation();
+	FRotator spawnRotation = PickupMarker->GetComponentRotation();
 
 	//choose random number between 1 and TotalItemWeight
 	//int choosenItem = LocalLevel->GameStream.RandRange(0, LevelItemDropWeightTable.Num() - 1);
@@ -347,20 +359,19 @@ void ULevelAssetSetupComponent::PlaceItemPickup(UStaticMeshComponent* PickupMark
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-	//TODO: Use other way like with enemy to spawn
-	ASPickupBase* SpawnedAsset = GetWorld()->SpawnActor<ASPickupBase>(ChoosenAsset, spawnLocation, PickupMarker->GetComponentRotation(), SpawnParams);
+	TArray<FName> Bundles;
+	//calls OnMonsterLoad when loaded, pass along AssetData and FVector to this OnMonsterLoaded function
+	FStreamableDelegate Delegate = FStreamableDelegate::CreateUObject(this, &ULevelAssetSetupComponent::OnPickupLoaded, AssetToSpawn, spawnLocation, spawnRotation, AttachedTile);
 
-	FString AssetName = AssetToSpawn->ItemName + "-" + UEnum::GetValueAsString(AttachedTile->TileVariDefinition->EVariantSize) + "_" + FString::FromInt(PickupsPlaced);
-	SpawnedAsset->SetActorLabel(AssetName);
+	UAssetManager* Manager = UAssetManager::GetIfValid();
+	Manager->LoadPrimaryAsset(AssetToSpawn->ItemId, Bundles, Delegate);
+	
 #if WITH_EDITOR
-	SpawnedAsset->SetFolderPath(TileManagerRef->AssetSubFolderName);
-
 	//debug
 	spawnLocation.Z += 700.0f;
 	DrawDebugSphere(GetWorld(), spawnLocation, 200.0f, 20, FColor::Emerald, false, 100);
 #endif
 
-	
 }
 
 void ULevelAssetSetupComponent::PlaceEnemy(UStaticMeshComponent* PickupMarker, ASTileVariantEnviornment* AttachedTile)
@@ -370,9 +381,6 @@ void ULevelAssetSetupComponent::PlaceEnemy(UStaticMeshComponent* PickupMarker, A
 	FEnemySpawnInfo* EnemyToSpawnInfo = GetWeightedRandomEnemy();
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
-	//TODO: Use delegate way from GameModeBase code
-	//AActor* SpawnedEnemy = GetWorld()->SpawnActor<AActor>(EnemyToSpawnInfo->EnemySubclass, spawnLocation, PickupMarker->GetComponentRotation(), SpawnParams);
 
 	TArray<FName> Bundles;
 	//calls OnMonsterLoad when loaded, pass along AssetData and FVector to this OnMonsterLoaded function
@@ -386,7 +394,8 @@ void ULevelAssetSetupComponent::PlaceEnemy(UStaticMeshComponent* PickupMarker, A
 	spawnLocation.Z += 700.0f;
 	DrawDebugSphere(GetWorld(), spawnLocation, 200.0f, 20, FColor::Magenta, false, 70);
 #endif
-	//link to tile?
+
+	//TODO: link to tile?
 
 
 }
@@ -432,6 +441,7 @@ ESpawnTiers ULevelAssetSetupComponent::GetTierOnPercent(float inputFloat)
 /// </summary>
 void ULevelAssetSetupComponent::ActivateEnemies()
 {
+	UE_LOG(LogTemp, Log, TEXT(" --- Spawning Enemies! --- "));
 	//based on which lvl
 
 	//60 - 40 if we spawn a group vs a single individual enemy (might tie this to lvls as we go on)?
@@ -480,7 +490,7 @@ void ULevelAssetSetupComponent::ActivateEnemies()
 	}
 
 
-	UE_LOG(LogTemp, Log, TEXT("Done spawning enemies! Grand Total Spawned Enemies in level: %d"), EnemiesPlaced);
+	UE_LOG(LogTemp, Log, TEXT(" --- Done spawning enemies! Grand Total Spawned Enemies in level: %d --- "), EnemiesPlaced);
 }
 
 /// <summary>
@@ -494,7 +504,7 @@ FEnemySpawnInfo* ULevelAssetSetupComponent::GetWeightedRandomEnemy()
 	FEnemySpawnInfo* possibleEnemy = nullptr;
 	//calculate total weight
 	float totalWeight = 0.0f;
-	//go through entire pool and add them up
+	//go through entire pool and add them all up
 	for (FEnemySpawnInfo* Enemy : CurrentLevelEnemyList)
 	{
 		totalWeight += Enemy->Weight;
@@ -502,8 +512,10 @@ FEnemySpawnInfo* ULevelAssetSetupComponent::GetWeightedRandomEnemy()
 
 	//choose random val within totalWeight
 	float randomVal = LocalLevel->GameStream.RandRange(0.0f, totalWeight);
-	//build a number we can choose TODO: build this out more
+	//build a number we can choose TODO: build this out more (or pick different tactic entirely tbh)
 	float accumulated = 0.0f;
+
+	//TODO: should i shuffle the enemy list here?
 
 	for (FEnemySpawnInfo* Enemy : CurrentLevelEnemyList)
 	{
@@ -544,38 +556,39 @@ FEnemySpawnInfo* ULevelAssetSetupComponent::GetWeightedRandomEnemy()
 /// <returns></returns>
 float ULevelAssetSetupComponent::GetNoiseVec(FVector inputCords)
 {
-
 	//transform vector input by seed to ensure we keep seed influence
 	//need to offset by a random number generated by seed (but cant use seed cause can be HUGE)
 	FVector2D inputConvertionSeedOffset(inputCords.X, inputCords.Y); 
-	//UE_LOG(LogTemp, Log, TEXT("Cords: %s"), *inputConvertionSeedOffset.ToString());
-
-	FVector2D seedOffset(LocalLevel->GameStream.RandRange(-1000, 1000), LocalLevel->GameStream.RandRange(-1000, 1000));
 
 	//multiply our cords (with applied offset) to our scale frequency
-    inputConvertionSeedOffset = (inputConvertionSeedOffset + seedOffset) * LocalLevel->assetPlacementScaleFreq;
+	//'seedOffset' vect2 is calculated at the beginning and is the same offset used throughout component
+    inputConvertionSeedOffset = (inputConvertionSeedOffset + seedOffset);
 	//UE_LOG(LogTemp, Log, TEXT("Input cords with offset and scale: %s"), *inputConvertionSeedOffset.ToString());
-	
-	float noiseOutput = FMath::PerlinNoise2D(inputConvertionSeedOffset);
-	//UE_LOG(LogTemp, Log, TEXT("not normalized: %f"), noiseOutput);
-	//normalize (so between 0 and 1) not within -1,1
-	//float normalizedOutput = UKismetMathLibrary::NormalizeToRange(noiseOutput, 0.0f, 1.0f); //is this not what i thought it was?
-	
-	//float normalize2 = (noiseOutput - 0.0f) / (1.0 - 0.0f);
-	//UE_LOG(LogTemp, Log, TEXT("normallized1: %f"), normalize2);
 
-	//float normalize3 = FMath::GetMappedRangeValueClamped(FVector2D(-1.0f, 1.0f), FVector2D(0.0f, 1.0f), noiseOutput);
-	//UE_LOG(LogTemp, Log, TEXT("normallized2: %f"), normalize3);
+	//normalize
+	float cordX = (inputConvertionSeedOffset.X) / float(LocalLevel->GameMapTextureSize - 1);
+	float cordY = (inputConvertionSeedOffset.Y) / float(LocalLevel->GameMapTextureSize - 1);
 
-	float normalizedOutput = FMath::GetMappedRangeValueUnclamped(FVector2D(-1.0f, 1.0f), FVector2D(0.0f, 1.0f), noiseOutput);
+
+	float NoiseLookup = FMath::PerlinNoise2D(FVector2D(cordX, cordY) * LocalLevel->PerlinScaleFreq);
+
+	float NormalizedNoise = (NoiseLookup - MinNoise) / (MaxNoise - MinNoise);
+
+	//UE_LOG(LogTemp, Log, TEXT("not normalized: %f"), NormalizedNoise);
+
+	//float normalizedOutput = FMath::GetMappedRangeValueUnclamped(FVector2D(-1.0f, 1.0f), FVector2D(0.0f, 1.0f), NormalizedNoise);
 	//UE_LOG(LogTemp, Log, TEXT("normalized/clamped val: %f"), normalizedOutput);
 
-	//float normalize5 = (noiseOutput + 1.0f) / 2.0f;
-	//UE_LOG(LogTemp, Log, TEXT("normallized4: %f"), normalize5);
-
-	return normalizedOutput;
+	return NormalizedNoise;
 }
 
+/// <summary>
+/// When we finish loading in an enemy, some small setup
+/// 
+/// Set up ActionComp, monster data for monster, folder path, etc
+/// </summary>
+/// <param name="EnemySpawnInfo">Input enemy info</param>
+/// <param name="SpawnLocation"> Location to spawn enemy that we loaded</param>
 void ULevelAssetSetupComponent::OnEnemyLoaded(FEnemySpawnInfo* EnemySpawnInfo, FVector SpawnLocation)
 {
 	//LogOnScreen(this, "Finished Loading Monster...", FColor::Green);
@@ -596,8 +609,6 @@ void ULevelAssetSetupComponent::OnEnemyLoaded(FEnemySpawnInfo* EnemySpawnInfo, F
 				NewBot->SetFolderPath(TileManagerRef->EnemySubFolderName);
 #endif
 
-				//LogOnScreen(this, FString::Printf(TEXT("Spawned Enemy: %s (%s)"), *GetNameSafe(NewBot), *GetNameSafe(MonsterData)));
-
 				USActionComponent* ActionComp = Cast<USActionComponent>(NewBot->GetComponentByClass(USActionComponent::StaticClass()));
 				if (ActionComp)
 				{
@@ -609,6 +620,158 @@ void ULevelAssetSetupComponent::OnEnemyLoaded(FEnemySpawnInfo* EnemySpawnInfo, F
 			}
 		}
 	}
+}
+
+/// <summary>
+/// 
+/// </summary>
+/// <param name="ItemSpawnInfo"></param>
+/// <param name="SpawnLocation"></param>
+/// <param name="spawnRotation"></param>
+/// <param name="AttachedTile"></param>
+void ULevelAssetSetupComponent::OnPickupLoaded(FItemPickupAsset* ItemSpawnInfo, FVector SpawnLocation, FRotator spawnRotation ,ASTileVariantEnviornment* AttachedTile)
+{
+	UAssetManager* Manager = UAssetManager::GetIfValid();
+	if (Manager)
+	{
+		//ASPickupBase* ItemData = Cast<ASPickupBase>(Manager->GetPrimaryAssetObject(ItemSpawnInfo->ItemId));
+		//if (ItemData)
+		//{
+			ASPickupBase* NewPickup = GetWorld()->SpawnActor<ASPickupBase>(ItemSpawnInfo->PickupPrefab, SpawnLocation, spawnRotation);
+			if (NewPickup)
+			{
+				FString ItemName = ItemSpawnInfo->ItemName + "_" + UEnum::GetValueAsString(AttachedTile->TileVariDefinition->EVariantSize) + "_" + FString::FromInt(PickupsPlaced);
+				NewPickup->SetActorLabel(ItemName);
+
+#if WITH_EDITOR
+				NewPickup->SetFolderPath(TileManagerRef->AssetSubFolderName);
+#endif
+
+				//LogOnScreen(this, FString::Printf(TEXT("Spawned Enemy: %s (%s)"), *GetNameSafe(NewBot), *GetNameSafe(MonsterData)));
+
+			}
+		//}
+	}
+}
+
+/// <summary>
+/// Turn on and off the debug floor
+/// Create PerlinNoise texture of floor
+/// Apply perlin noise texture to floor
+/// </summary>
+void ULevelAssetSetupComponent::SetUpDebugPerlinNoise()
+{
+	UStaticMeshComponent* DebugFloorSMComp = DebugPerlinNoiseFloor->FindComponentByClass<UStaticMeshComponent>();
+	DebugFloorSMComp->ToggleVisibility(ActivateDebugFloorPerlinNoise); //set it to be visible
+	//DebugFloorSMComp->GetStaticMesh()->GetBounds();
+	FBoxSphereBounds Bounds = DebugFloorSMComp->Bounds;
+
+	//(Title length * Number of tiles) + (Wall buffer length * number of buffers in direction)
+	//(35 * 5) + (1 * 5) = 180 (for scale size)
+	//normal tile is 35 x 35 (with wall buffers of 1) so having 5 tiles gives us a floor size of 179 x 179
+	UTexture2D* FloorPerlinTexture = DebugCreatePerlinNoiseTexture(LocalLevel->GameMapTextureSize, Bounds); //but cant exceed cap of 16,384 x 16,384
+
+	//create our runtime material to apply texture to
+	UMaterialInstanceDynamic* FloorMID = DebugFloorSMComp->CreateAndSetMaterialInstanceDynamic(0); //0 is material slot on mesh
+
+	FloorMID->SetTextureParameterValue("PerlinNoiseTexture", FloorPerlinTexture);
+}
+
+/// <summary>
+/// WARNING: THIS IS VERY INTENSE TO RUN SO KEEP THIS OFF WHEN I DONT NEED IT
+/// Going to attempt to generate 2d texture for floor to showcase our perlin noise (for easy debugging and tweaking)
+/// Current idea of how to do this: create 2d texture with resolution (still tbd on that, how many units is our game map rn? x,y),
+/// and then for each cord, convert to noise cord lookup and set that color scale value based on returned value
+/// 
+/// NOTE: Instead of setting this texture to each floor or each tile, make one big floor that is the proper size and apply it to that, 
+/// will be easier. This var is in this component called: 'DebugPerlinNoiseFloor'
+/// </summary>
+/// <param name="size"> width and length of texture (aka our floor actor we are using). aka resolution </param>
+/// <param name="NoiseScale"> multiplier or frequency of noise aka our assetPlacementScaleFreq we have used </param>
+/// <param name="OffsetX"> offset cord for x cord on texture we are setting </param>
+/// <param name="OffsetY"> offset cord for Y cord on texture we are setting </param>
+UTexture2D* ULevelAssetSetupComponent::DebugCreatePerlinNoiseTexture(int32 size, FBoxSphereBounds Bounds)
+{
+	//to better map
+	//world bounds in units is 18000 x 18000 for BASE MAP (not secret room or entrance)
+	//origin - extension = min corner
+	//origin + extension = max corner
+	float WorldMinX = Bounds.Origin.X - Bounds.BoxExtent.X;
+	float WorldMinY = Bounds.Origin.X + Bounds.BoxExtent.X;
+	float WorldMaxX = Bounds.Origin.Y - Bounds.BoxExtent.Y;
+	float WorldMaxY = Bounds.Origin.Y + Bounds.BoxExtent.Y;
+	//UE_LOG(LogTemp, Log, TEXT("Min X: %f"), WorldMinX);
+	//UE_LOG(LogTemp, Log, TEXT("Min Y: %f"), WorldMinY);
+	//UE_LOG(LogTemp, Log, TEXT("Max X: %f"), WorldMaxX);
+	//UE_LOG(LogTemp, Log, TEXT("Max Y: %f"), WorldMaxY);
+
+	//create blank texture
+	UTexture2D* Texture = UTexture2D::CreateTransient(size, size, PF_B8G8R8A8); //PF_B8G8R8A8 is a pixel format? using BGR instead of RGB
+	//blue has 8 bits, g has 8 bits, r has 8 buts and alpha has 8 bits. looks like we are setting the properties of this texture
+	
+	//tell unreal not to generate mipmaps, this should be pixel-perfect visualization of our debug perlin noise
+	Texture->MipGenSettings = TMGS_NoMipmaps; //also is intense to keep on so why bother
+	Texture->SRGB = false; //treat this as linear data not color data (because we are using perlin noise). keep more numeric
+
+	TArray<FColor> Pixels; //set array of pixels to be our texture
+	Pixels.SetNum(size * size);
+
+	//going with an auto normalize technique to pull us out of the gray scale
+	//might be intensive to run, this may need to be moved to run and used before we place items btw
+	//reminder: scale should make our min and max as close as possible to -1,1
+
+
+	//go through all the spots and color them (all the pixels... pain)
+	for (int y = 0; y < size; y++)
+	{
+		//for each y row, go through x column
+		for (int x = 0; x < size; x++)
+		{
+			//convert pixel cords to world cords an attempt (please optimize this later omg)
+			//normalized UV?
+			float a = x / float(size - 1);
+			float b = y / float(size - 1);
+
+			float NoiseLookup = FMath::PerlinNoise2D(FVector2D(a, b) * LocalLevel->PerlinScaleFreq); //get Perlin noise val
+			
+			//global normalization
+			float NormalizedNoise = (NoiseLookup - MinNoise) / (MaxNoise - MinNoise);
+			float clampedNoise = FMath::Clamp(NormalizedNoise, 0.0f, 1.0f);
+
+			//clamp value to be used as color
+			//use updated clamp w/ normalized noise values to get me the hell out of mid-gray band PLEASE
+			int valueColor = FMath::Clamp( NormalizedNoise * 255.0f, 0, 255); //create color value via clamp (255 for color value)
+
+			//debug
+			//if (x % 200 == 0 && y % 200 == 0)
+			//{
+				//UE_LOG(LogTemp, Log, TEXT("unnormalized values: x: %f, y: %f"), a, b);
+				//UE_LOG(LogTemp, Log, TEXT("scaled: %f, %f"), scaledX, scaledY);
+				//UE_LOG(LogTemp, Log, TEXT("noise normalized: %f ==> color clamp (0-255): %d"), NormalizedNoise, valueColor);
+			//}
+
+			Pixels[y * size + x] = FColor(valueColor, valueColor, valueColor, 255); // set as all values so its black and white
+		}
+	}
+
+	//MipMaps are lower res versions of texture
+	FTexture2DMipMap& Mip = Texture->GetPlatformData()->Mips[0];//mip 0 is full resolution (1 is half, etc)
+
+	//to protect data memory (concurrency reasons)
+	//raw pointer in pixel mem, bulkdata is actual bytes and lock is asking for permission to edit this data
+	void* Data = Mip.BulkData.Lock(LOCK_READ_WRITE); 
+
+	//copy the pixels into texture data 
+	FMemory::Memcpy(Data, Pixels.GetData(), Pixels.Num() * sizeof(FColor));
+
+	//apply and lock back up?
+	Mip.BulkData.Unlock();
+	Texture->CompressionSettings = TC_Grayscale; 
+	Texture->NeverStream = true; //please unreal don't compress or muck up this texture
+	Texture->Filter = TF_Nearest;
+	Texture->UpdateResource(); //apply updates to texture we have made
+
+	return Texture;
 }
 
 /// <summary>
@@ -634,11 +797,7 @@ void ULevelAssetSetupComponent::PopulateGridAssets()
 {
 	SetupLevelAssetComponent();
 	
-	//UE_LOG(LogTemp, Log, TEXT("noise test (1, 1): %d"), GetNoiseVec((1, 1)));
-	//UE_LOG(LogTemp, Log, TEXT("noise test2 (1, 4): %d"), GetNoiseVec((1, 4)));
-	//UE_LOG(LogTemp, Log, TEXT("noise test3 (3, 7): %d"), GetNoiseVec((3, 7)));
-
-	//do items first then focus on choosiung and creating objectives
+	//do items first then focus on choosing and creating objectives
 	ActivateObjectives();
 
 	ActivateItems();

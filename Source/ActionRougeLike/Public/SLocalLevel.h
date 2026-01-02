@@ -60,8 +60,14 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Game Setup Generation")
 	bool bDebugPrints = true;
 
+	//TODO: tbh these 2 props (scale and freq) collapse into a single factor
+
+	//how many parts inside the landscape we explore (like valleys/hills,etc)
 	UPROPERTY(EditAnywhere, Category = "Game Setup Generation")
-	float assetPlacementScaleFreq = 0.02;
+	float PerlinScaleFreq = 8.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Game Setup Generation")
+	int32 GameMapTextureSize = 1024;
 
 	//this is assigned via LocalLevel
 	UPROPERTY(EditAnywhere, Category = "Tile Configuration")

@@ -20,7 +20,8 @@ ASItemChest::ASItemChest()
 
 	TargetPitch = 110;
 
-	SetReplicates(true);
+	//SetReplicates(true); 
+	bReplicates = true; //set directly for preinit actors
 }
 
 void ASItemChest::Interact_Implementation(APawn* InstigatorPawn)

@@ -80,15 +80,7 @@ public:
 
 	
 
-	//For time stamping - debugging
-	UPROPERTY(EditAnywhere, Category = "Debug")
-	double LevelSetupStartTime;
-
-	UPROPERTY(EditAnywhere, Category = "Debug")
-	double TileGenerationEndTime;
-
-	UPROPERTY(EditAnywhere, Category = "Debug")
-	double TileSetupDuration;
+	
 
 #pragma region Tile Generation Public Vars
 
@@ -401,6 +393,20 @@ protected:
 	//list of possible starting tiles
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	int PathNumberTileMan = 0;
+
+	//For time stamping - debugging
+	UPROPERTY(EditAnywhere, Category = "Debug")
+	double LevelSetupStartTime;
+	UPROPERTY(EditAnywhere, Category = "Debug")
+	double TileGenerationEndTime;
+	UPROPERTY(EditAnywhere, Category = "Debug")
+	double TileSetupDuration;
+
+
+	UPROPERTY(EditAnywhere, Category = "Debug")
+	double PopulateWithNoiseMapEndTime;
+	UPROPERTY(EditAnywhere, Category = "Debug")
+	double PopulateWithNoiseMapDuration;
 
 #pragma endregion
 

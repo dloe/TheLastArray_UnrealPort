@@ -66,7 +66,7 @@ public:
 
 #pragma region Tile Stats - Public Variables
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Tile Stats")
-	float TileLength;
+	float TileLength; //cord size is Scale * 100
 
 	//what our index is on the array
 	UPROPERTY(EditAnywhere, Category = "Tile Stats")

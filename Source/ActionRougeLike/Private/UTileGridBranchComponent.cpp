@@ -383,7 +383,7 @@ bool UTileGridBranchComponent::VariantCandidateAnalysis(ASTile* CurrentTile, USF
 				
 				//need to save out the doors array, wall array and tile arrays in their respective index
 				VariantPlugTileInfo.Add(transVariantPlugInfo);
-				UE_LOG(LogTemp, Log, TEXT("Added to variant plug info, test new rotation. Currently variantpluginfosize = %d"), VariantPlugTileInfo.Num());
+				//UE_LOG(LogTemp, Log, TEXT("Added to variant plug info, test new rotation. Currently variantpluginfosize = %d"), VariantPlugTileInfo.Num());
 			}
 			CurrentVariant->RotationCheckCounter++;
 		}
