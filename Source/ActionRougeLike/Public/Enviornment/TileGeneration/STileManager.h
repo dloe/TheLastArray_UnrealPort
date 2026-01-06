@@ -138,7 +138,7 @@ public:
 	bool DoorToStartRoom = true;
 
 	//root component
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, Category = "Scene Setup")
 	USceneComponent* TilesRoot;
 
 #pragma endregion

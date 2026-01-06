@@ -26,7 +26,8 @@ ASPickupBase::ASPickupBase()
 	Triggered = false;
 	TriggerDelay = 10;
 
-	SetReplicates(true);
+	//SetReplicates(true);
+	bReplicates = true; //set directly for preinit actors
 }
 
 // Called when the game starts or when spawned

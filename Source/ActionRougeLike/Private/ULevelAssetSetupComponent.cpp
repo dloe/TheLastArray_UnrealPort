@@ -281,6 +281,7 @@ void ULevelAssetSetupComponent::ActivateItems()
 			//if meeds threshold, spawn item function for weight lookup and spawn procedure
 			
 			bool debug = false;
+			//TODO: inverse threshold so we go for darker saturation from noise return than the bright color
 			if (noiseMeasurement <= itemThreshold)
 			{
 				//can spawn!
@@ -290,6 +291,8 @@ void ULevelAssetSetupComponent::ActivateItems()
 				PickupsPlaced++;
 				currentAssetPlacedCount++;
 				debug = true;
+
+				
 			}
 			UE_LOG(LogTemp, Log, TEXT("Comparing noise val: %f <= threshold: %f -- Status: %d"), noiseMeasurement, itemThreshold, debug);
 		}
@@ -447,6 +450,7 @@ void ULevelAssetSetupComponent::ActivateEnemies()
 	//60 - 40 if we spawn a group vs a single individual enemy (might tie this to lvls as we go on)?
 	//TODO: build up squad
 
+	//TODO: Maybe tie this to individual tiles? dont overwelm an individual tile instead of limited the entire game map
 	//will use a point system for determining who to place (taking a different approach than the item spawn)
 	//different difficulties will use high budgets
 	int remainingSpawnBudget = 20; //this should be tied to local level data
@@ -455,6 +459,7 @@ void ULevelAssetSetupComponent::ActivateEnemies()
 	//for each placed variant tile
 	for (ASTileVariantEnviornment* TilePlaced : SpawnedVariantsRef)
 	{
+		int remainingTileSpawnBudget = TilePlaced->EnemyPlacementBudget;
 		//a one time add TilePlaced cleanup to OnCleanupDelegate
 		OnCleanupPickups.AddUObject(TilePlaced, &ASTileVariantEnviornment::HandleMarkerCleanup);
 		
@@ -462,7 +467,7 @@ void ULevelAssetSetupComponent::ActivateEnemies()
 		for (UStaticMeshComponent* PossibleEnemySpawn : TilePlaced->EnemyPlacements)
 		{
 			FEnemySpawnInfo* CurrentEnemy = GetWeightedRandomEnemy();
-			if ( remainingSpawnBudget > remainingSpawnBudget)
+			if (remainingTileSpawnBudget <= 0)
 			{
 				break;
 			}
@@ -480,13 +485,13 @@ void ULevelAssetSetupComponent::ActivateEnemies()
 				//can spawn!
 				PlaceEnemy(PossibleEnemySpawn, TilePlaced); 
 				
-				remainingSpawnBudget -= CurrentEnemy->SpawnCost;
+				remainingTileSpawnBudget -= CurrentEnemy->SpawnCost;
 				EnemiesPlaced++;
 				
 			}
 
 		}
-		UE_LOG(LogTemp, Log, TEXT("Tile complete %s, local total: %d"), *TilePlaced->GetActorLabel(), remainingSpawnBudget);
+		UE_LOG(LogTemp, Log, TEXT("Tile complete %s, local total: %d"), *TilePlaced->GetActorLabel(), EnemiesPlaced);
 	}
 
 

@@ -40,6 +40,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Level Population")
 	int AssetPlacementCaP;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Level Population")
+	int EnemyPlacementBudget;
+
 	UPROPERTY(EditAnywhere, Category = "Tile")
 	TArray <ASTile*> VariantEncompassingTiles;
 
