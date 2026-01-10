@@ -9,6 +9,10 @@
 #include "ScriptableObjects/SMonsterData.h"
 #include "Enviornment/PickupAssetData.h"
 #include "SFEnemyDataDefinition.h"
+#include "UObject/UObjectGlobals.h"
+#include "Delegates/Delegate.h"
+#include "Objectives/SEliminationObjective.h"
+#include "Gamemodes/SMainGameMode.h"
 
 //enum class ESpawnTiers : uint8;
 
@@ -68,23 +72,28 @@ void ULevelAssetSetupComponent::SetupLevelAssetComponent()
 	case ELevelTier::ELevel_1:
 		LocalEnemyInfoData = EnemyData->TieredData[0];
 		LocalItemInfoData = ItemData->ItemPickupTable[0];
+		LocalObjectiveInfoData = ObjectiveData->ObjectivesTable[0];
 		break;
 	case ELevelTier::ELevel_2:
 		LocalEnemyInfoData = EnemyData->TieredData[1];
 		LocalItemInfoData = ItemData->ItemPickupTable[1];
+		LocalObjectiveInfoData = ObjectiveData->ObjectivesTable[1];
 		break;
 	case ELevelTier::ELevel_3:
 		LocalEnemyInfoData = EnemyData->TieredData[2];
 		LocalItemInfoData = ItemData->ItemPickupTable[2];
+		LocalObjectiveInfoData = ObjectiveData->ObjectivesTable[2];
 		break;
 	case ELevelTier::ELevel_4:
 		LocalEnemyInfoData = EnemyData->TieredData[3];
 		LocalItemInfoData = ItemData->ItemPickupTable[3];
+		LocalObjectiveInfoData = ObjectiveData->ObjectivesTable[3];
 		break;
 	case ELevelTier::ELevel_Null:
 	default:
 		LocalEnemyInfoData = EnemyData->TieredData[1];
 		LocalItemInfoData = ItemData->ItemPickupTable[1];
+		LocalObjectiveInfoData = ObjectiveData->ObjectivesTable[1];
 		break;
 	}
 
@@ -185,6 +194,10 @@ void ULevelAssetSetupComponent::SetupLevelAssetComponent()
 	{
 		SetUpDebugPerlinNoise();
 	}
+
+
+	
+
 }
 
 void ULevelAssetSetupComponent::GridAnalysis()
@@ -237,21 +250,51 @@ void ULevelAssetSetupComponent::ActivateSecretRoom()
 }
 
 /// <summary>
-/// 
+/// All objectives are children of parent objective class
+/// This must run before we find a places for items btw
+/// Objective data object will hold array of objectives per level 
 /// </summary>
 void ULevelAssetSetupComponent::ActivateObjectives()
 {
-	//if lvl 4, we set up boss room?
+	UE_LOG(LogTemp, Log, TEXT("--- Choosing objectives ---"));
+	//if lvl 4, only pick boss objective (should be set up in data beforehand anyway)
+
+	int ChoosenObjectiveIndex = (OverrideObjectiveChoice == -1) ? 
+	LocalLevel->GameStream.RandRange(0, LocalObjectiveInfoData.PossibleObjectives.Num()) : OverrideObjectiveChoice;
 
 	//else we choose randomly from array
+	TSubclassOf<USBaseObjective> ChoosenObjective = LocalObjectiveInfoData.PossibleObjectives[ChoosenObjectiveIndex];
+
+	USBaseObjective* CurrentObjective = NewObject<USBaseObjective>(this, ChoosenObjective);
+	CurrentObjective->LevelTier = LocalObjectiveInfoData.LevelTier;
+	CurrentObjective->Initialize(this);
+
+	//objective setup
+
+	//check if elimination obj so we can set the event delegate
+	if (CurrentObjective->IsA<USEliminationObjective>())
+	{
+		//have the completion of each objective (kill special person, interact with object, kill x amount of enemies, etc)
+		// will broadcast an event
+		USEliminationObjective* EliminationObj = Cast<USEliminationObjective>(CurrentObjective);
+		OnEnemySpawnCompletedEvent.AddDynamic(EliminationObj, &USEliminationObjective::OnEnemySpawned);
+	}
 
 	//based on choice, may need to choose X placeable items to place an objective
 	//tie them to an objective object
 
-	//have the completion of each objective (kill special person, interact with object, kill x amount of enemies, etc)
-	// will broadcast an event
+	AGameModeBase* MyGameMode = GetWorld()->GetAuthGameMode();
 
+	if (MyGameMode->IsA<ASMainGameMode>())
+	{
+		ASMainGameMode* GM = Cast<ASMainGameMode>(MyGameMode);
+		GM->LevelObjective = CurrentObjective;
+	}
+	else {
+		UE_LOG(LogTemp, Error, TEXT("ERROR: Using Wrongly configured gamemode, please check world settings..."));
+	}
 
+	UE_LOG(LogTemp, Log, TEXT("--- Objectives choosen and setup objectives ---"));
 }
 
 /// <summary>
@@ -517,6 +560,11 @@ void ULevelAssetSetupComponent::ActivateEnemies()
 
 
 	UE_LOG(LogTemp, Log, TEXT(" --- Done spawning enemies! Grand Total Spawned Enemies in level: %d --- "), EnemiesPlaced);
+
+
+
+	//objective setup
+	OnEnemySpawnCompletedEvent.Broadcast();
 }
 
 /// <summary>
@@ -628,6 +676,7 @@ void ULevelAssetSetupComponent::OnEnemyLoaded(FEnemySpawnInfo* EnemySpawnInfo, F
 			AActor* NewBot = GetWorld()->SpawnActor<AActor>(MonsterData->MonsterClass, SpawnLocation, FRotator::ZeroRotator);
 			if (NewBot)
 			{
+				SpawnedEnemiesInLevel.Add(NewBot);
 				FString EnemyName = EnemySpawnInfo->EnemyName + "_" + FString::FromInt(enemyNum);
 				NewBot->SetActorLabel(EnemyName);
 
@@ -666,6 +715,7 @@ void ULevelAssetSetupComponent::OnPickupLoaded(FItemPickupAsset* ItemSpawnInfo, 
 			ASPickupBase* NewPickup = GetWorld()->SpawnActor<ASPickupBase>(ItemSpawnInfo->PickupPrefab, SpawnLocation, spawnRotation);
 			if (NewPickup)
 			{
+				SpawnedPickupsInLevel.Add(NewPickup);
 				FString ItemName = ItemSpawnInfo->ItemName + "_" + FString::FromInt(itemNum) + "_" + UEnum::GetValueAsString(AttachedTile->TileVariDefinition->EVariantSize);
 				NewPickup->SetActorLabel(ItemName);
 

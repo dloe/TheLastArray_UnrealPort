@@ -9,8 +9,10 @@
 #include "Enviornment/PickupAssetData.h"
 #include "SFEnemyDataDefinition.h"
 #include "STileVariantEnviornment.h"
+#include "ObjectiveData.h"
 #include "ULevelAssetSetupComponent.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEnemiesSpawned);
 
 /// <summary>
 /// This is local structure that is built off the ItemData table and the UPickupAssetData TieredItem info we build 
@@ -68,6 +70,9 @@ public:
 	// ------- Public Variables --------
 	// ---------------------------------
 
+	UPROPERTY(EditAnywhere, meta = (ToolTip = "Set to non -1 to use objective for possible objectives FOR CURRENT LEVEL. Check ObjectiveData for stats for which numbers"))
+	int OverrideObjectiveChoice = -1;
+
 	UPROPERTY(EditAnywhere)
 	ASTileManager* TileManagerRef;
 
@@ -80,11 +85,17 @@ public:
 	UPROPERTY(EditAnywhere, meta = (ToolTip = "Populated on play.")) //how many items have we placed?
 	int EnemiesPlaced;
 
+	//combine the item, enemy and objective data into same data objective. ALSO if i was clever i would
+	// combine these with the variance data i already have set up and sorted out. I could keep each levels 
+	//everything organized in one big data object
 	UPROPERTY(EditAnywhere)
 	UPickupAssetData* ItemData;
 
 	UPROPERTY(EditAnywhere)
 	USFEnemyDataDefinition* EnemyData;
+
+	UPROPERTY(EditAnywhere)
+	UObjectiveData* ObjectiveData;
 
 	UPROPERTY(EditAnywhere, Category = "Level Asset Population")
 	bool ActivateDebugFloorPerlinNoise = false;
@@ -108,6 +119,16 @@ public:
 	bool DebugTextureToggle;
 
 
+	UPROPERTY(BlueprintAssignable)
+
+	FOnEnemiesSpawned OnEnemySpawnCompletedEvent;
+
+	UPROPERTY(EditAnywhere, Category = "Level Asset Population", meta = (ToolTip = "Populated on play."))
+	TArray<AActor*> SpawnedEnemiesInLevel;
+
+	UPROPERTY(EditAnywhere, Category = "Level Asset Population", meta = (ToolTip = "Populated on play."))
+	TArray<AActor*> SpawnedPickupsInLevel;
+
 protected:
 
 	// ---------------------------------
@@ -129,6 +150,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Level Asset Population", meta = (ToolTip = "Populated on play. Assigned item Data per level"))
 	FLevelTiersItemInfo LocalItemInfoData;
+
+	UPROPERTY(EditAnywhere, Category = "Level Asset Population", meta = (ToolTip = "Populated on play. Assigned objective spawn Data per level"))
+	FLevelTiersObjectiveInfo LocalObjectiveInfoData;
 
 
 	//UPROPERTY(EditAnywhere, Category = "Enemies")

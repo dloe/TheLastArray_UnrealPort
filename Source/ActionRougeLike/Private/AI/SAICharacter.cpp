@@ -14,6 +14,7 @@
 #include <ActionRougeLike/Public/SGameModeBase.h>
 #include <Actions/SActionComponent.h>
 #include <ActionRougeLike/ActionRougeLike.h>
+#include "Gamemodes/SMainGameMode.h"
 
 // Sets default values
 ASAICharacter::ASAICharacter()
@@ -127,12 +128,27 @@ void ASAICharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponen
 
             const FTransform SpawnTM = FTransform(this->GetActorRotation(), this->GetActorLocation());
             
+            //old prototype
             //on minion death event via SGameModeBase
             ASGameModeBase* GM = GetWorld()->GetAuthGameMode<ASGameModeBase>();
             if (GM)
             {
                 GM->KillMinionEvent(InstigatorActor, CreditsOnKill);
             }
+
+            //tell instigator if player that they got the kill and update a stat somewhere
+
+
+            //first reduce count for enemy alive
+            ASMainGameMode* LevelGameMode = Cast<ASMainGameMode>(GetWorld()->GetAuthGameMode());
+            if (LevelGameMode)
+            {
+                //GM->NotifyEnemyKilled(this);
+                //check gamemode objective status
+                LevelGameMode->CheckObjective();
+            }
+            //then notify the gamemode to check if the objective has been complete
+
         }
     }
 }
@@ -142,7 +158,7 @@ void ASAICharacter::SetTargetActor(AActor* NewTarget)
     AAIController* AIC = Cast<AAIController>(GetController());
     if (AIC)
     {
-        //dont even need to null check this since we know for a fact this is valid. Cannot be null
+        //don't even need to null check this since we know for a fact this is valid. Cannot be null
         AIC->GetBlackboardComponent()->SetValueAsObject("TargetActor", NewTarget);
     }
 }

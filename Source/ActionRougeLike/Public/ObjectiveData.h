@@ -7,40 +7,16 @@
 #include "SLocalLevel.h"
 #include "Engine/DataTable.h"
 #include "Enviornment/PickupAssetData.h"
+#include "Objectives/SBaseObjective.h"
 #include "ObjectiveData.generated.h"
 
-USTRUCT()
-struct FObjectiveAsset : public FTableRowBase
-{
-	GENERATED_BODY()
+//class SBaseObjective;
 
-public:
-
-	FObjectiveAsset() {
-		ItemWeight = 1.0f;
-
-	}
-	
-	//TODO: can still use weight in each tier but unsure if i want that much nuance
-	UPROPERTY(EditAnywhere, Category = "Obj Info")
-	int ItemWeight; 
-
-	UPROPERTY(EditAnywhere, Category = "Obj Info")
-	FString ObjectiveName;
-
-	//levels can spawn in
-	UPROPERTY(EditAnywhere, Category = "Obj Info")
-	AActor* ObjectiveInteractable;
-
-	UPROPERTY(EditAnywhere, Category = "Obj Info")
-	FString ObjectiveDescription;
-
-	//icon?
-
-	//
-
-};
-
+/// <summary>
+/// This should store the objective class to spawn
+/// 
+/// This should also store any spawning info, if i wanted a basic weight system
+/// </summary>
 USTRUCT(BlueprintType)
 struct FLevelTiersObjectiveInfo {
 	GENERATED_BODY()
@@ -50,18 +26,17 @@ struct FLevelTiersObjectiveInfo {
 
 		}
 
-	UPROPERTY(EditAnywhere, Category = "Enemy Tier")
+	UPROPERTY(EditAnywhere, Category = "Objecive Info")
 	ELevelTier LevelTier;
 
-	//each tier has its own list of tiers (higher the level, more common the drops?)
-	UPROPERTY(EditAnywhere, Category = "Enemy Info")
-	TArray<FTierForLevel> TierWeightsPerLevel;
-
-	
+	//All possible objectives to spawn TODO: Swap out class
+	UPROPERTY(EditAnywhere, Category = "Objecive Info")
+	TArray<TSubclassOf<USBaseObjective>> PossibleObjectives;
 };
 
 /**
- * 
+ * TODO: Should this be tiers of rarity for objectives? I feel like i would want them all to be of equal 
+ * spawning tbh... may update later.
  */
 UCLASS()
 class ACTIONROUGELIKE_API UObjectiveData : public UDataAsset
@@ -70,11 +45,14 @@ class ACTIONROUGELIKE_API UObjectiveData : public UDataAsset
 
 	public:
 
+	//each objective should be the same chance of spawning
 	//each value is added to a local array in ULevelAsset that we then use those weights to randomly select
 	UPROPERTY(EditAnywhere, Category = "Items")
-	TArray<FLevelTiersObjectiveInfo> ItemPickupTable;
+	TArray<FLevelTiersObjectiveInfo> ObjectivesTable;
 
-	//all available objectives for all levels, the data and contents (compared to tiered data which is who spawns in what lvl)
-	UPROPERTY(EditDefaultsOnly, Category = "Items")
-	UDataTable* ObjectiveTable;
+
+	//instead of following the similar structure of items and enemies where its mainly stat differences 
+	//with AssetIds, spawn tier this will be an array of objective child classes i randomly pick (unless boss room?)
+	//UPROPERTY(EditDefaultsOnly, Category = "Items")
+	//UDataTable* ObjectiveTable;
 };
