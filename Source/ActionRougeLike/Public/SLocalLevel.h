@@ -92,6 +92,9 @@ public:
 	//presets for each level tier (TODO: move this to new location for storage)
 
 
+	/// <summary>
+	/// Level 1 seems solid with pickup threshold of 0.3 (assuming 512 and freq of 0.8)
+	/// </summary>
 	UPROPERTY(EditAnywhere, Category = "Local Level Data")
 	ULevelVariantPresetsData* LevelVariantsPresets;
 

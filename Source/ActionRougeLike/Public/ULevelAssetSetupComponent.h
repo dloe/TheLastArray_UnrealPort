@@ -74,10 +74,10 @@ public:
 	UPROPERTY(EditAnywhere)
 	ALocalLevel* LocalLevel;
 
-	UPROPERTY(EditAnywhere) //how many items have we placed?
+	UPROPERTY(EditAnywhere, meta = (ToolTip = "Populated on play.")) //how many items have we placed?
 	int PickupsPlaced;
 
-	UPROPERTY(EditAnywhere) //how many items have we placed?
+	UPROPERTY(EditAnywhere, meta = (ToolTip = "Populated on play.")) //how many items have we placed?
 	int EnemiesPlaced;
 
 	UPROPERTY(EditAnywhere)
@@ -86,17 +86,27 @@ public:
 	UPROPERTY(EditAnywhere)
 	USFEnemyDataDefinition* EnemyData;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Level Asset Population")
 	bool ActivateDebugFloorPerlinNoise = false;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Level Asset Population")
 	AActor* DebugPerlinNoiseFloor;
 
-	UPROPERTY(EditAnywhere)
-	float MaxNoise = 0;
+	UPROPERTY(EditAnywhere, Category = "Level Asset Population", meta = (ToolTip = "Populated on play."))
+	float MaxNoiseItems = 0;
 
-	UPROPERTY(EditAnywhere)
-	float MinNoise = 0;
+	UPROPERTY(EditAnywhere, Category = "Level Asset Population", meta = (ToolTip = "Populated on play."))
+	float MinNoiseItems = 0;
+
+	UPROPERTY(EditAnywhere, Category = "Level Asset Population", meta = (ToolTip = "Populated on play."))
+	float MaxNoiseEnemies = 0;
+
+	UPROPERTY(EditAnywhere, Category = "Level Asset Population", meta = (ToolTip = "Populated on play."))
+	float MinNoiseEnemies = 0;
+
+	UPROPERTY(EditAnywhere, Category = "Level Asset Population", meta=(ToolTip= "1 is items, 0 is enemies. Must be set before play."))
+	bool DebugTextureToggle;
+
 
 protected:
 
@@ -111,13 +121,13 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Component References")
 	UTileGridBranchComponent* GridBranchCompRef;
 
-	UPROPERTY(EditAnywhere, Category = "Level Asset Population")
+	UPROPERTY(EditAnywhere, Category = "Level Asset Population", meta = (ToolTip = "Populated on play. Spawned Variants in level"))
 	TArray <ASTileVariantEnviornment*> SpawnedVariantsRef;
 
-	UPROPERTY(EditAnywhere, Category = "Level Asset Population")
+	UPROPERTY(EditAnywhere, Category = "Level Asset Population", meta = (ToolTip = "Populated on play. Assigned. Enemy Data per level"))
 	FLevelTiersEnemyInfo LocalEnemyInfoData;
 
-	UPROPERTY(EditAnywhere, Category = "Level Asset Population")
+	UPROPERTY(EditAnywhere, Category = "Level Asset Population", meta = (ToolTip = "Populated on play. Assigned item Data per level"))
 	FLevelTiersItemInfo LocalItemInfoData;
 
 
@@ -127,9 +137,11 @@ protected:
 	TArray <FLocalLevelItemSpawnTiers> CurrentLevelItemTierList;
 
 	//same offset for all checks on asset spawning with Perlin noise
-	UPROPERTY(EditAnywhere, Category = "Level Asset Population")
-	FVector2D seedOffset;
+	UPROPERTY(EditAnywhere, Category = "Level Asset Population", meta = (ToolTip = "Populated on play. Randomized offset for item perlin noise map."))
+	FVector2D seedOffset_Items;
 
+	UPROPERTY(EditAnywhere, Category = "Level Asset Population", meta = (ToolTip = "Populated on play. Randomized offset for enemy perlin noise map."))
+	FVector2D seedOffset_Enemies;
 
 	// ---------------------------------
 	// -------- Helper Functions -------
@@ -157,14 +169,13 @@ protected:
 	void ActivateItems();
 
 	UFUNCTION(BlueprintCallable, Category = "Level Asset Population")
-	void PlaceItemPickup(UStaticMeshComponent* PickupMarker, ASTileVariantEnviornment* AttachedTile);
+	void PlaceItemPickup(UStaticMeshComponent* PickupMarker, ASTileVariantEnviornment* AttachedTile, int PlacementNum);
 
 	UFUNCTION(BlueprintCallable, Category = "Level Asset Population")
-	void PlaceEnemy(UStaticMeshComponent* PickupMarker, ASTileVariantEnviornment* AttachedTile);
+	void PlaceEnemy(UStaticMeshComponent* PickupMarker, ASTileVariantEnviornment* AttachedTile, int numberSpawned);
 
 	UFUNCTION(BlueprintCallable, Category = "Level Asset Population")
 	ESpawnTiers GetTierOnPercent(float inputFloat);
-
 
 	UFUNCTION(BlueprintCallable, Category = "Level Asset Population")
 	void ActivateEnemies();
@@ -173,18 +184,32 @@ protected:
 	FEnemySpawnInfo* GetWeightedRandomEnemy();
 
 	UFUNCTION(BlueprintCallable)
-	float GetNoiseVec(FVector inputCords);
+	float GetNoiseVec(FVector2D inputCords, float MinNoise, float MaxNoise);
 	
 	//For loading enemies
-	void OnEnemyLoaded(FEnemySpawnInfo* EnemySpawnInfo, FVector SpawnLocation);
+	void OnEnemyLoaded(FEnemySpawnInfo* EnemySpawnInfo, FVector SpawnLocation, int enemyNum);
 
-	void OnPickupLoaded(FItemPickupAsset* ItemSpawnInfo, FVector SpawnLocation, FRotator spawnRotation, ASTileVariantEnviornment* AttachedTile);
+	void OnPickupLoaded(FItemPickupAsset* ItemSpawnInfo, FVector SpawnLocation, FRotator spawnRotation, ASTileVariantEnviornment* AttachedTile, int itemNum);
 
 	UFUNCTION(BlueprintCallable)
 	void SetUpDebugPerlinNoise();
+
+	template<typename T>
+	TArray <T> ReshuffleArray(TArray <T> ar)
+	{
+		// Knuth shuffle algorithm :: courtesy of Wikipedia :)
+		for (int t = 0; t < ar.Num(); t++)
+		{
+			int r = LocalLevel->GameStream.RandRange(t, ar.Num() - 1);
+			ar.Swap(t, r);
+		}
+		return ar;
+	};
 
 	//debug see texture on floors 
 	UFUNCTION(BlueprintCallable)
 	UTexture2D* DebugCreatePerlinNoiseTexture(int32 size, FBoxSphereBounds Bounds);
 };
+
+
 

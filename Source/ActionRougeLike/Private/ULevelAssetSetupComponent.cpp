@@ -53,8 +53,11 @@ void ULevelAssetSetupComponent::BeginPlay()
 /// </summary>
 void ULevelAssetSetupComponent::SetupLevelAssetComponent()
 {
-	seedOffset.X = LocalLevel->GameStream.RandRange(-1000, 1000);
-	seedOffset.Y = LocalLevel->GameStream.RandRange(-1000, 1000);
+	seedOffset_Items.X = LocalLevel->GameStream.RandRange(-500, 500);
+	seedOffset_Items.Y = LocalLevel->GameStream.RandRange(-500, 500);
+
+	seedOffset_Enemies.X = LocalLevel->GameStream.RandRange(-500, 500);
+	seedOffset_Items.Y = LocalLevel->GameStream.RandRange(-500, 500);
 
 	GridBranchCompRef = TileManagerRef->GetGridBranchComp();
 	//go through all placed tiles (secret room should be separate)
@@ -160,14 +163,21 @@ void ULevelAssetSetupComponent::SetupLevelAssetComponent()
 		for (int x = 0; x < LocalLevel->GameMapTextureSize; x++)
 		{
 			//see comments below for more detail
-			float cordX = (x + seedOffset.X) / float(LocalLevel->GameMapTextureSize - 1);
-			float cordY = (y + seedOffset.Y) / float(LocalLevel->GameMapTextureSize - 1);
+			float cordX = (x + seedOffset_Items.X) / float(LocalLevel->GameMapTextureSize - 1);
+			float cordY = (y + seedOffset_Items.Y) / float(LocalLevel->GameMapTextureSize - 1);
 			float NoiseCheck = FMath::PerlinNoise2D(FVector2D(cordX, cordY) * LocalLevel->PerlinScaleFreq);
-			MinNoise = FMath::Min(MinNoise, NoiseCheck);
-			MaxNoise = FMath::Max(MaxNoise, NoiseCheck);
+			MinNoiseItems = FMath::Min(MinNoiseItems, NoiseCheck);
+			MaxNoiseItems = FMath::Max(MaxNoiseItems, NoiseCheck);
+
+			float cordX2 = (x + seedOffset_Enemies.X) / float(LocalLevel->GameMapTextureSize - 1);
+			float cordY2 = (y + seedOffset_Enemies.Y) / float(LocalLevel->GameMapTextureSize - 1);
+			NoiseCheck = FMath::PerlinNoise2D(FVector2D(cordX2, cordY2) * LocalLevel->PerlinScaleFreq);
+			MinNoiseEnemies = FMath::Min(MinNoiseEnemies, NoiseCheck);
+			MaxNoiseEnemies = FMath::Max(MaxNoiseEnemies, NoiseCheck);
 		}
 	}
-	UE_LOG(LogTemp, Log, TEXT("min: %f, max: %f"), MinNoise, MaxNoise);
+	UE_LOG(LogTemp, Log, TEXT("Items - min: %f, max: %f"), MinNoiseItems, MaxNoiseItems);
+	UE_LOG(LogTemp, Log, TEXT("Enemies - min: %f, max: %f"), MinNoiseEnemies, MaxNoiseEnemies);
 
 
 	//debug perlin noise texture for easy visualization
@@ -203,7 +213,8 @@ void ULevelAssetSetupComponent::ActivateSecretRoom()
 		const FVector relativeLocation = PossiblePickup->GetRelativeLocation();
 			//UE_LOG(LogTemp, Log, TEXT("Cords: %s"), *relativeLocation.ToString());
 		//check noise 
-		float noiseMeasurement = GetNoiseVec(relativeLocation);
+		FVector2D inputConvertionSeedOffset = FVector2D(relativeLocation.X + seedOffset_Items.X, relativeLocation.Y + seedOffset_Items.Y);
+		float noiseMeasurement = GetNoiseVec(inputConvertionSeedOffset, MinNoiseItems, MaxNoiseItems);
 			//UE_LOG(LogTemp, Log, TEXT("Noise lookup: %f"), noiseMeasurement);
 
 		//threshold check TODO: This will be assigned from 
@@ -213,11 +224,12 @@ void ULevelAssetSetupComponent::ActivateSecretRoom()
 		if (noiseMeasurement <= itemThreshold - 0.1f) //slight bump for secret room
 		{
 			//can spawn!
-			PlaceItemPickup(PossiblePickup, SecretRoom); //TODO: make blocked out tiles for rest of variants and assign
+			PlaceItemPickup(PossiblePickup, SecretRoom, PickupsPlaced); //TODO: make blocked out tiles for rest of variants and assign
 
 			//increment counter
 			PickupsPlaced++;
 			currentAssetPlacedCount++;
+			UE_LOG(LogTemp, Log, TEXT("Item %d placed"), PickupsPlaced);
 		}
 
 		UE_LOG(LogTemp, Log, TEXT("Secret Tile complete %s, local total: %d"), *SecretRoom->GetActorLabel(), currentAssetPlacedCount);
@@ -262,18 +274,21 @@ void ULevelAssetSetupComponent::ActivateItems()
 		int currentAssetPlacedCount = 0;
 
 		//check each pre-placed pickup
-		for (UStaticMeshComponent* PossiblePickup : TilePlaced->PickupPlacements)
+		//mix up pickup placements first
+		TArray <UStaticMeshComponent*> PickupsToGoThrough = ReshuffleArray(TilePlaced->PickupPlacements);
+		for (UStaticMeshComponent* PossiblePickup : PickupsToGoThrough)
 		{
 			if (currentAssetPlacedCount > TilePlaced->AssetPlacementCaP)
 			{
-				//break;
+				break;
 			}
 
 			check(PossiblePickup); //trying this check 
 			const FVector relativeLocation = PossiblePickup->GetRelativeLocation();
 			//UE_LOG(LogTemp, Log, TEXT("Cords: %s"), *relativeLocation.ToString());
 			//check noise 
-			float noiseMeasurement = GetNoiseVec(relativeLocation);
+			FVector2D inputConvertionSeedOffset = FVector2D(relativeLocation.X + seedOffset_Items.X, relativeLocation.Y + seedOffset_Items.Y);
+			float noiseMeasurement = GetNoiseVec(inputConvertionSeedOffset, MinNoiseItems, MaxNoiseItems);
 			//UE_LOG(LogTemp, Log, TEXT("Noise lookup: %f"), noiseMeasurement);
 
 			//threshold check TODO: This will be assigned from 
@@ -285,16 +300,20 @@ void ULevelAssetSetupComponent::ActivateItems()
 			if (noiseMeasurement <= itemThreshold)
 			{
 				//can spawn!
-				PlaceItemPickup(PossiblePickup, TilePlaced); //TODO: make blocked out tiles for rest of variants and assign
+				PlaceItemPickup(PossiblePickup, TilePlaced, PickupsPlaced); //TODO: make blocked out tiles for rest of variants and assign
 
 				//increment counter
 				PickupsPlaced++;
 				currentAssetPlacedCount++;
 				debug = true;
 
-				
+				UE_LOG(LogTemp, Log, TEXT("Item %d placed"), PickupsPlaced-1);
 			}
-			UE_LOG(LogTemp, Log, TEXT("Comparing noise val: %f <= threshold: %f -- Status: %d"), noiseMeasurement, itemThreshold, debug);
+			if(debug) {
+				UE_LOG(LogTemp, Log, TEXT("item spawned %d: Comparing noise val: %f <= threshold: %f -- Status: %d"), (PickupsPlaced-1), noiseMeasurement, itemThreshold, debug);
+			 } else {
+				UE_LOG(LogTemp, Log, TEXT("Comparing noise val: %f <= threshold: %f -- Status: %d"), noiseMeasurement, itemThreshold, debug);
+			}
 		}
 		UE_LOG(LogTemp, Log, TEXT(" --- Tile complete %s, local total: %d --- "), *TilePlaced->GetActorLabel(), currentAssetPlacedCount);
 	}
@@ -318,7 +337,7 @@ void ULevelAssetSetupComponent::ActivateItems()
 /// then spawn item at location
 /// 
 /// </summary>
-void ULevelAssetSetupComponent::PlaceItemPickup(UStaticMeshComponent* PickupMarker, ASTileVariantEnviornment* AttachedTile)
+void ULevelAssetSetupComponent::PlaceItemPickup(UStaticMeshComponent* PickupMarker, ASTileVariantEnviornment* AttachedTile, int PlacementNum)
 {
 	FVector spawnLocation = PickupMarker->GetComponentLocation();
 	FRotator spawnRotation = PickupMarker->GetComponentRotation();
@@ -364,7 +383,7 @@ void ULevelAssetSetupComponent::PlaceItemPickup(UStaticMeshComponent* PickupMark
 
 	TArray<FName> Bundles;
 	//calls OnMonsterLoad when loaded, pass along AssetData and FVector to this OnMonsterLoaded function
-	FStreamableDelegate Delegate = FStreamableDelegate::CreateUObject(this, &ULevelAssetSetupComponent::OnPickupLoaded, AssetToSpawn, spawnLocation, spawnRotation, AttachedTile);
+	FStreamableDelegate Delegate = FStreamableDelegate::CreateUObject(this, &ULevelAssetSetupComponent::OnPickupLoaded, AssetToSpawn, spawnLocation, spawnRotation, AttachedTile, PlacementNum);
 
 	UAssetManager* Manager = UAssetManager::GetIfValid();
 	Manager->LoadPrimaryAsset(AssetToSpawn->ItemId, Bundles, Delegate);
@@ -377,7 +396,7 @@ void ULevelAssetSetupComponent::PlaceItemPickup(UStaticMeshComponent* PickupMark
 
 }
 
-void ULevelAssetSetupComponent::PlaceEnemy(UStaticMeshComponent* PickupMarker, ASTileVariantEnviornment* AttachedTile)
+void ULevelAssetSetupComponent::PlaceEnemy(UStaticMeshComponent* PickupMarker, ASTileVariantEnviornment* AttachedTile, int numberSpawned)
 {
 	FVector spawnLocation = PickupMarker->GetComponentLocation();
 	//spawn enemy
@@ -387,7 +406,7 @@ void ULevelAssetSetupComponent::PlaceEnemy(UStaticMeshComponent* PickupMarker, A
 
 	TArray<FName> Bundles;
 	//calls OnMonsterLoad when loaded, pass along AssetData and FVector to this OnMonsterLoaded function
-	FStreamableDelegate Delegate = FStreamableDelegate::CreateUObject(this, &ULevelAssetSetupComponent::OnEnemyLoaded, EnemyToSpawnInfo, spawnLocation);
+	FStreamableDelegate Delegate = FStreamableDelegate::CreateUObject(this, &ULevelAssetSetupComponent::OnEnemyLoaded, EnemyToSpawnInfo, spawnLocation, numberSpawned);
 
 	UAssetManager* Manager = UAssetManager::GetIfValid();
 	Manager->LoadPrimaryAsset(EnemyToSpawnInfo->MonsterId, Bundles, Delegate);
@@ -450,21 +469,22 @@ void ULevelAssetSetupComponent::ActivateEnemies()
 	//60 - 40 if we spawn a group vs a single individual enemy (might tie this to lvls as we go on)?
 	//TODO: build up squad
 
-	//TODO: Maybe tie this to individual tiles? dont overwelm an individual tile instead of limited the entire game map
+	//TODO: Maybe tie this to individual tiles? don't overwhelm an individual tile instead of limited the entire game map
 	//will use a point system for determining who to place (taking a different approach than the item spawn)
-	//different difficulties will use high budgets
-	int remainingSpawnBudget = 20; //this should be tied to local level data
-
+	//different difficulties will use high budgets (tied to individual tiles but might need to be managed via manager later)
 
 	//for each placed variant tile
 	for (ASTileVariantEnviornment* TilePlaced : SpawnedVariantsRef)
 	{
 		int remainingTileSpawnBudget = TilePlaced->EnemyPlacementBudget;
+		int spawnedLocal = 0;
 		//a one time add TilePlaced cleanup to OnCleanupDelegate
 		OnCleanupPickups.AddUObject(TilePlaced, &ASTileVariantEnviornment::HandleMarkerCleanup);
 		
 		//check each pre-placed pickup
-		for (UStaticMeshComponent* PossibleEnemySpawn : TilePlaced->EnemyPlacements)
+		//mix up beforehand
+		TArray <UStaticMeshComponent*> EnemiesToGoThrough = ReshuffleArray(TilePlaced->EnemyPlacements);
+		for (UStaticMeshComponent* PossibleEnemySpawn : EnemiesToGoThrough)
 		{
 			FEnemySpawnInfo* CurrentEnemy = GetWeightedRandomEnemy();
 			if (remainingTileSpawnBudget <= 0)
@@ -474,24 +494,25 @@ void ULevelAssetSetupComponent::ActivateEnemies()
 
 			const FVector relativeLocation = PossibleEnemySpawn->GetRelativeLocation();
 			//UE_LOG(LogTemp, Log, TEXT("Cords: %s"), *relativeLocation.ToString());
+			FVector2D inputConvertionSeedOffset = FVector2D(relativeLocation.X + seedOffset_Items.X, relativeLocation.Y + seedOffset_Items.Y);
 			//check noise 
-			float noiseMeasurement = GetNoiseVec(relativeLocation);
+			float noiseMeasurement = GetNoiseVec(inputConvertionSeedOffset, MinNoiseEnemies, MaxNoiseEnemies);
 
 			//threshold check TODO: This will be assigned from 
 			float enemyThreshold = LocalLevel->GetLocalEnemySpawnLevelThreshold();
-			//if meeds threshold, spawn item function for weight lookup and spawn procedure
+			//if meets threshold, spawn item function for weight lookup and spawn procedure
 			if (noiseMeasurement <= enemyThreshold)
 			{
 				//can spawn!
-				PlaceEnemy(PossibleEnemySpawn, TilePlaced); 
+				PlaceEnemy(PossibleEnemySpawn, TilePlaced, EnemiesPlaced);
 				
 				remainingTileSpawnBudget -= CurrentEnemy->SpawnCost;
 				EnemiesPlaced++;
-				
+				spawnedLocal++;
 			}
 
 		}
-		UE_LOG(LogTemp, Log, TEXT("Tile complete %s, local total: %d"), *TilePlaced->GetActorLabel(), EnemiesPlaced);
+		UE_LOG(LogTemp, Log, TEXT("Tile complete %s, local total: %d"), *TilePlaced->GetActorLabel(), spawnedLocal);
 	}
 
 
@@ -559,20 +580,20 @@ FEnemySpawnInfo* ULevelAssetSetupComponent::GetWeightedRandomEnemy()
 ///High scale = fine grated placement, such as detailed enemy patrol points or env props
 /// </summary>
 /// <returns></returns>
-float ULevelAssetSetupComponent::GetNoiseVec(FVector inputCords)
+float ULevelAssetSetupComponent::GetNoiseVec(FVector2D inputCords, float MinNoise, float MaxNoise)
 {
 	//transform vector input by seed to ensure we keep seed influence
 	//need to offset by a random number generated by seed (but cant use seed cause can be HUGE)
-	FVector2D inputConvertionSeedOffset(inputCords.X, inputCords.Y); 
+	//FVector2D inputConvertionSeedOffset(inputCords.X, inputCords.Y); 
 
 	//multiply our cords (with applied offset) to our scale frequency
 	//'seedOffset' vect2 is calculated at the beginning and is the same offset used throughout component
-    inputConvertionSeedOffset = (inputConvertionSeedOffset + seedOffset);
+   // inputConvertionSeedOffset = (inputCords + seedOffset_Items);
 	//UE_LOG(LogTemp, Log, TEXT("Input cords with offset and scale: %s"), *inputConvertionSeedOffset.ToString());
 
 	//normalize
-	float cordX = (inputConvertionSeedOffset.X) / float(LocalLevel->GameMapTextureSize - 1);
-	float cordY = (inputConvertionSeedOffset.Y) / float(LocalLevel->GameMapTextureSize - 1);
+	float cordX = (inputCords.X) / float(LocalLevel->GameMapTextureSize - 1);
+	float cordY = (inputCords.Y) / float(LocalLevel->GameMapTextureSize - 1);
 
 
 	float NoiseLookup = FMath::PerlinNoise2D(FVector2D(cordX, cordY) * LocalLevel->PerlinScaleFreq);
@@ -594,7 +615,7 @@ float ULevelAssetSetupComponent::GetNoiseVec(FVector inputCords)
 /// </summary>
 /// <param name="EnemySpawnInfo">Input enemy info</param>
 /// <param name="SpawnLocation"> Location to spawn enemy that we loaded</param>
-void ULevelAssetSetupComponent::OnEnemyLoaded(FEnemySpawnInfo* EnemySpawnInfo, FVector SpawnLocation)
+void ULevelAssetSetupComponent::OnEnemyLoaded(FEnemySpawnInfo* EnemySpawnInfo, FVector SpawnLocation, int enemyNum)
 {
 	//LogOnScreen(this, "Finished Loading Monster...", FColor::Green);
 
@@ -607,7 +628,7 @@ void ULevelAssetSetupComponent::OnEnemyLoaded(FEnemySpawnInfo* EnemySpawnInfo, F
 			AActor* NewBot = GetWorld()->SpawnActor<AActor>(MonsterData->MonsterClass, SpawnLocation, FRotator::ZeroRotator);
 			if (NewBot)
 			{
-				FString EnemyName = EnemySpawnInfo->EnemyName + "_" + FString::FromInt(EnemiesPlaced);
+				FString EnemyName = EnemySpawnInfo->EnemyName + "_" + FString::FromInt(enemyNum);
 				NewBot->SetActorLabel(EnemyName);
 
 #if WITH_EDITOR
@@ -628,13 +649,13 @@ void ULevelAssetSetupComponent::OnEnemyLoaded(FEnemySpawnInfo* EnemySpawnInfo, F
 }
 
 /// <summary>
-/// 
+/// Runs when pickup has loaded in. Pass in arguements when we start the load.
 /// </summary>
 /// <param name="ItemSpawnInfo"></param>
 /// <param name="SpawnLocation"></param>
 /// <param name="spawnRotation"></param>
 /// <param name="AttachedTile"></param>
-void ULevelAssetSetupComponent::OnPickupLoaded(FItemPickupAsset* ItemSpawnInfo, FVector SpawnLocation, FRotator spawnRotation ,ASTileVariantEnviornment* AttachedTile)
+void ULevelAssetSetupComponent::OnPickupLoaded(FItemPickupAsset* ItemSpawnInfo, FVector SpawnLocation, FRotator spawnRotation ,ASTileVariantEnviornment* AttachedTile, int itemNum)
 {
 	UAssetManager* Manager = UAssetManager::GetIfValid();
 	if (Manager)
@@ -645,7 +666,7 @@ void ULevelAssetSetupComponent::OnPickupLoaded(FItemPickupAsset* ItemSpawnInfo, 
 			ASPickupBase* NewPickup = GetWorld()->SpawnActor<ASPickupBase>(ItemSpawnInfo->PickupPrefab, SpawnLocation, spawnRotation);
 			if (NewPickup)
 			{
-				FString ItemName = ItemSpawnInfo->ItemName + "_" + UEnum::GetValueAsString(AttachedTile->TileVariDefinition->EVariantSize) + "_" + FString::FromInt(PickupsPlaced);
+				FString ItemName = ItemSpawnInfo->ItemName + "_" + FString::FromInt(itemNum) + "_" + UEnum::GetValueAsString(AttachedTile->TileVariDefinition->EVariantSize);
 				NewPickup->SetActorLabel(ItemName);
 
 #if WITH_EDITOR
@@ -725,6 +746,9 @@ UTexture2D* ULevelAssetSetupComponent::DebugCreatePerlinNoiseTexture(int32 size,
 	//might be intensive to run, this may need to be moved to run and used before we place items btw
 	//reminder: scale should make our min and max as close as possible to -1,1
 
+	const FVector2D Offset = (DebugTextureToggle) ? seedOffset_Items : seedOffset_Enemies;
+	const float MinNoise = (DebugTextureToggle) ? MinNoiseItems : MinNoiseEnemies;
+	const float MaxNoise = (DebugTextureToggle) ? MaxNoiseItems : MaxNoiseEnemies;
 
 	//go through all the spots and color them (all the pixels... pain)
 	for (int y = 0; y < size; y++)
@@ -734,8 +758,8 @@ UTexture2D* ULevelAssetSetupComponent::DebugCreatePerlinNoiseTexture(int32 size,
 		{
 			//convert pixel cords to world cords an attempt (please optimize this later omg)
 			//normalized UV?
-			float a = x / float(size - 1);
-			float b = y / float(size - 1);
+			float a = (x + Offset.X) / float(size - 1);
+			float b = (y + Offset.Y) / float(size - 1);
 
 			float NoiseLookup = FMath::PerlinNoise2D(FVector2D(a, b) * LocalLevel->PerlinScaleFreq); //get Perlin noise val
 			

@@ -8,7 +8,8 @@
 ASPlayerState::ASPlayerState()
 {
 	Credits = 0;
-	SetReplicates(true);
+	//SetReplicates(true);
+	bReplicates = true;
 }
 
 int ASPlayerState::GetCredits()
