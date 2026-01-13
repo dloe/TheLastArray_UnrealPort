@@ -8,6 +8,6 @@ void ASMainGameMode::CheckObjective()
 	if (LevelObjective->CheckForObjectiveCompletion())
 	{
 		//returns true, objective complete can now extract
-
+		UE_LOG(LogTemp, Log, TEXT("OBJECTIVE COMPLETED. PLAYER WILL BE ABLE TO NOW EXTRACT"));
 	}
 }

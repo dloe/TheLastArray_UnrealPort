@@ -21,7 +21,7 @@ public:
 	// ---------------------------------
 	// ------- Public Functions --------
 	// ---------------------------------
-	UPROPERTY(EditAnywhere, Category = "Objective")
+	UFUNCTION(BlueprintCallable, Category = "Objective")
 	void CheckObjective();
 
 	// ---------------------------------
