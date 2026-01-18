@@ -6,6 +6,9 @@
 USEliminationObjective::USEliminationObjective()
 {
 	//OnEnemySpawnCompletedEvent.AddDynamic(this, &USEliminationObjective::OnEnemySpawned);
+	ObjectiveName = "Elimination";
+	ObjectiveDescription = "Eliminate the enemies.";
+
 }
 
 void USEliminationObjective::Initialize(ULevelAssetSetupComponent* LevelAssetSetupComp)
@@ -17,7 +20,8 @@ void USEliminationObjective::Initialize(ULevelAssetSetupComponent* LevelAssetSet
 bool USEliminationObjective::CheckForObjectiveCompletion()
 {
 	bool ObjectiveStatus = false;
-	if (LevelAssetSetupCompRef->SpawnedEnemiesInLevel.Num() <= KillCountRequirement)
+	//14 total, need to get 11 kills so num should be <= 14 - 11
+	if (LevelAssetSetupCompRef->SpawnedEnemiesInLevel.Num() <= EnemyStartingCount - KillCountRequirement)
 	{
 		ObjectiveStatus = true;
 	}
@@ -30,8 +34,9 @@ void USEliminationObjective::OnEnemySpawned()
 
 	//for now kill only 75% of the enemies
 	KillCountRequirement = LevelAssetSetupCompRef->EnemiesPlaced * 0.75f;
+	EnemyStartingCount = LevelAssetSetupCompRef->EnemiesPlaced;
 
 	//finish setup for this objective (had to wait until the enemies where spawned
 
-	UE_LOG(LogTemp, Log, TEXT("Eleminiate %d Enemies"), KillCountRequirement);
+	UE_LOG(LogTemp, Log, TEXT("Eliminate %d Enemies"), KillCountRequirement);
 }

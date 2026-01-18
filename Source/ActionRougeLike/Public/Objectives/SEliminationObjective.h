@@ -48,6 +48,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Objective")
 	int KillCountRequirement;
 
+	UPROPERTY(EditAnywhere, Category = "Objective")
+	int EnemyStartingCount = 0;
+
 	//may need to change this later but will see how it works as a delegate event design
 	//event to get the enemy spawn info for objective to finish setting up
 

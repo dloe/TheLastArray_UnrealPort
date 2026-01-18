@@ -108,6 +108,7 @@ void ASTileManager::OnBranchFillGeneration()
 	}
 
 	//Level asset spawn can now begin
+	//LevelAssetSetupComponent->SpawnTileRef = PlayerStartingTile_SpawnTile;
 	LevelAssetSetupComponent->PopulateGridAssets();
 
 	PopulateWithNoiseMapEndTime = FPlatformTime::Seconds();

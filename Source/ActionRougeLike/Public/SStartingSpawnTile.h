@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Enviornment/TileGeneration/STile.h"
+#include "Interactables/SLevelExit.h"
 #include "SStartingSpawnTile.generated.h"
 
 /**
@@ -19,4 +20,7 @@ class ACTIONROUGELIKE_API ASStartingSpawnTile : public ASTileVariantEnviornment
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tile Components - Neighbors")
 	FTransform DoorSpawnPoint;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Level Setup")
+	ASLevelExit* LevelExitRef;
+
 };

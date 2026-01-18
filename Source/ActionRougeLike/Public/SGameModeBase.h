@@ -148,7 +148,7 @@ public:
 
 
 	UFUNCTION(BlueprintCallable, Category = "SaveGame")
-	void WriteSaveGame();
+	void WriteSaveGame_OLD();
 
-	void LoadSaveGame();
+	void LoadSaveGame_OLD();
 };

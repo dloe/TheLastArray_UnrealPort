@@ -137,12 +137,20 @@ void ASAICharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponen
             }
 
             //tell instigator if player that they got the kill and update a stat somewhere
-
+            
 
             //first reduce count for enemy alive
+
+
             ASMainGameMode* LevelGameMode = Cast<ASMainGameMode>(GetWorld()->GetAuthGameMode());
             if (LevelGameMode)
             {
+                //check enemy type, if normal enemy and part of objective. Update killcount
+                //run objective enemy killed event
+                LevelGameMode->KillNormalEnemyEvent(InstigatorActor, CreditsOnKill, this);
+
+                //SEliminationObjective* ElimObjective = Cast<SEliminationObjective>(GetWorld()->GetAuthGameMode());
+
                 //GM->NotifyEnemyKilled(this);
                 //check gamemode objective status
                 LevelGameMode->CheckObjective();

@@ -277,9 +277,9 @@ public:
 	bool GetDebugPrints() { return bDebugPrintsRef; };
 
 	UFUNCTION()
-	ASTileVariantEnviornment* GetPlayerSpawnPresentTile() const { return PlayerSpawnPresentTile; };
+	ASStartingSpawnTile* GetPlayerSpawnPresentTile() const { return PlayerSpawnPresentTile; };
 	UFUNCTION()
-	void SetPlayerSpawnPresentTile(ASTileVariantEnviornment* TileEnv) { PlayerSpawnPresentTile = TileEnv; };
+	void SetPlayerSpawnPresentTile(ASStartingSpawnTile* TileEnv) { PlayerSpawnPresentTile = TileEnv; };
 
 protected:
 	// Called when the game starts or when spawned
@@ -343,7 +343,7 @@ protected:
 
 	//Assigned and (spawned in from local level) - make private
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
-	ASTileVariantEnviornment* PlayerSpawnPresentTile;
+	ASStartingSpawnTile* PlayerSpawnPresentTile;
 
 	//list of possible starting tiles - DO DO: PROTECT THIS LATER
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")

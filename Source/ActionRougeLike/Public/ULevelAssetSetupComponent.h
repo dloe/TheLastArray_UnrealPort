@@ -129,6 +129,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Level Asset Population", meta = (ToolTip = "Populated on play."))
 	TArray<AActor*> SpawnedPickupsInLevel;
 
+	UPROPERTY(EditAnywhere, Category = "Level Asset Population", meta = (ToolTip = "Populated on play."))
+	ASStartingSpawnTile* SpawnTileEnvRef;
+
 protected:
 
 	// ---------------------------------
@@ -203,6 +206,9 @@ protected:
 
 	UFUNCTION(BlueprintCallable, Category = "Level Asset Population")
 	void ActivateEnemies();
+
+	UFUNCTION(BlueprintCallable, Category = "Level Asset Population")
+	void SetupStartingTile();
 
 	//UFUNCTION(BlueprintCallable, Category = "Level Asset Population")
 	FEnemySpawnInfo* GetWeightedRandomEnemy();

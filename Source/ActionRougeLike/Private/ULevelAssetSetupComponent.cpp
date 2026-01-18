@@ -57,6 +57,8 @@ void ULevelAssetSetupComponent::BeginPlay()
 /// </summary>
 void ULevelAssetSetupComponent::SetupLevelAssetComponent()
 {
+	SpawnTileEnvRef = TileManagerRef->GetPlayerSpawnPresentTile();
+
 	seedOffset_Items.X = LocalLevel->GameStream.RandRange(-500, 500);
 	seedOffset_Items.Y = LocalLevel->GameStream.RandRange(-500, 500);
 
@@ -289,12 +291,25 @@ void ULevelAssetSetupComponent::ActivateObjectives()
 	{
 		ASMainGameMode* GM = Cast<ASMainGameMode>(MyGameMode);
 		GM->LevelObjective = CurrentObjective;
+
+		//ASStartingSpawnTile* StartingTileEnv = Cast<ASStartingSpawnTile>(SpawnTileEnvRef->AttachedVariant);
+		GM->LevelExitRef = SpawnTileEnvRef->LevelExitRef;
+		GM->SetLevelSetupComp(this);
 	}
 	else {
 		UE_LOG(LogTemp, Error, TEXT("ERROR: Using Wrongly configured gamemode, please check world settings..."));
 	}
 
 	UE_LOG(LogTemp, Log, TEXT("--- Objectives choosen and setup objectives ---"));
+
+
+	//exit level obj setup
+	//will be spawning an actor that has a tag marked level exit (use same interaction as the level)
+
+	//pass that ref to the gamemode object for when the objective is completed
+
+
+
 }
 
 /// <summary>
@@ -565,6 +580,59 @@ void ULevelAssetSetupComponent::ActivateEnemies()
 
 	//objective setup
 	OnEnemySpawnCompletedEvent.Broadcast();
+}
+
+/// <summary>
+/// Spawn any items that might be in the starting tile
+/// Set up the train exit (objective hookup happens in ActiveObjective function)
+/// </summary>
+void ULevelAssetSetupComponent::SetupStartingTile()
+{
+
+	int currentAssetPlacedCount = 0;
+	TArray <UStaticMeshComponent*> PickupsToGoThrough = ReshuffleArray(SpawnTileEnvRef->PickupPlacements);
+	for (UStaticMeshComponent* PossiblePickup : PickupsToGoThrough)
+	{
+		if (currentAssetPlacedCount > SpawnTileEnvRef->AssetPlacementCaP)
+		{
+			break;
+		}
+
+		check(PossiblePickup); //trying this check 
+		const FVector relativeLocation = PossiblePickup->GetRelativeLocation();
+		//UE_LOG(LogTemp, Log, TEXT("Cords: %s"), *relativeLocation.ToString());
+		//check noise 
+		FVector2D inputConvertionSeedOffset = FVector2D(relativeLocation.X + seedOffset_Items.X, relativeLocation.Y + seedOffset_Items.Y);
+		float noiseMeasurement = GetNoiseVec(inputConvertionSeedOffset, MinNoiseItems, MaxNoiseItems);
+		//UE_LOG(LogTemp, Log, TEXT("Noise lookup: %f"), noiseMeasurement);
+
+		//threshold check TODO: This will be assigned from 
+		float itemThreshold = LocalLevel->GetLocalPickupSpawnLevelThreshold();
+		//if meeds threshold, spawn item function for weight lookup and spawn procedure
+
+		bool debug = false;
+		//TODO: inverse threshold so we go for darker saturation from noise return than the bright color
+		if (noiseMeasurement <= itemThreshold)
+		{
+			//can spawn!
+			PlaceItemPickup(PossiblePickup, SpawnTileEnvRef, PickupsPlaced); //TODO: make blocked out tiles for rest of variants and assign
+
+			//increment counter
+			PickupsPlaced++;
+			currentAssetPlacedCount++;
+			debug = true;
+
+			UE_LOG(LogTemp, Log, TEXT("Item %d placed"), PickupsPlaced - 1);
+		}
+		if (debug) {
+			UE_LOG(LogTemp, Log, TEXT("item spawned %d: Comparing noise val: %f <= threshold: %f -- Status: %d"), (PickupsPlaced - 1), noiseMeasurement, itemThreshold, debug);
+		}
+		else {
+			UE_LOG(LogTemp, Log, TEXT("Comparing noise val: %f <= threshold: %f -- Status: %d"), noiseMeasurement, itemThreshold, debug);
+		}
+	}
+	UE_LOG(LogTemp, Log, TEXT(" --- Tile complete %s, local total: %d --- "), *SpawnTileEnvRef->GetActorLabel(), currentAssetPlacedCount);
+
 }
 
 /// <summary>

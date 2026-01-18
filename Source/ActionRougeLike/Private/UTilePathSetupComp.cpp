@@ -346,7 +346,7 @@ void UTilePathSetupComp::ChooseStartEndRooms()
 	ASTile* ChoosenEndTile = availableTiles[choosenEndTileIndex];
 	ChoosenEndTile->ShadeEndRoom();
 	ATileManagerRef->SetEndTile(ChoosenEndTile);
-	ATileManagerRef->SetPossibleStartingTiles(PossibleStartingTileRef);
+	//ATileManagerRef->SetPossibleStartingTiles(PossibleStartingTileRef); //why is this here?
 }
 
 void UTilePathSetupComp::GeneratePath()
@@ -408,7 +408,7 @@ void UTilePathSetupComp::CreateSpawnRoom()
 	int variantIndex = GameStreamRef.RandRange(0, PossibleStartingTiles.Num() - 1);
 	TSubclassOf<ASStartingSpawnTile> StartingTileSubclass = PossibleStartingTiles[variantIndex];
 
-	ASTileVariantEnviornment* ChoosenPlayerSpawnPresentTile;
+	ASStartingSpawnTile* ChoosenPlayerSpawnPresentTile;
 
 	//There are going to be 2 tiles basically spawned, one is the base, the base structure of the tile
 	// The other tile (which i don't think needs to be a tile at all), is the environment to be populated on the tile
@@ -582,6 +582,7 @@ void UTilePathSetupComp::CreateSpawnRoom()
 	//Set the Preset ref to the SpawnPresetTile obj
 	PlayerStartingTile_SpawnTile->PresetTile = ChoosenPlayerSpawnPresentTile;
 
+
 	//Spawn stats from StartingTile to PlayerStartingTileBase, then we will reassign the StartingTile
 	StartingGridTileRef->ShadePath();
 	LevelPathRef.Insert(PlayerStartingTile_SpawnTile, 0);
@@ -589,7 +590,7 @@ void UTilePathSetupComp::CreateSpawnRoom()
 	PlayerStartingTile_SpawnTile->ShadeStartingRoom();
 	ATileManagerRef->SetStartingGridTile(PlayerStartingTile_SpawnTile);
 	ATileManagerRef->SetDoorArray(DoorArrayRef);
-	ATileManagerRef->SetPlayerSpawnPresentTile(ChoosenPlayerSpawnPresentTile);
+	ATileManagerRef->SetPlayerSpawnPresentTile(ChoosenPlayerSpawnPresentTile); //setting the env for ref not tile object
 }
 
 

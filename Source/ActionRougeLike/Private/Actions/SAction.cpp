@@ -12,7 +12,7 @@ void USAction::Initialize(USActionComponent* NewActionComp)
 
 void USAction::StartAction_Implementation(AActor* Instigator)
 {
-	UE_LOG(LogTemp, Log, TEXT("Running: %s"), *GetNameSafe(this));
+	UE_LOG(LogTemp, Log, TEXT("%s: Running: %s"), *GetNameSafe(Instigator), *GetNameSafe(this));
 	//LogOnScreen(this, FString::Printf(TEXT("Started: %s"), *ActionName.ToString()), FColor::Green);
 
 	USActionComponent* Comp = GetOwningComponent();
@@ -34,7 +34,7 @@ void USAction::StartAction_Implementation(AActor* Instigator)
 
 void USAction::StopAction_Implementation(AActor* Instigator)
 {
-	UE_LOG(LogTemp, Log, TEXT("Stopping: %s"), *GetNameSafe(this));
+	UE_LOG(LogTemp, Log, TEXT("%s: Stopping: %s"), *GetNameSafe(Instigator), *GetNameSafe(this));
 	//LogOnScreen(this, FString::Printf(TEXT("Stopped: %s"), *ActionName.ToString()), FColor::White);
 
 	//check if boolean even on as santity

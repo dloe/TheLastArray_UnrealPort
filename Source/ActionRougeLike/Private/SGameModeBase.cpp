@@ -45,7 +45,7 @@ void ASGameModeBase::InitGame(const FString& MapName, const FString& Options, FS
 
 	}
 
-	LoadSaveGame();
+	LoadSaveGame_OLD();
 	
 }
 
@@ -348,7 +348,7 @@ void ASGameModeBase::RespawnPlayerElasped(AController* Controller)
 }
 
 
-void ASGameModeBase::WriteSaveGame()
+void ASGameModeBase::WriteSaveGame_OLD()
 {
 	for (int32 i = 0; i < GameState->PlayerArray.Num(); i++)
 	{
@@ -393,7 +393,7 @@ void ASGameModeBase::WriteSaveGame()
 	UGameplayStatics::SaveGameToSlot(CurrentSaveGame, SlotName, 0);
 }
 
-void ASGameModeBase::LoadSaveGame()
+void ASGameModeBase::LoadSaveGame_OLD()
 {
 	if (UGameplayStatics::DoesSaveGameExist(SlotName, 0))
 	{
