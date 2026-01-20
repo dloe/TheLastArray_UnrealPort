@@ -149,6 +149,8 @@ public:
 
 #pragma region Tile Generation Public Functions
 
+	UFUNCTION()
+	void BeginLevelSetupProcedure();
 
 	/// <summary>
 	/// 
@@ -418,6 +420,8 @@ protected:
 
 	UFUNCTION()
 	void OnTilePathGeneration();
+
+	
 
 	UFUNCTION()
 	void OnBranchFillGeneration();

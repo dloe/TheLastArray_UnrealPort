@@ -39,7 +39,7 @@ bool ASPlayerState::RemoveCredits(int32 delta)
 int ASPlayerState::AddCredits(int32 delta)
 {
 
-	if (!ensure(delta > 0.0f))
+	if (delta <= 0.0f) // used to be (!ensure(delta >=- 0.0f))
 		return 0;
 
 	//UE_LOG(LogTemp, Log, TEXT("in funct - value to add: %d"), value);

@@ -58,6 +58,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Tile")
 	TArray<ASTileWall*> RightWalls;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Setup")
+	TArray <UStaticMeshComponent*> FloorsStatArray;
+
 
 	//Fully combined walls (Still WIP TBD if this is useful) - could make these privatre and have getters and setters
 	UPROPERTY(EditAnywhere, Category = "Walls")
@@ -100,7 +103,7 @@ public:
 	TArray <UStaticMeshComponent*> DownPatchSMArray;
 
 
-protected:
+protected:d
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 

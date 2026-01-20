@@ -157,8 +157,6 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Level Asset Population", meta = (ToolTip = "Populated on play. Assigned objective spawn Data per level"))
 	FLevelTiersObjectiveInfo LocalObjectiveInfoData;
 
-
-	//UPROPERTY(EditAnywhere, Category = "Enemies")
 	TArray <FEnemySpawnInfo*> CurrentLevelEnemyList;
 
 	TArray <FLocalLevelItemSpawnTiers> CurrentLevelItemTierList;

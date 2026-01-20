@@ -13,6 +13,8 @@
 #include "Delegates/Delegate.h"
 #include "Objectives/SEliminationObjective.h"
 #include "Gamemodes/SMainGameMode.h"
+#include "NavigationSystem.h"
+#include "NavMesh/RecastNavMesh.h"
 
 //enum class ESpawnTiers : uint8;
 

@@ -57,6 +57,10 @@ public:
 	// ---------------------------------
 	USBaseObjective* LevelObjective;
 
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Level Setup")
+	ASTileManager* TileManager;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Level Setup")
 	ASLevelExit* LevelExitRef;
 
@@ -67,7 +71,7 @@ protected:
 	// ---------------------------------
 	// -------- Helper Functions -------
 	// ---------------------------------
-
+	
 
 	// ---------------------------------
 	// -- Internal state / variables --

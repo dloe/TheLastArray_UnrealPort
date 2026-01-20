@@ -32,7 +32,7 @@ void USEliminationObjective::OnEnemySpawned()
 {
 	UE_LOG(LogTemp, Log, TEXT("Eleminaition Objective Setup"));
 
-	//for now kill only 75% of the enemies
+	//for now kill only ~75% of the enemies
 	KillCountRequirement = LevelAssetSetupCompRef->EnemiesPlaced * 0.75f;
 	EnemyStartingCount = LevelAssetSetupCompRef->EnemiesPlaced;
 

@@ -18,6 +18,7 @@
 #include "ScriptableObjects/SMonsterData.h"
 #include <ActionRougeLike/ActionRougeLike.h>
 #include <Runtime/Engine/Classes/Engine/AssetManager.h>
+#include "SFEnemyDataDefinition.h"
 //dont think the eenvqueryrunmode enum is needed to include header
 
 //cvar
@@ -208,12 +209,12 @@ void ASGameModeBase::OnQueryBotSpawnCompleted(UEnvQueryInstanceBlueprintWrapper*
 	{
 		if (MonsterTable)
 		{
-			TArray<FMonsterInfoRowOld*> Rows;
+			TArray<FEnemySpawnInfo*> Rows;
 			MonsterTable->GetAllRows("", Rows);
 
 			//get random enemy
 			int32 RandomIndex = FMath::RandRange(0, Rows.Num() - 1);
-			FMonsterInfoRowOld* SelectedRow = Rows[RandomIndex];
+			FEnemySpawnInfo* SelectedRow = Rows[RandomIndex];
 
 			//SelectedRow->SpawnCost
 
@@ -221,7 +222,7 @@ void ASGameModeBase::OnQueryBotSpawnCompleted(UEnvQueryInstanceBlueprintWrapper*
 			if (Manager)
 			{
 				LogOnScreen(this, "Loading Monster...", FColor::Green);
-				//do them all since we didnt specific
+				//do them all since we didn't specific
 				TArray<FName> Bundles;
 
 				//calls OnMonsterLoad when loaded, pass along AssetData and FVector to this OnMonsterLoaded function

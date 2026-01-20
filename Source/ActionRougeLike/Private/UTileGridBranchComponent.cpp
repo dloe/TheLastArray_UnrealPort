@@ -448,9 +448,9 @@ bool UTileGridBranchComponent::VariantCandidateAnalysis(ASTile* CurrentTile, USF
 			FActorSpawnParameters SpawnParams;
 			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-			ASTileVariantEnviornment* SpawnedVariant = GetWorld()->SpawnActor<ASTileVariantEnviornment>(ChoosenVariant, CurrentTile->GetActorLocation(), CurrentTile->GetActorRotation(), SpawnParams);			
+			ASTileVariantEnviornment* SpawnedVariant = GetWorld()->SpawnActor<ASTileVariantEnviornment>(ChoosenVariant, CurrentTile->GetActorLocation(), SpawnRot, SpawnParams);
 			
-			SpawnedVariant->SetActorRotation(SpawnRot);
+			//SpawnedVariant->SetActorRotation(SpawnRot);
 			FString VariantTileName = "VariantTileMap_" + FString::FromInt(CurrentVariant->Size.X) + "_" + FString::FromInt(CurrentVariant->Size.Y);
 			SpawnedVariant->SetActorLabel(VariantTileName);
 #if WITH_EDITOR
@@ -459,6 +459,7 @@ bool UTileGridBranchComponent::VariantCandidateAnalysis(ASTile* CurrentTile, USF
 
 #endif
 			SpawnedVariant->TileVariDefinition = CurrentVariant;
+			//SpawnedVariant->MarkFloorsToStatic(); //so nav mesh can read them 
 
 			//an array should be passed up of all the relevant tiles, add them to the VariantEncompassingTiles
 			//EncompassingTilesBuild
@@ -953,15 +954,16 @@ void UTileGridBranchComponent::CreateSecretRoom()
 		break;
 	}
 
-	SecretRoomVariant = GetWorld()->SpawnActor<ASTileVariantEnviornment>(ChoosenSecretRoomVariant, SecretRoom->GetActorLocation(), SecretRoom->GetActorRotation(), SpawnParamsPrefab);
+	SecretRoomVariant = GetWorld()->SpawnActor<ASTileVariantEnviornment>(ChoosenSecretRoomVariant, SecretRoom->GetActorLocation(), SpawnRotPrefab, SpawnParamsPrefab);
 
-	SecretRoomVariant->SetActorRotation(SpawnRotPrefab);
+	//SecretRoomVariant->SetActorRotation(SpawnRotPrefab);
 	FString VariantTileName = "Secret_VariantTileMap_" + FString::FromInt(SecretRoom->XIndex) + "_" + FString::FromInt(SecretRoom->ZIndex);
 	SecretRoomVariant->SetActorLabel(VariantTileName);
 #if WITH_EDITOR
 	SecretRoomVariant->SetFolderPath(TileManagerRef->VariantTileMapSubFolderName);
 	DrawDebugSphere(GetWorld(), SecretRoomVariant->GetActorLocation(), 225.0f, 20, FColor::Orange, false, 100);
 #endif
+	//SecretRoomVariant->MarkFloorsToStatic();
 
 	//TODO: Make this format copy the other variants
 	FTileVariantDefinitionRow tier = TileVariantCompRef->TileVariantTiersLocal[4];
@@ -1045,9 +1047,9 @@ void UTileGridBranchComponent::SpawnEndRoom()
 		break;
 	}
 
-	ASTileVariantEnviornment* EndRoomVariant = GetWorld()->SpawnActor<ASTileVariantEnviornment>(ChoosenEndRoomVariant, EndTileRef->GetActorLocation(), EndTileRef->GetActorRotation(), SpawnParams);
+	ASTileVariantEnviornment* EndRoomVariant = GetWorld()->SpawnActor<ASTileVariantEnviornment>(ChoosenEndRoomVariant, EndTileRef->GetActorLocation(), SpawnRot, SpawnParams);
 
-	EndRoomVariant->SetActorRotation(SpawnRot);
+	//EndRoomVariant->SetActorRotation(SpawnRot);
 	FString VariantTileName = "EndRoom_VariantTileMap_" + FString::FromInt(EndTileRef->XIndex) + "_" + FString::FromInt(EndTileRef->ZIndex);
 	EndRoomVariant->SetActorLabel(VariantTileName);
 #if WITH_EDITOR

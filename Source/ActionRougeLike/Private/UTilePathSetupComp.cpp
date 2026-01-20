@@ -409,6 +409,7 @@ void UTilePathSetupComp::CreateSpawnRoom()
 	TSubclassOf<ASStartingSpawnTile> StartingTileSubclass = PossibleStartingTiles[variantIndex];
 
 	ASStartingSpawnTile* ChoosenPlayerSpawnPresentTile;
+	FRotator SpawnRotPrefab = FRotator(0,0,0);
 
 	//There are going to be 2 tiles basically spawned, one is the base, the base structure of the tile
 	// The other tile (which i don't think needs to be a tile at all), is the environment to be populated on the tile
@@ -419,10 +420,12 @@ void UTilePathSetupComp::CreateSpawnRoom()
 		//left
 		SpawnPos = FVector(StartingGridTileRef->GetActorLocation().X - (StartingGridTileRef->TileLength + DoorwayAdjustment), StartingGridTileRef->GetActorLocation().Y, StartingGridTileRef->GetActorLocation().Z);
 		PlayerStartingTile_SpawnTile = GetWorld()->SpawnActor<ASTile>(ATileManagerRef->TileBaseClass, SpawnPos, StartingGridTileRef->GetActorRotation(), SpawnParams);
-		ChoosenPlayerSpawnPresentTile = GetWorld()->SpawnActor<ASStartingSpawnTile>(StartingTileSubclass, SpawnPos, StartingGridTileRef->GetActorRotation(), SpawnParams); //rotate -90
+		//FRotator(ChoosenPlayerSpawnPresentTile->GetActorRotation().Euler().X, -90.0f, ChoosenPlayerSpawnPresentTile->GetActorRotation().Euler().Z)
+		SpawnRotPrefab = FRotator(StartingGridTileRef->GetActorRotation().Euler().X, -90.0f, StartingGridTileRef->GetActorRotation().Euler().Z);
+		ChoosenPlayerSpawnPresentTile = GetWorld()->SpawnActor<ASStartingSpawnTile>(StartingTileSubclass, SpawnPos, SpawnRotPrefab, SpawnParams); //rotate -90
 		StartingGridTileRef->LeftNeighbor = PlayerStartingTile_SpawnTile;
 		PlayerStartingTile_SpawnTile->RightNeighbor = StartingGridTileRef;
-		ChoosenPlayerSpawnPresentTile->SetActorRotation(FRotator(ChoosenPlayerSpawnPresentTile->GetActorRotation().Euler().X, -90.0f, ChoosenPlayerSpawnPresentTile->GetActorRotation().Euler().Z));
+		//ChoosenPlayerSpawnPresentTile->SetActorRotation();
 		//TileManagerRef->PlayerStartingTile_SpawnTile->ConnectRightDoor(TileManagerRef->ChoosenDoorwayAsset, TileManagerRef->WallsSubFolderName, TileManagerRef->AllSpawnedWalls);
 		
 		if (ATileManagerRef->DoorToStartRoom)
@@ -479,11 +482,12 @@ void UTilePathSetupComp::CreateSpawnRoom()
 	case 2:
 		//Right
 		SpawnPos = FVector(StartingGridTileRef->GetActorLocation().X + (StartingGridTileRef->TileLength + DoorwayAdjustment), StartingGridTileRef->GetActorLocation().Y, StartingGridTileRef->GetActorLocation().Z);
-		PlayerStartingTile_SpawnTile = GetWorld()->SpawnActor<ASTile>(ATileManagerRef->TileBaseClass, SpawnPos, StartingGridTileRef->GetActorRotation(), SpawnParams);
+		SpawnRotPrefab = FRotator(StartingGridTileRef->GetActorRotation().Euler().X, 90, StartingGridTileRef->GetActorRotation().Euler().Z);
+		//FRotator(StartingGridTileRef->GetActorRotation().Euler().X, 90, StartingGridTileRef->GetActorRotation().Euler().Z)
 		ChoosenPlayerSpawnPresentTile = GetWorld()->SpawnActor<ASStartingSpawnTile>(StartingTileSubclass, SpawnPos, StartingGridTileRef->GetActorRotation(), SpawnParams); //rotate 90
 		StartingGridTileRef->RightNeighbor = PlayerStartingTile_SpawnTile;
 		PlayerStartingTile_SpawnTile->LeftNeighbor = StartingGridTileRef;
-		ChoosenPlayerSpawnPresentTile->SetActorRotation(FRotator(ChoosenPlayerSpawnPresentTile->GetActorRotation().Euler().X, 90, ChoosenPlayerSpawnPresentTile->GetActorRotation().Euler().Z));
+		//ChoosenPlayerSpawnPresentTile->SetActorRotation();
 		//TileManagerRef->PlayerStartingTile_SpawnTile->ConnectRightDoor(TileManagerRef->ChoosenDoorwayAsset, TileManagerRef->WallsSubFolderName, TileManagerRef->AllSpawnedWalls);
 		
 		if (ATileManagerRef->DoorToStartRoom)
@@ -511,10 +515,12 @@ void UTilePathSetupComp::CreateSpawnRoom()
 		//DOWN
 		SpawnPos = FVector(StartingGridTileRef->GetActorLocation().X, StartingGridTileRef->GetActorLocation().Y + (StartingGridTileRef->TileLength + DoorwayAdjustment), StartingGridTileRef->GetActorLocation().Z);
 		PlayerStartingTile_SpawnTile = GetWorld()->SpawnActor<ASTile>(ATileManagerRef->TileBaseClass, SpawnPos, StartingGridTileRef->GetActorRotation(), SpawnParams); //rotate 180
-		ChoosenPlayerSpawnPresentTile = GetWorld()->SpawnActor<ASStartingSpawnTile>(StartingTileSubclass, SpawnPos, StartingGridTileRef->GetActorRotation(), SpawnParams);
+		SpawnRotPrefab = FRotator(StartingGridTileRef->GetActorRotation().Euler().X, 180.0f, StartingGridTileRef->GetActorRotation().Euler().Z);
+		//FRotator(StartingGridTileRef->GetActorRotation().Euler().X, 180.0f, StartingGridTileRef->GetActorRotation().Euler().Z)
+		ChoosenPlayerSpawnPresentTile = GetWorld()->SpawnActor<ASStartingSpawnTile>(StartingTileSubclass, SpawnPos, SpawnRotPrefab, SpawnParams);
 		StartingGridTileRef->DownNeighbor = PlayerStartingTile_SpawnTile;
 		PlayerStartingTile_SpawnTile->UpNeighbor = StartingGridTileRef;
-		ChoosenPlayerSpawnPresentTile->SetActorRotation(FRotator(ChoosenPlayerSpawnPresentTile->GetActorRotation().Euler().X, 180.0f, ChoosenPlayerSpawnPresentTile->GetActorRotation().Euler().Z));
+		//ChoosenPlayerSpawnPresentTile->SetActorRotation(FRotator(ChoosenPlayerSpawnPresentTile->GetActorRotation().Euler().X, 180.0f, ChoosenPlayerSpawnPresentTile->GetActorRotation().Euler().Z));
 
 		if (ATileManagerRef->DoorToStartRoom)
 		{
@@ -542,11 +548,12 @@ void UTilePathSetupComp::CreateSpawnRoom()
 		UE_LOG(LogTemp, Error, TEXT("HIT DEFAULT CASE"));
 		SpawnPos = FVector(StartingGridTileRef->GetActorLocation().X - (StartingGridTileRef->TileLength + DoorwayAdjustment), StartingGridTileRef->GetActorLocation().Y, StartingGridTileRef->GetActorLocation().Z);
 		PlayerStartingTile_SpawnTile = GetWorld()->SpawnActor<ASTile>(ATileManagerRef->TileBaseClass, SpawnPos, StartingGridTileRef->GetActorRotation(), SpawnParams);
-		ChoosenPlayerSpawnPresentTile = GetWorld()->SpawnActor<ASStartingSpawnTile>(StartingTileSubclass, SpawnPos, StartingGridTileRef->GetActorRotation(), SpawnParams); //rotate -90
+		SpawnRotPrefab = FRotator(StartingGridTileRef->GetActorRotation().Euler().X, -90.0f, StartingGridTileRef->GetActorRotation().Euler().Z);
+		ChoosenPlayerSpawnPresentTile = GetWorld()->SpawnActor<ASStartingSpawnTile>(StartingTileSubclass, SpawnPos, SpawnRotPrefab, SpawnParams); //rotate -90
 
 		StartingGridTileRef->LeftNeighbor = PlayerStartingTile_SpawnTile;
 		PlayerStartingTile_SpawnTile->RightNeighbor = StartingGridTileRef;
-		ChoosenPlayerSpawnPresentTile->SetActorRotation(FRotator(ChoosenPlayerSpawnPresentTile->GetActorRotation().Euler().X, -90.0f, ChoosenPlayerSpawnPresentTile->GetActorRotation().Euler().Z));
+		//ChoosenPlayerSpawnPresentTile->SetActorRotation(FRotator(ChoosenPlayerSpawnPresentTile->GetActorRotation().Euler().X, -90.0f, ChoosenPlayerSpawnPresentTile->GetActorRotation().Euler().Z));
 		//TileManagerRef->PlayerStartingTile_SpawnTile->ConnectRightDoor(TileManagerRef->ChoosenDoorwayAsset, TileManagerRef->WallsSubFolderName, TileManagerRef->AllSpawnedWalls);
 
 		if (ATileManagerRef->DoorToStartRoom)
@@ -581,6 +588,7 @@ void UTilePathSetupComp::CreateSpawnRoom()
 #endif
 	//Set the Preset ref to the SpawnPresetTile obj
 	PlayerStartingTile_SpawnTile->PresetTile = ChoosenPlayerSpawnPresentTile;
+
 
 
 	//Spawn stats from StartingTile to PlayerStartingTileBase, then we will reassign the StartingTile

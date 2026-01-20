@@ -10,6 +10,7 @@
 #include <Math/UnrealMathUtility.h>
 #include <Kismet/KismetMathLibrary.h>
 #include "SFTileVariantDefinitionData.h"
+#include "Gamemodes/SMainGameMode.h"
 
 // Sets default values
 ASTileManager::ASTileManager()
@@ -44,34 +45,16 @@ ASTileManager::ASTileManager()
 void ASTileManager::BeginPlay()
 {
 	Super::BeginPlay();
-	bDebugPrintsRef = MyLocalLevel->bDebugPrints;
-	LevelSetupStartTime = FPlatformTime::Seconds();
 
-	//TO DO: Make a set var function?
-	TileVariantComponent = FindComponentByClass<UTileVariantComponent>();
-	LevelAssetSetupComponent = FindComponentByClass<ULevelAssetSetupComponent>();
+	UE_LOG(LogTemp, Log, TEXT("==========================================================="));
+	UE_LOG(LogTemp, Log, TEXT("=============== Starting Level Setup ======================"));
+	UE_LOG(LogTemp, Log, TEXT("==========================================================="));
 
-	//TODO: Move this out of here
-	//LevelAssetSetupComponent->TileManagerRef = this;
-
-	if (bDebugPrintsRef) {
-		UE_LOG(LogTemp, Log, TEXT("==========================================================="));
-		UE_LOG(LogTemp, Log, TEXT("================= TILE GENERATION ========================="));
-		UE_LOG(LogTemp, Log, TEXT("==========================================================="));
-
-	}
-	
-	GameStreamRef = MyLocalLevel->GameStream;
-
-	SetVariables();
-
-	//create and link tiles into grid
-	//this includes establishment of doors if we need them
-	Create2DTileArray();
-
-	TilePathComponent->TilePathGeneration();
-
+	BeginLevelSetupProcedure();
+	UE_LOG(LogTemp, Log, TEXT("begin play..."));
 }
+
+
 
 /// <summary>
 /// For now not in use since don't need to load variants from local level, this will be used when we get there
@@ -94,6 +77,36 @@ void ASTileManager::OnTilePathGeneration()
 	//finished the main path creation, now do branch, random rooms and secret room setup
 
 	GridBranchSetupComponent->GameMapAdditionalSetup();
+}
+
+void ASTileManager::BeginLevelSetupProcedure()
+{
+	bDebugPrintsRef = MyLocalLevel->bDebugPrints;
+	LevelSetupStartTime = FPlatformTime::Seconds();
+
+	//TO DO: Make a set var function?
+	TileVariantComponent = FindComponentByClass<UTileVariantComponent>();
+	LevelAssetSetupComponent = FindComponentByClass<ULevelAssetSetupComponent>();
+
+	//TODO: Move this out of here
+	//LevelAssetSetupComponent->TileManagerRef = this;
+
+	if (bDebugPrintsRef) {
+		UE_LOG(LogTemp, Log, TEXT("==========================================================="));
+		UE_LOG(LogTemp, Log, TEXT("================= TILE GENERATION ========================="));
+		UE_LOG(LogTemp, Log, TEXT("==========================================================="));
+
+	}
+
+	GameStreamRef = MyLocalLevel->GameStream;
+
+	SetVariables();
+
+	//create and link tiles into grid
+	//this includes establishment of doors if we need them
+	Create2DTileArray();
+
+	TilePathComponent->TilePathGeneration();
 }
 
 void ASTileManager::OnBranchFillGeneration()
