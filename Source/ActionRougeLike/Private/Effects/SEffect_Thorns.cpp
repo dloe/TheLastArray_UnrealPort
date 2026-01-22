@@ -21,6 +21,7 @@ void USEffect_Thorns::StartAction_Implementation(AActor* Instigator)
 	USAttributeComponent* Attributes = USAttributeComponent::GetAttributes(GetOwningComponent()->GetOwner());
 	if (Attributes)
 	{
+		//bind onhealthchanged to run our custom behavior for on health change
 		Attributes->OnHealthChanged.AddDynamic(this, &USEffect_Thorns::OnHealthChanged);
 	}
 

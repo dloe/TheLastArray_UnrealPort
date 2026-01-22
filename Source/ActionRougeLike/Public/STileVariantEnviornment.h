@@ -103,7 +103,7 @@ public:
 	TArray <UStaticMeshComponent*> DownPatchSMArray;
 
 
-protected:d
+protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
