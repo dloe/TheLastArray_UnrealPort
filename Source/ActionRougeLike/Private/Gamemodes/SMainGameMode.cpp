@@ -50,32 +50,7 @@ void ASMainGameMode::ExitLevel()
 		//loading screen 
 		//create widget
 		//add it to view
-
-		TransitionToTrainLevel();
-
-		//FLatentActionInfo LatentInfo;
-		//// Load a streaming level, this async
-		//UGameplayStatics::LoadStreamLevel(
-		//	World,
-		//	TEXT("TrainPrepArea"), // Name of the sub-level asset
-		//	true,                        // Make Visible After Load
-		//	true,                         // Should Block on Load (optional, can be false for async)
-		//	LatentInfo
-		//);
-
-		//// Unload a previously loaded level, this is also async
-		////this should run when we successfully load the trainprep area right?
-		//UGameplayStatics::UnloadStreamLevel(
-		//	World,
-		//	TEXT("TileGeneration_Testing"),
-		//	LatentInfo,
-		//	true                         // Should Block on Unload
-		//);
-		////once level is loaded, we can remove widget from parent
-		//RemoveLoadingScreenBP();
-
-		
-
+		TransitionToTrainLevel(); //implemented in bp
 
 	}
 }
@@ -87,12 +62,32 @@ void ASMainGameMode::ExitLevel()
 /// <param name="MinionCost"></param>
 void ASMainGameMode::KillNormalEnemyEvent(AActor* InstigatorActor, int MinionCost, AActor* EnemyKilled)
 {
-	APlayerController* PC = Cast<APlayerController>(InstigatorActor->GetInstigatorController());
-	ASPlayerState* PS = Cast<ASPlayerState>(PC->PlayerState);
-	PS->AddCredits(MinionCost);
+	AController* InstigatingController = InstigatorActor->GetInstigatorController();
+	if (ensure(InstigatingController) && InstigatingController->IsPlayerController()) {
+		APlayerController* PC = Cast<APlayerController>(InstigatingController);
+		if(ensure(PC)) {
+			ASPlayerState* PS = Cast<ASPlayerState>(PC->PlayerState);
+			PS->AddCredits(MinionCost);
+		} else {
+			UE_LOG(LogTemp, Error, TEXT("KillNormalEnemyEvent: issue with player controller cast"));
+		}
+	}
+	else
+	{
+		//transfer minion cost to the guy that killed our other enemy (if possible)
+		ASAICharacter* InstigatingEnemy = Cast<ASAICharacter>(EnemyKilled);
+		if (InstigatingEnemy)
+		{
+			InstigatingEnemy->CreditsOnKill += MinionCost;
+		}
+
+		UE_LOG(LogTemp, Log, TEXT("%s had friendly fire incident from %s"), *GetNameSafe(EnemyKilled), *GetNameSafe(InstigatorActor));
+	}
 
 	//remove from enemies active list
 	LevelSetupComp->SpawnedEnemiesInLevel.Remove(EnemyKilled);
+
+	CheckObjective();
 }
 
 //cheat, runnable via cmd

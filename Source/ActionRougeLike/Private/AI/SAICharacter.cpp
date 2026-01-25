@@ -133,7 +133,7 @@ void ASAICharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponen
             ASGameModeBase* GM = GetWorld()->GetAuthGameMode<ASGameModeBase>();
             if (GM)
             {
-                GM->KillMinionEvent(InstigatorActor, CreditsOnKill);
+                //GM->KillMinionEvent(InstigatorActor, CreditsOnKill);
             }
 
             //tell instigator if player that they got the kill and update a stat somewhere
@@ -147,15 +147,11 @@ void ASAICharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponen
             {
                 //check enemy type, if normal enemy and part of objective. Update killcount
                 //run objective enemy killed event
+                //(we run a check objective function in this call btw)
                 LevelGameMode->KillNormalEnemyEvent(InstigatorActor, CreditsOnKill, this);
 
-                //SEliminationObjective* ElimObjective = Cast<SEliminationObjective>(GetWorld()->GetAuthGameMode());
-
-                //GM->NotifyEnemyKilled(this);
-                //check gamemode objective status
-                LevelGameMode->CheckObjective();
             }
-            //then notify the gamemode to check if the objective has been complete
+            
 
         }
     }

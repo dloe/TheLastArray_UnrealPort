@@ -55,6 +55,7 @@ public:
 	// ---------------------------------
 	// -------- Public Variables -------
 	// ---------------------------------
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Level Setup")
 	USBaseObjective* LevelObjective;
 
 	

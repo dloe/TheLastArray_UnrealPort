@@ -85,8 +85,6 @@ public:
 
 	//player data?
 
-	//objective
-
 	//reference to player
 
 	//presets for each level tier (TODO: move this to new location for storage)
@@ -131,8 +129,6 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	TSubclassOf<ASTile> GetPresetStartingTile();
-
-	
 
 	UFUNCTION(BlueprintCallable, Category = "Level Objective")
 	void ChooseObjective();
@@ -189,9 +185,6 @@ protected:
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-	//UFUNCTION(BlueprintCallable, Category = "Level Objective")
-	//TArray<TSubclassOf<ASTileVariantEnviornment>> SetVariantEnvVars(TArray<TSubclassOf<ASTileVariantEnviornment>> VariantsEnvArray);
 
 	UFUNCTION(BlueprintCallable, Category = "Level Objective")
 	void AssignVariantDefData();

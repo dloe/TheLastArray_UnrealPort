@@ -374,7 +374,7 @@ void ULevelAssetSetupComponent::ActivateItems()
 			if(debug) {
 				//UE_LOG(LogTemp, Log, TEXT("item spawned %d: Comparing noise val: %f <= threshold: %f -- Status: %d"), (PickupsPlaced-1), noiseMeasurement, itemThreshold, debug);
 			 } else {
-				//UE_LOG(LogTemp, Log, TEXT("Comparing noise val: %f <= threshold: %f -- Status: %d"), noiseMeasurement, itemThreshold, debug);
+				UE_LOG(LogTemp, Log, TEXT("Comparing noise val: %f <= threshold: %f -- Status: %d"), noiseMeasurement, itemThreshold, debug);
 			}
 		}
 		UE_LOG(LogTemp, Log, TEXT(" --- Tile complete %s, local total: %d --- "), *TilePlaced->GetActorLabel(), currentAssetPlacedCount);
