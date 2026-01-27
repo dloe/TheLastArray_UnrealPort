@@ -482,9 +482,10 @@ void UTilePathSetupComp::CreateSpawnRoom()
 	case 2:
 		//Right
 		SpawnPos = FVector(StartingGridTileRef->GetActorLocation().X + (StartingGridTileRef->TileLength + DoorwayAdjustment), StartingGridTileRef->GetActorLocation().Y, StartingGridTileRef->GetActorLocation().Z);
+		PlayerStartingTile_SpawnTile = GetWorld()->SpawnActor<ASTile>(ATileManagerRef->TileBaseClass, SpawnPos, StartingGridTileRef->GetActorRotation(), SpawnParams);
 		SpawnRotPrefab = FRotator(StartingGridTileRef->GetActorRotation().Euler().X, 90, StartingGridTileRef->GetActorRotation().Euler().Z);
 		//FRotator(StartingGridTileRef->GetActorRotation().Euler().X, 90, StartingGridTileRef->GetActorRotation().Euler().Z)
-		ChoosenPlayerSpawnPresentTile = GetWorld()->SpawnActor<ASStartingSpawnTile>(StartingTileSubclass, SpawnPos, StartingGridTileRef->GetActorRotation(), SpawnParams); //rotate 90
+		ChoosenPlayerSpawnPresentTile = GetWorld()->SpawnActor<ASStartingSpawnTile>(StartingTileSubclass, SpawnPos, SpawnRotPrefab, SpawnParams); //rotate 90
 		StartingGridTileRef->RightNeighbor = PlayerStartingTile_SpawnTile;
 		PlayerStartingTile_SpawnTile->LeftNeighbor = StartingGridTileRef;
 		//ChoosenPlayerSpawnPresentTile->SetActorRotation();

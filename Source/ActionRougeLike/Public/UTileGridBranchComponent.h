@@ -64,7 +64,8 @@ public:
 
 	FOnBranchFillGenerated OnGridAdditionalSetupCompletedEvent; //event to notify when path is created
 
-
+	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
+	ASTileVariantEnviornment* GetSecretRoomVariant() { return SecretRoomVariant; };
 
 protected:
 

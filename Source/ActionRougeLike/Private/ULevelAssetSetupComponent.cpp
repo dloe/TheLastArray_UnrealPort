@@ -41,7 +41,7 @@
 // Sets default values for this component's properties
 ULevelAssetSetupComponent::ULevelAssetSetupComponent()
 {
-
+	// ...
 }
 
 
@@ -49,9 +49,7 @@ ULevelAssetSetupComponent::ULevelAssetSetupComponent()
 void ULevelAssetSetupComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
 	// ...
-	
 }
 
 /// <summary>
@@ -100,7 +98,6 @@ void ULevelAssetSetupComponent::SetupLevelAssetComponent()
 		LocalObjectiveInfoData = ObjectiveData->ObjectivesTable[1];
 		break;
 	}
-
 
 	TArray<FEnemySpawnInfo*> EnemySpawnItems;
 	//the string being pass in is for debugging purposes in case it breaks or fails to cast
@@ -192,26 +189,11 @@ void ULevelAssetSetupComponent::SetupLevelAssetComponent()
 	UE_LOG(LogTemp, Log, TEXT("Items - min: %f, max: %f"), MinNoiseItems, MaxNoiseItems);
 	UE_LOG(LogTemp, Log, TEXT("Enemies - min: %f, max: %f"), MinNoiseEnemies, MaxNoiseEnemies);
 
-
 	//debug perlin noise texture for easy visualization
 	if (ActivateDebugFloorPerlinNoise)
 	{
 		SetUpDebugPerlinNoise();
 	}
-
-
-	
-
-}
-
-void ULevelAssetSetupComponent::GridAnalysis()
-{
-	
-}
-
-void ULevelAssetSetupComponent::ActivateLevelKey()
-{
-
 }
 
 void ULevelAssetSetupComponent::ActivateSecretRoom()
@@ -228,29 +210,26 @@ void ULevelAssetSetupComponent::ActivateSecretRoom()
 	{
 		check(PossiblePickup); //trying this check 
 		const FVector relativeLocation = PossiblePickup->GetRelativeLocation();
-			//UE_LOG(LogTemp, Log, TEXT("Cords: %s"), *relativeLocation.ToString());
 		//check noise 
 		FVector2D inputConvertionSeedOffset = FVector2D(relativeLocation.X + seedOffset_Items.X, relativeLocation.Y + seedOffset_Items.Y);
 		float noiseMeasurement = GetNoiseVec(inputConvertionSeedOffset, MinNoiseItems, MaxNoiseItems);
-			//UE_LOG(LogTemp, Log, TEXT("Noise lookup: %f"), noiseMeasurement);
 
 		//threshold check TODO: This will be assigned from 
 		float itemThreshold = LocalLevel->GetLocalPickupSpawnLevelThreshold();
-			//if meeds threshold, spawn item function for weight lookup and spawn procedure
-			//UE_LOG(LogTemp, Log, TEXT("Comparing noise val: %f to threshold: %f"), noiseMeasurement, itemThreshold);
-		if (noiseMeasurement <= itemThreshold - 0.1f) //slight bump for secret room
+		//UE_LOG(LogTemp, Log, TEXT("Comparing noise val: %f to threshold: %f"), noiseMeasurement, itemThreshold);
+		//if meeds threshold, spawn item function for weight lookup and spawn procedure
+		if (noiseMeasurement <= itemThreshold * 2) //slight bump for secret room (for now doubling) TODO: Maybe tie to separate stat per level?
 		{
 			//can spawn!
-			PlaceItemPickup(PossiblePickup, SecretRoom, PickupsPlaced); //TODO: make blocked out tiles for rest of variants and assign
+			PlaceItemPickup(PossiblePickup, SecretRoom, PickupsPlaced);
 
 			//increment counter
 			PickupsPlaced++;
 			currentAssetPlacedCount++;
-			//UE_LOG(LogTemp, Log, TEXT("Item %d placed"), PickupsPlaced);
+			UE_LOG(LogTemp, Log, TEXT("Item %d placed"), PickupsPlaced);
 		}
-
-		//UE_LOG(LogTemp, Log, TEXT("Secret Tile complete %s, local total: %d"), *SecretRoom->GetActorLabel(), currentAssetPlacedCount);
 	}
+	UE_LOG(LogTemp, Log, TEXT("Secret Tile complete %s, local total: %d"), *SecretRoom->GetActorLabel(), currentAssetPlacedCount);
 }
 
 /// <summary>
@@ -291,6 +270,7 @@ void ULevelAssetSetupComponent::ActivateObjectives()
 
 	if (MyGameMode->IsA<ASMainGameMode>())
 	{
+		//pass that ref to the gamemode object for when the objective is completed
 		ASMainGameMode* GM = Cast<ASMainGameMode>(MyGameMode);
 		GM->LevelObjective = CurrentObjective;
 
@@ -309,11 +289,7 @@ void ULevelAssetSetupComponent::ActivateObjectives()
 
 	//exit level obj setup
 	//will be spawning an actor that has a tag marked level exit (use same interaction as the level)
-
-	//pass that ref to the gamemode object for when the objective is completed
-
-
-
+	//TODO: Physical spawn of exit interactable that takes us to train lvl
 }
 
 /// <summary>
@@ -435,7 +411,6 @@ void ULevelAssetSetupComponent::PlaceItemPickup(UStaticMeshComponent* PickupMark
 
 	TSubclassOf<ASPickupBase> ChoosenAsset = AssetToSpawn->PickupPrefab;
 
-	
 	//TODO: spawn on spawnLocation
 	//could take a crazy approach to pickups... What if instead of a floating item in game space,
 	//the item is simply in the environment resting on the floor or leaning on a wall, etc. But within
@@ -572,15 +547,11 @@ void ULevelAssetSetupComponent::ActivateEnemies()
 				EnemiesPlaced++;
 				spawnedLocal++;
 			}
-
 		}
 		UE_LOG(LogTemp, Log, TEXT("Tile complete %s, local total: %d"), *TilePlaced->GetActorLabel(), spawnedLocal);
 	}
 
-
 	UE_LOG(LogTemp, Log, TEXT(" --- Done spawning enemies! Grand Total Spawned Enemies in level: %d --- "), EnemiesPlaced);
-
-
 
 	//objective setup
 	OnEnemySpawnCompletedEvent.Broadcast();
@@ -636,7 +607,6 @@ void ULevelAssetSetupComponent::SetupStartingTile()
 		}
 	}
 	UE_LOG(LogTemp, Log, TEXT(" --- Tile complete %s, local total: %d --- "), *SpawnTileEnvRef->GetActorLabel(), currentAssetPlacedCount);
-
 }
 
 /// <summary>
@@ -715,13 +685,11 @@ float ULevelAssetSetupComponent::GetNoiseVec(FVector2D inputCords, float MinNois
 	float cordX = (inputCords.X) / float(LocalLevel->GameMapTextureSize - 1);
 	float cordY = (inputCords.Y) / float(LocalLevel->GameMapTextureSize - 1);
 
-
 	float NoiseLookup = FMath::PerlinNoise2D(FVector2D(cordX, cordY) * LocalLevel->PerlinScaleFreq);
 
 	float NormalizedNoise = (NoiseLookup - MinNoise) / (MaxNoise - MinNoise);
 
 	//UE_LOG(LogTemp, Log, TEXT("not normalized: %f"), NormalizedNoise);
-
 	//float normalizedOutput = FMath::GetMappedRangeValueUnclamped(FVector2D(-1.0f, 1.0f), FVector2D(0.0f, 1.0f), NormalizedNoise);
 	//UE_LOG(LogTemp, Log, TEXT("normalized/clamped val: %f"), normalizedOutput);
 
@@ -738,7 +706,6 @@ float ULevelAssetSetupComponent::GetNoiseVec(FVector2D inputCords, float MinNois
 void ULevelAssetSetupComponent::OnEnemyLoaded(FEnemySpawnInfo* EnemySpawnInfo, FVector SpawnLocation, int enemyNum)
 {
 	//LogOnScreen(this, "Finished Loading Monster...", FColor::Green);
-
 	UAssetManager* Manager = UAssetManager::GetIfValid();
 	if (Manager)
 	{
@@ -955,9 +922,11 @@ void ULevelAssetSetupComponent::PopulateGridAssets()
 
 	ActivateEnemies();
 
+	SetupStartingTile();
+
 	CleanupAllItemPickups();
 
 	//Finished grid branch creation
-	UE_LOG(LogTemp, Log, TEXT("\n\n================= Finished ========================="));
+	UE_LOG(LogTemp, Log, TEXT("\n================= Finished ========================="));
 }
 

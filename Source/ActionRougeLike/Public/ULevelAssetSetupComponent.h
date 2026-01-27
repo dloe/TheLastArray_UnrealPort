@@ -132,6 +132,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Level Asset Population", meta = (ToolTip = "Populated on play."))
 	ASStartingSpawnTile* SpawnTileEnvRef;
 
+	UPROPERTY(EditAnywhere, Category = "Level Asset Population", meta = (ToolTip = "Populated on play."))
+	ASTileVariantEnviornment* SecretRoomRef;
+
 protected:
 
 	// ---------------------------------
@@ -177,12 +180,6 @@ protected:
 
 	UFUNCTION(BlueprintCallable, Category = "Level Asset Population")
 	void SetupLevelAssetComponent();
-
-	UFUNCTION(BlueprintCallable, Category = "Level Asset Population")
-	void GridAnalysis();
-
-	UFUNCTION(BlueprintCallable, Category = "Level Asset Population")
-	void ActivateLevelKey();
 
 	UFUNCTION(BlueprintCallable, Category = "Level Asset Population")
 	void ActivateSecretRoom();
