@@ -1,4 +1,8 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright (c) 2026 Dylan.
+// Personal Game Project.
+//
+// This code is provided as-is for development and experimentation.
+// Unauthorized use, distribution, or modification is not permitted.
 
 #pragma once
 
@@ -85,8 +89,6 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Tile Variant")
 	bool TileVariantInUse = false;
 
-	//UPROPERTY(EditAnywhere, Category = "Tile Variant")
-	//ETileSizeVariant VariantType = ETileSizeVariant::ET1x1;
 #pragma endregion
 
 #pragma region Tile Path - Public Variables

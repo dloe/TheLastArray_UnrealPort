@@ -1,4 +1,8 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright (c) 2026 Dylan.
+// Personal Game Project.
+//
+// This code is provided as-is for development and experimentation.
+// Unauthorized use, distribution, or modification is not permitted.
 
 #pragma once
 
@@ -6,7 +10,6 @@
 #include "GameFramework/Actor.h"
 #include "STileVariantEnviornment.h"
 #include "SStartingSpawnTile.h"
-//#include "Enviornment/PickupAssetData.h"
 #include "SLocalLevel.generated.h"
 
 UENUM(BlueprintType)
@@ -78,17 +81,6 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Tile Stats")
 	ELevelTier CurrentLevelTier;
-
-	//reference level asset data and presets
-
-	//each level should have some type of data object that holds this info, then will assign this this guy
-
-	//player data?
-
-	//reference to player
-
-	//presets for each level tier (TODO: move this to new location for storage)
-
 
 	/// <summary>
 	/// Level 1 seems solid with pickup threshold of 0.3 (assuming 512 and freq of 0.8)

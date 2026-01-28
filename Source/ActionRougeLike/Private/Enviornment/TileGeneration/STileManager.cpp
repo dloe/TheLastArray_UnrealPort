@@ -1,5 +1,8 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
+// Copyright (c) 2026 Dylan.
+// Personal Game Project.
+//
+// This code is provided as-is for development and experimentation.
+// Unauthorized use, distribution, or modification is not permitted.
 
 #include "Enviornment/TileGeneration/STileManager.h"
 #include "SLocalLevel.h"
@@ -28,12 +31,6 @@ ASTileManager::ASTileManager()
 	GridBranchSetupComponent = CreateDefaultSubobject<UTileGridBranchComponent>(TEXT("BranchSetupComponent"));
 	GridBranchSetupComponent->OnGridAdditionalSetupCompletedEvent.AddDynamic(this, &ASTileManager::OnBranchFillGeneration);
 
-	//LevelAssetSetupComponent = CreateDefaultSubobject<ULevelAssetSetupComponent>(TEXT("LevelAssetSetupComponent"));
-	//LevelAssetSetupComponent->TileManagerRef = this;
-	
-
-	//TODO: don't think i need this? will use if i end up finding a better way than bp
-	//TileVariantComponent = CreateDefaultSubobject<UTileVariantComponent>(TEXT("TileVariantComponent"));
 }
 
 /// <summary>
@@ -87,9 +84,6 @@ void ASTileManager::BeginLevelSetupProcedure()
 	//TO DO: Make a set var function?
 	TileVariantComponent = FindComponentByClass<UTileVariantComponent>();
 	LevelAssetSetupComponent = FindComponentByClass<ULevelAssetSetupComponent>();
-
-	//TODO: Move this out of here
-	//LevelAssetSetupComponent->TileManagerRef = this;
 
 	if (bDebugPrintsRef) {
 		UE_LOG(LogTemp, Log, TEXT("==========================================================="));
