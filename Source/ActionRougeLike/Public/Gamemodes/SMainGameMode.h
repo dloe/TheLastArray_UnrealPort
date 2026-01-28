@@ -1,4 +1,8 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright (c) 2026 Dylan.
+// Personal Game Project.
+//
+// This code is provided as-is for development and experimentation.
+// Unauthorized use, distribution, or modification is not permitted.
 
 #pragma once
 
@@ -6,10 +10,6 @@
 #include "GameFramework/GameModeBase.h"
 #include "Objectives/SBaseObjective.h"
 #include "ULevelAssetSetupComponent.h"
-
-
-
-
 #include "SMainGameMode.generated.h"
 
 class USSaveGame;

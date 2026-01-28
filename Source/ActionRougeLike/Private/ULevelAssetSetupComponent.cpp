@@ -1,5 +1,8 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
+// Copyright (c) 2026 Dylan.
+// Personal Game Project.
+//
+// This code is provided as-is for development and experimentation.
+// Unauthorized use, distribution, or modification is not permitted.
 
 #include "ULevelAssetSetupComponent.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -16,23 +19,15 @@
 #include "NavigationSystem.h"
 #include "NavMesh/RecastNavMesh.h"
 
-//enum class ESpawnTiers : uint8;
 
 //Note: This component is purely for placement and choosing of level assets (IE Items and objectives?)
 // and enemies
 
-//all the data for level will be kept in local level
 
 
-
-//TODO: Visualize the noise map. Material debugging, create mat that maps Perlin noise 
-// to a texture or world surface (like the floor?).Use debug spheres or other markers to 
-// visualize valid locations based on thresholds 
-
-
-/// - TODO: These are like pickups right? Lets inherit from our pickup class we already have looked at
-/// Will for now make the spawned items populate an array of pickups. Will make block-outs for lvl2 to include
-/// the preplaced 'markers'.
+/// -------------   Main Idea for component:  -------------
+/// Will for now make the spawned items populate an array of pickups. Prototype via blockout tiles to be placed and run core logic,
+/// will have the preplaced 'markers'.
 /// 1. Make variant block-outs for example lvl. Include the preplacements of items and enemies
 /// 2. Perlin noise system and how to determine which places to use.
 /// 3. weight table for which items to spawn
