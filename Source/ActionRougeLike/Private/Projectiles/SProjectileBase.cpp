@@ -1,5 +1,8 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
+// Copyright (c) 2026 Dylan.
+// Personal Game Project.
+//
+// This code is provided as-is for development and experimentation.
+// Unauthorized use, distribution, or modification is not permitted.
 
 #include "Projectiles/SProjectileBase.h"
 
@@ -32,7 +35,8 @@ ASProjectileBase::ASProjectileBase()
 	ImpactShakeInnerRadius = 0.0f;
 	ImpactShakeOuterRadius = 1500.0f;
 
-	SetReplicates(true);
+	//SetReplicates(true);
+	bReplicates = true;
 }
 
 void ASProjectileBase::OnActorHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
@@ -45,9 +49,9 @@ void ASProjectileBase::OnActorHit(UPrimitiveComponent* HitComp, AActor* OtherAct
 //implementation from it being marked as BlueprintNativeEvent
 void ASProjectileBase::Explode_Implementation()
 {
-	//check to make sure we arent already being destroyed
+	//check to make sure we aren't already being destroyed
 	//adding ensure to see if we counter this situation at all
-	if (ensure(!IsPendingKill()))
+	if (ensure(!IsPendingKill()))//!IsValidChecked(this)) //future me: did we need that ensure here?
 	{
 		UGameplayStatics::SpawnEmitterAtLocation(this, ImpactVFX, GetActorLocation(), GetActorRotation());
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), ImpactSound, GetActorLocation(), GetActorRotation());

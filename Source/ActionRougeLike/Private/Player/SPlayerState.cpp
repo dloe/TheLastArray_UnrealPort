@@ -1,5 +1,8 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
+// Copyright (c) 2026 Dylan.
+// Personal Game Project.
+//
+// This code is provided as-is for development and experimentation.
+// Unauthorized use, distribution, or modification is not permitted.
 
 #include "Player/SPlayerState.h"
 #include "Net/UnrealNetwork.h"
@@ -8,7 +11,8 @@
 ASPlayerState::ASPlayerState()
 {
 	Credits = 0;
-	SetReplicates(true);
+	//SetReplicates(true);
+	bReplicates = true;
 }
 
 int ASPlayerState::GetCredits()
@@ -38,7 +42,7 @@ bool ASPlayerState::RemoveCredits(int32 delta)
 int ASPlayerState::AddCredits(int32 delta)
 {
 
-	if (!ensure(delta > 0.0f))
+	if (delta <= 0.0f) // used to be (!ensure(delta >=- 0.0f))
 		return 0;
 
 	//UE_LOG(LogTemp, Log, TEXT("in funct - value to add: %d"), value);

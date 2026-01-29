@@ -1,7 +1,11 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright (c) 2026 Dylan.
+// Personal Game Project.
+//
+// This code is provided as-is for development and experimentation.
+// Unauthorized use, distribution, or modification is not permitted.
 
 #include "Enviornment/TileGeneration/STile.h"
-#include "STileDoorWallConnection.h"
+#include "Enviornment/TileGeneration/STileDoorWallConnection.h"
 #include "Engine/World.h"
 
 // Sets default values
@@ -407,10 +411,13 @@ void ASTile::ActivateLeftDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorw
 
 /// <summary>
 /// Remove Given wall
+/// return if removal of wall is possible for debugging purposes
 /// </summary>
 /// <param name="side"></param>
-void ASTile::RemoveCurrentWall(ETileSide side)
+bool ASTile::RemoveCurrentWall(ETileSide side)
 {
+	bool canProceedWithRemovalAndSpawning = false;
+
 	ASTileWall* wall;
 	switch (side)
 	{
@@ -432,11 +439,16 @@ void ASTile::RemoveCurrentWall(ETileSide side)
 		break;
 
 	}
-	if(wall != NULL)
+	if(wall != NULL && !wall->isConnector) {
 		wall->Destroy();
-	else {
-		UE_LOG(LogTemp, Log, TEXT("Wall is null for %s"), *GetNameSafe(this));
 	}
+	else {
+		canProceedWithRemovalAndSpawning = true;
+	}
+	//else {
+		//UE_LOG(LogTemp, Log, TEXT("Wall is null for %s"), *GetNameSafe(this));
+	//}
+	return canProceedWithRemovalAndSpawning;
 }
 
 /// <summary>

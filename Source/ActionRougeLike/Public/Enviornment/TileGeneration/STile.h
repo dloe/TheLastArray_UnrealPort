@@ -1,4 +1,8 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright (c) 2026 Dylan.
+// Personal Game Project.
+//
+// This code is provided as-is for development and experimentation.
+// Unauthorized use, distribution, or modification is not permitted.
 
 #pragma once
 
@@ -66,7 +70,7 @@ public:
 
 #pragma region Tile Stats - Public Variables
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Tile Stats")
-	float TileLength;
+	float TileLength; //cord size is Scale * 100
 
 	//what our index is on the array
 	UPROPERTY(EditAnywhere, Category = "Tile Stats")
@@ -85,8 +89,6 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Tile Variant")
 	bool TileVariantInUse = false;
 
-	//UPROPERTY(EditAnywhere, Category = "Tile Variant")
-	//ETileSizeVariant VariantType = ETileSizeVariant::ET1x1;
 #pragma endregion
 
 #pragma region Tile Path - Public Variables
@@ -299,7 +301,7 @@ UFUNCTION(BlueprintCallable, Category = "Tile Components - Walls")
 	void ActivateLeftDoor(TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName, TArray<ASTileWall*>& AllSpawnedWalls);
 
 	UFUNCTION(Category = "Tile Components - Walls")
-	void RemoveCurrentWall(ETileSide side);
+	bool RemoveCurrentWall(ETileSide side);
 
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
 	ASTileWall* SpawnDoorConnector(ETileSide side, TSubclassOf<ASTileDoorWallConnection> ChoosenDoorwayAsset, FName WallsSubFolderName, TArray<ASTileWall*>& AllSpawnedWalls);

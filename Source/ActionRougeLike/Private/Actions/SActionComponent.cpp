@@ -1,4 +1,9 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright (c) 2026 Dylan.
+// Personal Game Project.
+//
+// This code is provided as-is for development and experimentation.
+// Unauthorized use, distribution, or modification is not permitted.
+
 #include "Actions/SActionComponent.h"
 #include "Actions/SAction.h"
 #include <ActionRougeLike/ActionRougeLike.h>
@@ -74,6 +79,7 @@ void USActionComponent::AddAction(AActor* Instigator, TSubclassOf<USAction> Acti
 {
 	if (!ensure(ActionClass))
 	{
+		UE_LOG(LogTemp, Error, TEXT("Failed. No actionclass passed... [Class: %s]"), *GetNameSafe(ActionClass));
 		return;
 	}
 
@@ -201,7 +207,7 @@ void USActionComponent::ServerStopAction_Implementation(AActor* Instigator, FNam
 
 }
 
-//we shouldnt need to add the header file since we marked a var as replciated. Its only generated h should include it
+//we shouldn't need to add the header file since we marked a var as replicated. Its only generated h should include it
 void  USActionComponent::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -218,7 +224,7 @@ bool USActionComponent::ReplicateSubobjects(UActorChannel* Channel, FOutBunch* B
 		if (Action)
 		{
 			//using bitwise to write to WroteSomthing
-			//make sure that it keeps track of wheather or not it wrote somehting
+			//make sure that it keeps track of whether or not it wrote something
 			WroteSomething |= Channel->ReplicateSubobject(Action, *Bunch, *RepFlags);
 
 		}

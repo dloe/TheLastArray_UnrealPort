@@ -1,5 +1,8 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
+// Copyright (c) 2026 Dylan.
+// Personal Game Project.
+//
+// This code is provided as-is for development and experimentation.
+// Unauthorized use, distribution, or modification is not permitted.
 
 #include "Interactables/SItemChest.h"
 #include "Components/StaticMeshComponent.h"
@@ -20,7 +23,8 @@ ASItemChest::ASItemChest()
 
 	TargetPitch = 110;
 
-	SetReplicates(true);
+	//SetReplicates(true); 
+	bReplicates = true; //set directly for preinit actors
 }
 
 void ASItemChest::Interact_Implementation(APawn* InstigatorPawn)

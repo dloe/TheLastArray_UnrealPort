@@ -1,5 +1,8 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
+// Copyright (c) 2026 Dylan.
+// Personal Game Project.
+//
+// This code is provided as-is for development and experimentation.
+// Unauthorized use, distribution, or modification is not permitted.
 
 #include "AI/SAICharacter.h"
 #include "Perception/PawnSensingComponent.h"
@@ -11,9 +14,10 @@
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Player/SPlayerState.h"
-#include <ActionRougeLike/Public/SGameModeBase.h>
+#include <Gamemodes/SGameModeBase.h>
 #include <Actions/SActionComponent.h>
 #include <ActionRougeLike/ActionRougeLike.h>
+#include "Gamemodes/SMainGameMode.h"
 
 // Sets default values
 ASAICharacter::ASAICharacter()
@@ -127,12 +131,31 @@ void ASAICharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponen
 
             const FTransform SpawnTM = FTransform(this->GetActorRotation(), this->GetActorLocation());
             
+            //old prototype
             //on minion death event via SGameModeBase
             ASGameModeBase* GM = GetWorld()->GetAuthGameMode<ASGameModeBase>();
             if (GM)
             {
-                GM->KillMinionEvent(InstigatorActor, CreditsOnKill);
+                //GM->KillMinionEvent(InstigatorActor, CreditsOnKill);
             }
+
+            //tell instigator if player that they got the kill and update a stat somewhere
+            
+
+            //first reduce count for enemy alive
+
+
+            ASMainGameMode* LevelGameMode = Cast<ASMainGameMode>(GetWorld()->GetAuthGameMode());
+            if (LevelGameMode)
+            {
+                //check enemy type, if normal enemy and part of objective. Update killcount
+                //run objective enemy killed event
+                //(we run a check objective function in this call btw)
+                LevelGameMode->KillNormalEnemyEvent(InstigatorActor, CreditsOnKill, this);
+
+            }
+            
+
         }
     }
 }
@@ -142,7 +165,7 @@ void ASAICharacter::SetTargetActor(AActor* NewTarget)
     AAIController* AIC = Cast<AAIController>(GetController());
     if (AIC)
     {
-        //dont even need to null check this since we know for a fact this is valid. Cannot be null
+        //don't even need to null check this since we know for a fact this is valid. Cannot be null
         AIC->GetBlackboardComponent()->SetValueAsObject("TargetActor", NewTarget);
     }
 }
