@@ -6,13 +6,13 @@
 
 #include "Enviornment/TileGeneration/STileManager.h"
 #include "SLocalLevel.h"
-#include "UTilePathSetupComp.h"
-#include "UTileGridBranchComponent.h"
-#include "ULevelAssetSetupComponent.h"
+#include "Enviornment/UTilePathSetupComp.h"
+#include "Enviornment/UTileGridBranchComponent.h"
+#include "Enviornment/ULevelAssetSetupComponent.h"
 #include <string>
 #include <Math/UnrealMathUtility.h>
 #include <Kismet/KismetMathLibrary.h>
-#include "SFTileVariantDefinitionData.h"
+#include "Enviornment/TileGeneration/SFTileVariantDefinitionData.h"
 #include "Gamemodes/SMainGameMode.h"
 
 // Sets default values

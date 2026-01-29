@@ -4,5 +4,9 @@
 // This code is provided as-is for development and experimentation.
 // Unauthorized use, distribution, or modification is not permitted.
 
-#include "SSaveGame.h"
+#include "Enviornment/TileGeneration/STileDoorWallConnection.h"
 
+ASTileDoorWallConnection::ASTileDoorWallConnection()
+{
+	isConnector = true;
+}

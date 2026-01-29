@@ -5,7 +5,7 @@
 // Unauthorized use, distribution, or modification is not permitted.
 
 #include "Enviornment/TileGeneration/STile.h"
-#include "STileDoorWallConnection.h"
+#include "Enviornment/TileGeneration/STileDoorWallConnection.h"
 #include "Engine/World.h"
 
 // Sets default values

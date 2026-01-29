@@ -9,7 +9,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Enviornment/TileGeneration/STileManager.h"
-#include "ASTileWall.h"
+#include "Enviornment/TileGeneration/ASTileWall.h"
 #include "UTilePathSetupComp.generated.h"
 
 //forward declared

@@ -9,7 +9,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
 #include "Objectives/SBaseObjective.h"
-#include "ULevelAssetSetupComponent.h"
+#include "Enviornment/ULevelAssetSetupComponent.h"
 #include "SMainGameMode.generated.h"
 
 class USSaveGame;

@@ -4,14 +4,14 @@
 // This code is provided as-is for development and experimentation.
 // Unauthorized use, distribution, or modification is not permitted.
 
-#include "ULevelAssetSetupComponent.h"
+#include "Enviornment/ULevelAssetSetupComponent.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "UTileGridBranchComponent.h"
+#include "Enviornment/UTileGridBranchComponent.h"
 #include "Engine/AssetManager.h"
 #include "Actions/SActionComponent.h"
 #include "ScriptableObjects/SMonsterData.h"
 #include "Enviornment/PickupAssetData.h"
-#include "SFEnemyDataDefinition.h"
+#include "AI/SFEnemyDataDefinition.h"
 #include "UObject/UObjectGlobals.h"
 #include "Delegates/Delegate.h"
 #include "Objectives/SEliminationObjective.h"

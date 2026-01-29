@@ -4,7 +4,7 @@
 // This code is provided as-is for development and experimentation.
 // Unauthorized use, distribution, or modification is not permitted.
 
-#include "STileVariantEnviornment.h"
+#include "Enviornment/TileGeneration/STileVariantEnviornment.h"
 #include "Enviornment/TileGeneration/STileDoor.h"
 #include "Enviornment/TileGeneration/STile.h"
 //#include "SFTileVariantDefinitionData.h"

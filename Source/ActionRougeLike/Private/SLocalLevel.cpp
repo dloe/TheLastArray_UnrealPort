@@ -5,8 +5,8 @@
 // Unauthorized use, distribution, or modification is not permitted.
 
 #include "SLocalLevel.h"
-#include "LevelVariantPresetsData.h"
-#include "SFTileVariantDefinitionData.h"
+#include "Enviornment/TileGeneration/LevelVariantPresetsData.h"
+#include "Enviornment/TileGeneration/SFTileVariantDefinitionData.h"
 #include "Enviornment/TileGeneration/STile.h"
 
 // Sets default values

@@ -8,9 +8,9 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "STileVariantEnviornment.h"
-#include "SFTileVariantDefinitionData.h"
-#include "TileVariantComponent.h"
+#include "Enviornment/TileGeneration/STileVariantEnviornment.h"
+#include "Enviornment/TileGeneration/SFTileVariantDefinitionData.h"
+#include "Enviornment/TileGeneration/TileVariantComponent.h"
 #include "UTileGridBranchComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBranchFillGenerated);

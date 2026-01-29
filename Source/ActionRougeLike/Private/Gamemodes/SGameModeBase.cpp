@@ -1,7 +1,10 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright (c) 2026 Dylan.
+// Personal Game Project.
+//
+// This code is provided as-is for development and experimentation.
+// Unauthorized use, distribution, or modification is not permitted.
 
-
-#include "SGameModeBase.h"
+#include "Gamemodes/SGameModeBase.h"
 #include "EnvironmentQuery/EnvQueryTypes.h"
 #include "EnvironmentQuery/EnvQueryManager.h"
 #include "EnvironmentQuery/EnvQueryInstanceBlueprintWrapper.h"
@@ -18,8 +21,8 @@
 #include "ScriptableObjects/SMonsterData.h"
 #include <ActionRougeLike/ActionRougeLike.h>
 #include <Runtime/Engine/Classes/Engine/AssetManager.h>
-#include "SFEnemyDataDefinition.h"
-//dont think the eenvqueryrunmode enum is needed to include header
+#include "AI/SFEnemyDataDefinition.h"
+//don't think the eenvqueryrunmode enum is needed to include header
 
 //cvar
 static TAutoConsoleVariable<bool> CVarSpawnBots(TEXT("su.SpawnBots"), true, TEXT("Enable spawning of bots via timer."), ECVF_Cheat);

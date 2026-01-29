@@ -9,7 +9,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "AI/SAICharacter.h"
 #include "Attributes/SAttributeComponent.h"
-#include "SGameModeBase.h"
+#include "Gamemodes/SGameModeBase.h"
 #include <ActionRougeLike/Public/AI/SAICharacter.h>
 #include "EngineUtils.h"
 #include "SSaveGame.h"

@@ -8,8 +8,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "STileVariantEnviornment.h"
-#include "SStartingSpawnTile.h"
+#include "Enviornment/TileGeneration/STileVariantEnviornment.h"
+#include "Enviornment/TileGeneration/SStartingSpawnTile.h"
 #include "SLocalLevel.generated.h"
 
 UENUM(BlueprintType)

@@ -8,7 +8,7 @@
 
 #include "CoreMinimal.h"
 #include "Objectives/SBaseObjective.h"
-#include "ULevelAssetSetupComponent.h"
+#include "Enviornment/ULevelAssetSetupComponent.h"
 #include "SEliminationObjective.generated.h"
 
 

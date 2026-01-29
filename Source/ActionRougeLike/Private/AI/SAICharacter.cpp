@@ -14,7 +14,7 @@
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Player/SPlayerState.h"
-#include <ActionRougeLike/Public/SGameModeBase.h>
+#include <Gamemodes/SGameModeBase.h>
 #include <Actions/SActionComponent.h>
 #include <ActionRougeLike/ActionRougeLike.h>
 #include "Gamemodes/SMainGameMode.h"

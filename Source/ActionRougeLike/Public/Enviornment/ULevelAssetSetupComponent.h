@@ -11,9 +11,9 @@
 #include "Enviornment/TileGeneration/STileManager.h"
 #include "SLocalLevel.h"
 #include "Enviornment/PickupAssetData.h"
-#include "SFEnemyDataDefinition.h"
-#include "STileVariantEnviornment.h"
-#include "ObjectiveData.h"
+#include "AI/SFEnemyDataDefinition.h"
+#include "Enviornment/TileGeneration/STileVariantEnviornment.h"
+#include "Objectives/ObjectiveData.h"
 #include "ULevelAssetSetupComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEnemiesSpawned);

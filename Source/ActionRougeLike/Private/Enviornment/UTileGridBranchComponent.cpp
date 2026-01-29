@@ -4,7 +4,7 @@
 // This code is provided as-is for development and experimentation.
 // Unauthorized use, distribution, or modification is not permitted.
 
-#include "UTileGridBranchComponent.h"
+#include "Enviornment/UTileGridBranchComponent.h"
 //#include "Components/ActorComponent.h"
 #include "Enviornment/TileGeneration/STileManager.h"
 
