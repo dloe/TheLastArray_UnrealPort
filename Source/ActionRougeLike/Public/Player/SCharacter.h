@@ -14,6 +14,7 @@
 #include "Particles/ParticleSystemComponent.h"
 #include "SPlayerState.h"
 #include "Actions/SActionEffect.h"
+#include "ActorComponents/SPlayerInventoryComponent.h"
 #include "SCharacter.generated.h"
 
 
@@ -51,6 +52,11 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Category = "Components")
 	USActionComponent* ActionComp;
+
+	//this is where our weapon inventory should reside
+	//or general inventory? or access to that inventory
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Inventory")
+	USPlayerInventoryComponent* PlayerInventoryComponent;
 
 	//TO DO
 	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Category = "Player")
@@ -107,5 +113,8 @@ public:
 
 	UFUNCTION(Exec)
 	void HealSelf(float Amount = 100);
+
+	UFUNCTION()
+	USPlayerInventoryComponent* GetPlayerInventoryComp() {return PlayerInventoryComponent; };
 
 };

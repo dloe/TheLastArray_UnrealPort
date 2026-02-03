@@ -4,47 +4,93 @@
 // This code is provided as-is for development and experimentation.
 // Unauthorized use, distribution, or modification is not permitted.
 
-#include "Actions/SAction_ProjectileAttack.h"
+#include "Actions/SAction_WeaponAttack.h"
 #include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
 #include "GameFramework/Character.h"
+#include "Weapons/SBaseWeapon.h"
+#include "Animation/AnimMontage.h"
+#include "Player/SCharacter.h"
+#include "AI/SAICharacter.h"
+#include "Engine/World.h"
 
-USAction_ProjectileAttack::USAction_ProjectileAttack()
-{
-	HandSocketName = "Muzzle_01";
-	AttacAnimDelay = 0.2f;
-}
-
-
-void USAction_ProjectileAttack::StartAction_Implementation(AActor* Instigator)
+/// <summary>
+/// Attack Action Behavior from equipped weapon stored in inventory
+/// 
+/// 
+/// </summary>
+/// <param name="Instigator"></param>
+void USAction_WeaponAttack::StartAction_Implementation(AActor* Instigator)
 {
 	Super::StartAction_Implementation(Instigator);
 
-	//get our attacking character
-	ACharacter* Character = Cast<ACharacter>(Instigator);
+	//if instigator is type player
+	ASCharacter* Character = Cast<ASCharacter>(Instigator);
+	ASAICharacter* AI = Cast<ASAICharacter>(Instigator);
 	if (Character)
 	{
-		Character->PlayAnimMontage(AttackAnim); //start animation, then wait until animation is finished to spawn projectile physically
+		InventoryComponent = Character->GetPlayerInventoryComp();
+	}
+	else if(AI) { //AI Inventory
+		InventoryComponent = AI->GetInventoryComp();
+	}
+	else {
+		//throw error?
+		UE_LOG(LogTemp, Error, TEXT("Failed Assignment of InventoryComp. Instigator issue... [Class: %s]"), *GetNameSafe(Instigator));
+	}
 
-		//spawn particle effect from hand socket on mesh
-		UGameplayStatics::SpawnEmitterAttached(CastingEffects, Character->GetMesh(), HandSocketName, FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTarget);
+	//if weapon, get weapon stats and run weapon action, else run consumable action
+	UInventorySlot* ItemEquipped = InventoryComponent->GetEquippedItem();
+	if(ItemEquipped->IsWeapon) {
 
-		if (Character->HasAuthority()) {
-			FTimerHandle TimerHandle_AttackDelay;
-			FTimerDelegate Delegate;
-			Delegate.BindUFunction(this, "AttackDelay_Elasped", Character);
+		EquipedWeaponFromInventory = Cast<USBaseWeapon>(ItemEquipped->ItemData);
 
-			//when timer finishes, spawn projectile
-			GetWorld()->GetTimerManager().SetTimer(TimerHandle_AttackDelay, Delegate, AttacAnimDelay, false);
+		ensure(EquipedWeaponFromInventory);
+		WeaponAttackAnimAction = EquipedWeaponFromInventory->AttackAnim;
+		WeaponCastingEffectsAction = EquipedWeaponFromInventory->CastingEffects;
+		SpawnSocketNameAction = EquipedWeaponFromInventory->HandSocketName;
+		AttacAnimDelayAction = EquipedWeaponFromInventory->AttacAnimDelay;
+		WeaponProjectileSubclassAction = EquipedWeaponFromInventory->WeaponProjectile;
+
+
+		//get our attacking character
+		//todo: put in character condition (or combine with ai one?)
+		if (Character)
+		{
+			Character->PlayAnimMontage(WeaponAttackAnimAction); //start animation, then wait until animation is finished to spawn projectile physically
+
+			//spawn particle effect from hand socket on mesh
+			UGameplayStatics::SpawnEmitterAttached(WeaponCastingEffectsAction, Character->GetMesh(), SpawnSocketNameAction, FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTarget);
+
+			if (Character->HasAuthority()) {
+				FTimerHandle TimerHandle_AttackDelay;
+				FTimerDelegate Delegate;
+				Delegate.BindUFunction(this, "AttackDelay_Elasped", Character);
+
+				//when timer finishes, spawn projectile
+				GetWorld()->GetTimerManager().SetTimer(TimerHandle_AttackDelay, Delegate, AttacAnimDelayAction, false);
+			}
 		}
+	}
+	else {
+		//if consumable
+		//this behavior TBD
+		//expect this to move around as i find a better way to incorporate consumables (drugs, power ups, train support charges, etc)
 	}
 }
 
-void USAction_ProjectileAttack::AttackDelay_Elasped(ACharacter* InstigatorCharacter)
+/// <summary>
+/// After animation players we spawn projectils or do the attack physically 
+/// </summary>
+/// <param name="InstigatorCharacter"></param>
+void USAction_WeaponAttack::AttackDelay_Elasped(ACharacter* InstigatorCharacter)
 {
-	if (ensureAlways(ProjectileClass))
+	//very similar behavior as the magic projectile, except we get alot of the properties from teh weapon instead of beiung
+	//stored in this action class
+
+	if (ensureAlways(WeaponProjectileSubclassAction))
 	{
 		//use handsocketname instead of muzzle_01
-		const FVector HandLocation = InstigatorCharacter->GetMesh()->GetSocketLocation(HandSocketName);
+		const FVector HandLocation = InstigatorCharacter->GetMesh()->GetSocketLocation(SpawnSocketNameAction);
 
 		//EPSCPoolMethod PoolingMethod; //defaults to none
 		//attach location can be KeepWorldPosition or KeepRelativeOffset
@@ -105,10 +151,8 @@ void USAction_ProjectileAttack::AttackDelay_Elasped(ACharacter* InstigatorCharac
 
 		//replaced GetControlRotation with our new target rotation
 		const FTransform SpawnTM = FTransform(ProjRotation, HandLocation);
-		AActor* T = GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTM, SpawnParams);
+		AActor* T = GetWorld()->SpawnActor<AActor>(WeaponProjectileSubclassAction, SpawnTM, SpawnParams);
 	}
 
 	StopAction(InstigatorCharacter);
 }
-
-

@@ -20,6 +20,10 @@ public:
 	// Sets default values for this actor's properties
 	ASTileDoor();
 
+	// ---------------------------------
+	// ------- Public Functions --------
+	// ---------------------------------
+
 	UPROPERTY(EditAnywhere, Category = "Door Info")
 	bool DoorActive = false;
 

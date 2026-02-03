@@ -18,6 +18,10 @@ USBTTask_RangedAttack::USBTTask_RangedAttack()
 
 EBTNodeResult::Type USBTTask_RangedAttack::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
+	//eventually will simply perform action call from here?
+	//or would it be simpler to retrieve stats from weapon from the ai inventory of equipped weapon?
+	// will look into this after i have some weapons made and player inventory working as intended
+	
 	//Super::ExecuteTask(OwnerComp, NodeMemory);
 
 	AAIController* MyController = OwnerComp.GetAIOwner();

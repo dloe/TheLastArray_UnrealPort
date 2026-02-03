@@ -37,6 +37,9 @@ ASCharacter::ASCharacter()
 
 	AttributeComponent = CreateDefaultSubobject<USAttributeComponent>("AttributeComp");
 
+	//todo: may need to have in character cpp script but ideally i only want the attributes to mess with the inventory
+	PlayerInventoryComponent = CreateDefaultSubobject<USPlayerInventoryComponent>("PlayerInventoryComp");
+
 	ActionComp = CreateDefaultSubobject<USActionComponent>("ActionComp");
 
 	//rotate to whatever we are moving towards
@@ -63,6 +66,8 @@ void ASCharacter::PostInitializeComponents()
 void ASCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	PlayerInventoryComponent->LoadInventory();
 	
 	//APlayerController* PC = Cast<APlayerController>(GetController());
 	//PState = Cast<ASPlayerState>(PC->PlayerState);
@@ -187,7 +192,14 @@ void ASCharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponent*
 
 void ASCharacter::PrimaryAttack()
 {
+	//if not melee weapon
+	//if weapon has equipped ammo and is able to fire
 	ActionComp->StartActionByName(this, "PrimaryAttack");
+
+	//else reload if we can reload
+
+	//else we got no ammo boi
+	//give feedback to player that weapon cant be used
 
 }
 
