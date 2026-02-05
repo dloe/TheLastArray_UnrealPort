@@ -71,6 +71,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Inventory")
 	UStockInventoryLoadoutsData* LoadoutBaseData;
 
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	int TotalItemsInHotbar = 0;
+
 	//utility functions to sweep usable items from inventory to hotbar
 
 	//integration to swap through hotbar (maybe use 1-3 or scroll?)

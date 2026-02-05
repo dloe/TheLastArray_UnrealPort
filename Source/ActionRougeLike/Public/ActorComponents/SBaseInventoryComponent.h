@@ -66,7 +66,11 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Inventory")
 	TArray<UInventorySlot*> Inventory;
 
-	
+	/// <summary>
+	/// Count hotbar as inventory extension btw
+	/// </summary>
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	int TotalItemsInInventory = 0;
 
 
 protected:

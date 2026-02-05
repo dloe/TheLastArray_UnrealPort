@@ -143,16 +143,39 @@ UInventorySlot* USPlayerInventoryComponent::GetEquippedItem()
 }
 
 /// <summary>
-/// Override based on Loadout data object
+/// Override based on loadout data object
 /// </summary>
 void USPlayerInventoryComponent::LoadInventory()
 {
-	
 	BaseHotbarSize = LoadoutBaseData->StockLoadout.BaseHotbarSize;
-	HotbarInventory = LoadoutBaseData->StockLoadout.HotbarInventory;
+	HotbarInventory.Empty();
+	for(FSlot hotbarSlot : LoadoutBaseData->StockLoadout.HotbarInventory)
+	{
+		UInventorySlot* SlotToAdd = NewObject<UInventorySlot>(GetOwner()); //this is passed in so playerinventorycomp is the outer and owner?
+		UItemBase* itemToAdd = nullptr;
+		if(hotbarSlot.ItemDataClass) {
+			itemToAdd = NewObject<UItemBase>(GetOwner(), hotbarSlot.ItemDataClass);
+			TotalItemsInHotbar++;
+			TotalItemsInInventory++;
+		}
+		SlotToAdd->Initialize(itemToAdd, hotbarSlot.IsWeapon, hotbarSlot.IsEquipable);
+		HotbarInventory.Add(SlotToAdd);
+	}
 	BaseInventorySize = LoadoutBaseData->StockLoadout.BaseInventorySize;
-	Inventory = LoadoutBaseData->StockLoadout.Inventory;
-
+	Inventory.Empty();
+	for (FSlot invSlot : LoadoutBaseData->StockLoadout.Inventory)
+	{
+		UInventorySlot* SlotToAdd = NewObject<UInventorySlot>(this);
+		UItemBase* itemToAdd = nullptr;
+		if(invSlot.ItemDataClass) {
+			itemToAdd = NewObject<UItemBase>(GetOwner(), invSlot.ItemDataClass);
+			TotalItemsInInventory++;
+		}
+		SlotToAdd->Initialize(itemToAdd, invSlot.IsWeapon, invSlot.IsEquipable);
+		Inventory.Add(SlotToAdd);
+	}
+	if(TotalItemsInHotbar > 0)
+		EquipItemAtIndex(0);
 }
 
 /// <summary>

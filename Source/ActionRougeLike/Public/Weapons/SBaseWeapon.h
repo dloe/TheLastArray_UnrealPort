@@ -15,7 +15,7 @@
 class UAnimMontage;
 class UParticleSystem;
 
-UCLASS()
+UCLASS(Blueprintable, DefaultToInstanced)
 class ACTIONROUGELIKE_API USBaseWeapon : public UItemBase
 {
 	GENERATED_BODY()
@@ -91,16 +91,19 @@ public:
 
 		//may move into child class for the projectile based weapons
 	UPROPERTY(EditAnywhere, Category = "Attack")
-		TSubclassOf<AActor> ProjectileClass;
+	TSubclassOf<AActor> ProjectileClass;
 
 	UPROPERTY(VisibleAnywhere, Category = "Effects")
-		FName HandSocketName = "Muzzle_01";
+	FName HandSocketName = "Muzzle_01";
 	UPROPERTY(VisibleAnywhere, Category = "Attack")
-		float AttacAnimDelay = 0.2f;
+	float AttacAnimDelay = 0.2f;
 	UPROPERTY(EditAnywhere, Category = "Attack")
-		UAnimMontage* AttackAnim;
+	UAnimMontage* AttackAnim;
+
+	UPROPERTY(EditAnywhere, Category = "Attack")
+	UAnimMontage* ReloadAnim;
 	UPROPERTY(EditDefaultsOnly, Category = "Effects")
-		UParticleSystem* CastingEffects;
+	UParticleSystem* CastingEffects;
 
 protected:
 	// Called when the game starts or when spawned

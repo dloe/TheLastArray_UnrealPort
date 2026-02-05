@@ -8,6 +8,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
+//#include "Engine/DataAsset.h"
 #include "UItemBase.generated.h"
 
 /**
@@ -15,7 +16,7 @@
  * 
  * if its actor it can be the parent for ASBaseWeapon?
  */
-UCLASS()
+UCLASS(Blueprintable, BlueprintType, DefaultToInstanced)
 class ACTIONROUGELIKE_API UItemBase : public UObject
 {
 	GENERATED_BODY()

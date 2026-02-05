@@ -13,11 +13,12 @@ UInventorySlot::UInventorySlot()
 
 }
 
-UInventorySlot::UInventorySlot(UItemBase* itemData, bool isweapon, bool isequipable)
+void UInventorySlot::Initialize(UItemBase* itemDataP, bool isweaponP, bool isequipableP)
 {
-	ItemData = itemData;
-	IsWeapon = isweapon;
-	IsEquipable = isequipable;
+	if(itemDataP)
+		ItemData = itemDataP;
+	IsWeapon = isweaponP;
+	IsEquipable = isequipableP;
 }
 
 /// <summary>

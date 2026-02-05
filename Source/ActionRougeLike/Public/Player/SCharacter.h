@@ -95,6 +95,12 @@ protected:
 
 	void PrimaryInteract();
 
+	void SelectHotbar1() { SetEquippedHotbar(0); };
+	void SelectHotbar2() { SetEquippedHotbar(1); };
+	void SelectHotbar3() { SetEquippedHotbar(2); };
+	void SelectHotbar4() { SetEquippedHotbar(3); };
+	void SetEquippedHotbar(int input);
+
 	UFUNCTION()
 	void OnHealthChanged(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewHealth, float Delta);
 

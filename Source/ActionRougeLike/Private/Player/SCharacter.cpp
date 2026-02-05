@@ -119,13 +119,23 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	//spawn projectile
 	PlayerInputComponent->BindAction("PrimaryAttack", IE_Pressed, this, &ASCharacter::PrimaryAttack);
 
-	//interactjion
+	//interaction
 	const FName interact = "PrimaryInteract";
 	PlayerInputComponent->BindAction(interact, IE_Pressed, this, &ASCharacter::PrimaryInteract);
 
 	//actions
 	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &ASCharacter::SprintStart);
 	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &ASCharacter::SprintStop);
+
+	//inventory swapping
+	const FName equip1 = "Hotbar1";
+	PlayerInputComponent->BindAction(equip1, IE_Pressed, this, &ASCharacter::SelectHotbar1);
+	const FName equip2 = "Hotbar2";
+	PlayerInputComponent->BindAction(equip2, IE_Pressed, this, &ASCharacter::SelectHotbar2);
+	const FName equip3 = "Hotbar3";
+	PlayerInputComponent->BindAction(equip3, IE_Pressed, this, &ASCharacter::SelectHotbar3);
+	const FName equip4 = "Hotbar4";
+	PlayerInputComponent->BindAction(equip4, IE_Pressed, this, &ASCharacter::SelectHotbar4); //remember 0 indexed
 }
 
 //movement
@@ -194,7 +204,9 @@ void ASCharacter::PrimaryAttack()
 {
 	//if not melee weapon
 	//if weapon has equipped ammo and is able to fire
-	ActionComp->StartActionByName(this, "PrimaryAttack");
+	//ActionComp->StartActionByName(this, "PrimaryAttack");
+	ActionComp->StartActionByName(this, "WeaponAttack"); //swap with our equipped weapon attack
+	
 
 	//else reload if we can reload
 
@@ -210,6 +222,11 @@ void ASCharacter::PrimaryInteract()
 		InteractiveComp->PrimaryInteract();
 	}
 	
+}
+
+void ASCharacter::SetEquippedHotbar(int input)
+{
+	PlayerInventoryComponent->EquipItemAtIndex(input);
 }
 
 //blackhole assignment 2

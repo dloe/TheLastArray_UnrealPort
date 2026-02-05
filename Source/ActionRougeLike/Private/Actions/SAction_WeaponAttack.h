@@ -47,22 +47,22 @@ class USAction_WeaponAttack : public USAction
 	// ---------------------------------
 
 	//vars tied directly to actions, only set when action starts and those props maintained until the aciton ends
-	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+	UPROPERTY(EditAnywhere, Category = "Equipped Weapon Properties")
 	USBaseWeapon* EquipedWeaponFromInventory;
 
-	UPROPERTY(EditAnywhere,  Category = "Weapon Properties")
+	UPROPERTY(EditAnywhere,  Category = "Equipped Weapon Properties")
 	UAnimMontage* WeaponAttackAnimAction;
 
-	UPROPERTY(EditAnywhere,  Category = "Weapon Properties")
+	UPROPERTY(EditAnywhere,  Category = "Equipped Weapon Properties")
 	UParticleSystem* WeaponCastingEffectsAction;
 
-	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+	UPROPERTY(EditAnywhere, Category = "Equipped Weapon Properties")
 	FName SpawnSocketNameAction;
 
-	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+	UPROPERTY(EditAnywhere, Category = "Equipped Weapon Properties")
 	float AttacAnimDelayAction;
 
-	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+	UPROPERTY(EditAnywhere, Category = "Equipped Weapon Properties")
 	TSubclassOf<AActor> WeaponProjectileSubclassAction;
 
 	//runs attack procedure for currently equipped weapon in actor's inventory

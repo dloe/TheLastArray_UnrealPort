@@ -64,11 +64,16 @@ void USAction_WeaponAttack::StartAction_Implementation(AActor* Instigator)
 			if (Character->HasAuthority()) {
 				FTimerHandle TimerHandle_AttackDelay;
 				FTimerDelegate Delegate;
+				//unless there is a 'warm up' animation that has to run before we can fire the weapon or make the attack, this will most likely be near 0
 				Delegate.BindUFunction(this, "AttackDelay_Elasped", Character);
 
 				//when timer finishes, spawn projectile
 				GetWorld()->GetTimerManager().SetTimer(TimerHandle_AttackDelay, Delegate, AttacAnimDelayAction, false);
 			}
+		}
+		else if (AI)
+		{
+			//panick
 		}
 	}
 	else {
@@ -79,7 +84,7 @@ void USAction_WeaponAttack::StartAction_Implementation(AActor* Instigator)
 }
 
 /// <summary>
-/// After animation players we spawn projectils or do the attack physically 
+/// After animation players we spawn projectiles or do the attack physically 
 /// </summary>
 /// <param name="InstigatorCharacter"></param>
 void USAction_WeaponAttack::AttackDelay_Elasped(ACharacter* InstigatorCharacter)

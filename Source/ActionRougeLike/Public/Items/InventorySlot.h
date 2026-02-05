@@ -14,7 +14,7 @@
 /**
  * 
  */
- UCLASS()
+ UCLASS(Blueprintable, DefaultToInstanced)
 class ACTIONROUGELIKE_API UInventorySlot : public UObject
 {
 
@@ -24,9 +24,6 @@ class ACTIONROUGELIKE_API UInventorySlot : public UObject
 
 public:
 	
-
-	UInventorySlot(UItemBase* itemData, bool isweapon, bool isequipable);
-
 	//item class stores here
 	//TODO make item class
 	//gets set to null initially
@@ -40,7 +37,7 @@ public:
 	bool IsWeapon;
 
 	//maybe this one over IsWeapon bool?
-	 UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool IsEquipable;
 
 	UFUNCTION(BlueprintCallable)
@@ -48,5 +45,8 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void AssignItem(UItemBase* itemToAssign);
+
+	UFUNCTION(BlueprintCallable)
+	void Initialize(UItemBase* itemDataP, bool isweaponP, bool isequipableP);
 
 };
