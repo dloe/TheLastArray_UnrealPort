@@ -39,6 +39,7 @@ ASCharacter::ASCharacter()
 
 	//todo: may need to have in character cpp script but ideally i only want the attributes to mess with the inventory
 	PlayerInventoryComponent = CreateDefaultSubobject<USPlayerInventoryComponent>("PlayerInventoryComp");
+	PlayerInventoryComponent->SetPlayerActor(this);
 
 	ActionComp = CreateDefaultSubobject<USActionComponent>("ActionComp");
 
@@ -67,7 +68,7 @@ void ASCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	PlayerInventoryComponent->LoadInventory();
+	PlayerInventoryComponent->LoadInventory(this);
 	
 	//APlayerController* PC = Cast<APlayerController>(GetController());
 	//PState = Cast<ASPlayerState>(PC->PlayerState);
@@ -226,7 +227,7 @@ void ASCharacter::PrimaryInteract()
 
 void ASCharacter::SetEquippedHotbar(int input)
 {
-	PlayerInventoryComponent->EquipItemAtIndex(input);
+	PlayerInventoryComponent->EquipItemAtIndex(input, this);
 }
 
 //blackhole assignment 2

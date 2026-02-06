@@ -47,7 +47,7 @@ public:
 
 	//could pass in data loaded to assign to inventory?
 	UFUNCTION(BlueprintCallable, Category = "Inventory Behavior")
-	virtual void LoadInventory();
+	virtual void LoadInventory(AActor* Instigator);
 
 	//Some type of data structure to hold items
 	//could include weapons? maybe have additional hotbar for weapons you can actually equip on character.
@@ -91,10 +91,13 @@ protected:
 	// ---------------------------------
 
 	//whatever index is selected, access that one and show to UI for highlighting
-	UPROPERTY(EditAnywhere, Category = "Inventory")
+	UPROPERTY(EditAnywhere, Category = "Equipped")
 	int EquippedSlotIndex = 0;
 
 	//updated every time we add sometihng to inventory or remove
 	UPROPERTY(EditAnywhere, Category = "Inventory")
 	int InventorySlotsAssigned = 0;
+
+	UPROPERTY(EditAnywhere, Category = "Equipped")
+	UAnimMontage* EquippedIdleAnim;
 };

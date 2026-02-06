@@ -8,7 +8,10 @@
 
 #include "CoreMinimal.h"
 #include "ActorComponents/SBaseInventoryComponent.h"
+//#include "Player/SCharacter.h"
 #include "SPlayerInventoryComponent.generated.h"
+
+class ASCharacter;
 
 /**
  * 
@@ -40,14 +43,17 @@ public:
 	bool RemoveItemToEquipableHotbar(UItemBase* ItemToEquip);
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory Behavior")
-	bool EquipItemAtIndex(int index);
+	bool EquipItemAtIndex(int index, AActor* Instigator);
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory Behavior")
 	bool EquipItemByName(FName ItemName);
 
 	virtual UInventorySlot* GetEquippedItem() override;
 
-	virtual void LoadInventory() override;
+	virtual void LoadInventory(AActor* Instigator) override;
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory Setup")
+	void SetPlayerActor(ASCharacter* playerToSet) { PlayerA  = playerToSet; };
 
 	//@TODO: This will eventually be an item (that weapons are a child class of)
 	//UFUNCTION(BlueprintCallable, Category = "Inventory Behavior")
@@ -92,10 +98,14 @@ protected:
 	// ---------------------------------
 	// -- Internal state / variables --
 	// ---------------------------------
+	
 	//@todo: this will eventually be an item that weapon is a child of
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Inventory")
 	UItemBase* EquippedItem;
 
 	UPROPERTY(EditAnywhere, Category = "Inventory")
 	int HotbarSlotsAssigned = 0;
+
+	UPROPERTY(EditAnywhere, Category = "Player")
+	ASCharacter* PlayerA;
 };

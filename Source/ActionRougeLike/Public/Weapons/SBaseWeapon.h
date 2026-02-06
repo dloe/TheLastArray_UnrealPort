@@ -93,8 +93,6 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Attack")
 	TSubclassOf<AActor> ProjectileClass;
 
-	UPROPERTY(VisibleAnywhere, Category = "Effects")
-	FName HandSocketName = "Muzzle_01";
 	UPROPERTY(VisibleAnywhere, Category = "Attack")
 	float AttacAnimDelay = 0.2f;
 	UPROPERTY(EditAnywhere, Category = "Attack")
@@ -104,6 +102,9 @@ public:
 	UAnimMontage* ReloadAnim;
 	UPROPERTY(EditDefaultsOnly, Category = "Effects")
 	UParticleSystem* CastingEffects;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon Properties")
+	FName WeaponMuzzleSocketName;
 
 protected:
 	// Called when the game starts or when spawned

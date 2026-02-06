@@ -39,6 +39,21 @@ class ACTIONROUGELIKE_API UItemBase : public UObject
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
 	TSoftObjectPtr<UTexture2D> Icon;
 
+		//storing blueprint of physical weapon model and mesh
+	//cant i just get the static mesh comp from this guy?
+	UPROPERTY(EditAnywhere, Category = "Item Model")
+	TSubclassOf<AActor> ItemActorSubclass;
+
+	UPROPERTY(EditAnywhere, Category = "Item Model")
+	AActor* ItemActor;
+
+	//A catch all for every time we have a weapon or equiptable item. where does it spawn on the skeletal mesh
+	UPROPERTY(VisibleAnywhere, Category = "Effects")
+	FName HandSocketName = "Muzzle_01";
+
+	UPROPERTY(EditAnywhere, Category = "Idle")
+	UAnimMontage* IldeAnimWhenEquipped;
+
 protected:
 
 
@@ -50,5 +65,6 @@ protected:
 	// ---------------------------------
 	// -- Internal state / variables --
 	// ---------------------------------
-
+	UPROPERTY(EditAnywhere, Category = "Item Model")
+	UStaticMeshComponent* ItemStaticMesh;
 };

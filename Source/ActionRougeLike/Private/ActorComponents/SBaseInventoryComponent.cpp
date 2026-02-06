@@ -101,11 +101,11 @@ bool USBaseInventoryComponent::AddItemToInventory(UItemBase* ItemToAdd)
 /// On begin play, this is called from Character script
 /// if we have loaded info, set that up here. Else use a stock inventory
 /// </summary>
-void USBaseInventoryComponent::LoadInventory()
+void USBaseInventoryComponent::LoadInventory(AActor* Instigator)
 {
 	//default to base inventory size, but if we have upgrades that will be passed in
 	Inventory.SetNum(BaseInventorySize);
 
-	//default loadout on start? we preseave and then load in?
+	//default loadout on start? we presave and then load in?
 }
 

@@ -5,10 +5,12 @@
 // Unauthorized use, distribution, or modification is not permitted.
 
 #include "ActorComponents/SPlayerInventoryComponent.h"
+#include "Player/SCharacter.h"
+#include "Kismet/GameplayStatics.h"
 
 USPlayerInventoryComponent::USPlayerInventoryComponent()
 {
-
+	
 }
 
 
@@ -72,22 +74,7 @@ bool USPlayerInventoryComponent::RemoveItemToEquipableHotbar(UItemBase* Equipped
 			HotbarInventory.RemoveAt(index);
 			if (EquippedSlotIndex == index)
 			{
-				//find next open slot to reassign as equipped slot
-				//if (HotbarSlotsAssigned > 0)
-				//{
-					//for (int indexSub = 0; indexSub < HotbarInventory.Num(); indexSub++) //UInventorySlot* Slot : Inventory)
-					//{
-						//if (!HotbarInventory[index]->isEmptySlot())
-						//{
-						//	EquippedItem = HotbarInventory[index]->ItemData;
-						//	EquippedSlotIndex = index;
-						//}
-					//}
-				//}
-				//else { //nothing in hotbar so donut show anything
-					//HotbarSlotsAssigned = 0;
-					EquippedItem = nullptr;
-				//}
+				EquippedItem = nullptr;
 			}
 		}
 	}
@@ -95,9 +82,10 @@ bool USPlayerInventoryComponent::RemoveItemToEquipableHotbar(UItemBase* Equipped
 	return foundItem;
 }
 
-bool USPlayerInventoryComponent::EquipItemAtIndex(int indexToFind)
+bool USPlayerInventoryComponent::EquipItemAtIndex(int indexToFind, AActor* Instigator)
 {
 	bool foundItem = false;
+	PlayerA = Cast<ASCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 
 	for (int index = 0; index < HotbarInventory.Num(); index++) //UInventorySlot* Slot : Inventory)
 	{
@@ -107,6 +95,29 @@ bool USPlayerInventoryComponent::EquipItemAtIndex(int indexToFind)
 			foundItem = true;
 			EquippedItem = HotbarInventory[index]->ItemData;
 			EquippedSlotIndex = index;
+			EquippedIdleAnim = HotbarInventory[index]->ItemData->IldeAnimWhenEquipped;
+
+			//if the hotbar weapon doesn't already have the physical weapon spawned, spawn it
+
+			//run animation to swap weapons
+
+			//for now will just have it spawn and immediately attach to player, no swap animation yet
+			//despawn old weapon
+			
+			FActorSpawnParameters SpawnParams;
+			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+			//ACharacter* MyPawn = Cast<ACharacter>(MyController->GetPawn());
+			SpawnParams.Instigator = PlayerA;
+
+			//@TODO: socket might change based on what item, take that into account (if weapon vs equippable item)
+			FTransform socketTransform = PlayerA->GetMesh()->GetSocketTransform(EquippedItem->HandSocketName);
+			EquippedItem->ItemActor = GetWorld()->SpawnActor<AActor>(EquippedItem->ItemActorSubclass, socketTransform, SpawnParams);
+			
+
+			//attach to socket
+			EquippedItem->ItemActor->AttachToComponent(PlayerA->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+			EquippedItem->HandSocketName);
+
 		}
 	}
 
@@ -145,7 +156,7 @@ UInventorySlot* USPlayerInventoryComponent::GetEquippedItem()
 /// <summary>
 /// Override based on loadout data object
 /// </summary>
-void USPlayerInventoryComponent::LoadInventory()
+void USPlayerInventoryComponent::LoadInventory(AActor* Instigator)
 {
 	BaseHotbarSize = LoadoutBaseData->StockLoadout.BaseHotbarSize;
 	HotbarInventory.Empty();
@@ -175,7 +186,7 @@ void USPlayerInventoryComponent::LoadInventory()
 		Inventory.Add(SlotToAdd);
 	}
 	if(TotalItemsInHotbar > 0)
-		EquipItemAtIndex(0);
+		EquipItemAtIndex(0, Instigator);
 }
 
 /// <summary>
@@ -200,6 +211,9 @@ bool USPlayerInventoryComponent::MoveItemFromHotbar(int IndexAInv, int IndexBHot
 
 			HotbarInventory[IndexBHot] = Inventory[IndexAInv];
 			Inventory[IndexAInv] = tempCopy;
+
+			//remove from corresponding index of places to spawn items
+
 		}
 	}
 
@@ -232,6 +246,9 @@ bool USPlayerInventoryComponent::MoveItemIntoHotbar(int IndexAHot, int IndexBInv
 
 			HotbarInventory[IndexAHot] = Inventory[IndexBInv];
 			Inventory[IndexBInv] = tempCopy;
+
+			//TODO: Depending on which index, corresponds to a different place for the aactor of the weapon to spawn
+
 		}
 	}
 
