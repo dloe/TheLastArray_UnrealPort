@@ -51,19 +51,22 @@ class USAction_WeaponAttack : public USAction
 	USBaseWeapon* EquipedWeaponFromInventory;
 
 	UPROPERTY(EditAnywhere,  Category = "Equipped Weapon Properties")
-	UAnimMontage* WeaponAttackAnimAction;
+	UAnimMontage* EquipedWeaponAttackAnimAction;
 
 	UPROPERTY(EditAnywhere,  Category = "Equipped Weapon Properties")
-	UParticleSystem* WeaponCastingEffectsAction;
+	UParticleSystem* EquipedWeaponCastingEffectsAction;
 
 	UPROPERTY(EditAnywhere, Category = "Equipped Weapon Properties")
-	FName SpawnSocketNameAction;
+	FName EquipedSpawnSocketNameAction;
 
 	UPROPERTY(EditAnywhere, Category = "Equipped Weapon Properties")
-	float AttacAnimDelayAction;
+	float EquipedAttacAnimDelayAction;
 
 	UPROPERTY(EditAnywhere, Category = "Equipped Weapon Properties")
-	TSubclassOf<AActor> WeaponProjectileSubclassAction;
+	TSubclassOf<AActor> EquipedWeaponProjectileSubclassAction;
+
+	UPROPERTY(EditAnywhere, Category = "Equipped Weapon Properties")
+	UStaticMeshComponent* EquipedWeaponStaticMesh;
 
 	//runs attack procedure for currently equipped weapon in actor's inventory
 	//this should be assigned when we a reference to this class is established to the controller class?

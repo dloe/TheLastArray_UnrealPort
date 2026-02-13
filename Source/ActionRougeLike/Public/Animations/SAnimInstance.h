@@ -21,8 +21,14 @@ class ACTIONROUGELIKE_API USAnimInstance : public UAnimInstance
 	
 protected:
 
+	//check action component if we are stunned
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
 	bool bIsStunned;
+
+	//check action component if we are reloading
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
+	bool bIsReloading;
+
 
 	UPROPERTY(BlueprintReadOnly, Category = "Animation")
 	USActionComponent* ActionComp;

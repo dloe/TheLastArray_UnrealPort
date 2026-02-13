@@ -45,30 +45,33 @@ void USAction_WeaponAttack::StartAction_Implementation(AActor* Instigator)
 		EquipedWeaponFromInventory = Cast<USBaseWeapon>(ItemEquipped->ItemData);
 
 		ensure(EquipedWeaponFromInventory);
-		WeaponAttackAnimAction = EquipedWeaponFromInventory->AttackAnim;
-		WeaponCastingEffectsAction = EquipedWeaponFromInventory->CastingEffects;
-		SpawnSocketNameAction = EquipedWeaponFromInventory->HandSocketName;
-		AttacAnimDelayAction = EquipedWeaponFromInventory->AttacAnimDelay;
-		WeaponProjectileSubclassAction = EquipedWeaponFromInventory->WeaponProjectile;
+		EquipedWeaponAttackAnimAction = EquipedWeaponFromInventory->AttackAnim;
+		EquipedWeaponCastingEffectsAction = EquipedWeaponFromInventory->CastingEffects;
+		EquipedSpawnSocketNameAction = EquipedWeaponFromInventory->WeaponMuzzleSocketName;
+		EquipedAttacAnimDelayAction = EquipedWeaponFromInventory->AttacAnimDelay;
+		EquipedWeaponProjectileSubclassAction = EquipedWeaponFromInventory->WeaponProjectile;
+		EquipedWeaponStaticMesh = EquipedWeaponFromInventory->GetItemStaticMesh();
 
 
 		//get our attacking character
 		//todo: put in character condition (or combine with ai one?)
 		if (Character)
 		{
-			Character->PlayAnimMontage(WeaponAttackAnimAction); //start animation, then wait until animation is finished to spawn projectile physically
-
-			//spawn particle effect from hand socket on mesh
-			UGameplayStatics::SpawnEmitterAttached(WeaponCastingEffectsAction, Character->GetMesh(), SpawnSocketNameAction, FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTarget);
+			Character->PlayAnimMontage(EquipedWeaponAttackAnimAction); //start animation, then wait until animation is finished to spawn projectile physically
 
 			if (Character->HasAuthority()) {
 				FTimerHandle TimerHandle_AttackDelay;
 				FTimerDelegate Delegate;
-				//unless there is a 'warm up' animation that has to run before we can fire the weapon or make the attack, this will most likely be near 0
-				Delegate.BindUFunction(this, "AttackDelay_Elasped", Character);
-
+				
 				//when timer finishes, spawn projectile
-				GetWorld()->GetTimerManager().SetTimer(TimerHandle_AttackDelay, Delegate, AttacAnimDelayAction, false);
+				if(EquipedAttacAnimDelayAction != 0.0f) {
+					//unless there is a 'warm up' animation that has to run before we can fire the weapon or make the attack, this will most likely be near 0
+					Delegate.BindUFunction(this, "AttackDelay_Elasped", Character);
+					GetWorld()->GetTimerManager().SetTimer(TimerHandle_AttackDelay, Delegate, EquipedAttacAnimDelayAction, false);
+				} else {
+					//run immediately if no delay is there
+					AttackDelay_Elasped(Character);
+				}
 			}
 		}
 		else if (AI)
@@ -92,10 +95,10 @@ void USAction_WeaponAttack::AttackDelay_Elasped(ACharacter* InstigatorCharacter)
 	//very similar behavior as the magic projectile, except we get alot of the properties from teh weapon instead of beiung
 	//stored in this action class
 
-	if (ensureAlways(WeaponProjectileSubclassAction))
+	if (ensureAlways(EquipedWeaponProjectileSubclassAction))
 	{
-		//use handsocketname instead of muzzle_01
-		const FVector HandLocation = InstigatorCharacter->GetMesh()->GetSocketLocation(SpawnSocketNameAction);
+		//use weapons projectiles name instead of 'muzzle'
+		const FVector HandLocation = EquipedWeaponStaticMesh->GetSocketLocation(EquipedSpawnSocketNameAction);
 
 		//EPSCPoolMethod PoolingMethod; //defaults to none
 		//attach location can be KeepWorldPosition or KeepRelativeOffset
@@ -109,6 +112,10 @@ void USAction_WeaponAttack::AttackDelay_Elasped(ACharacter* InstigatorCharacter)
 		//UGameplayStatics::SpawnEmitterAttached(CastSpellVFX, GetMesh(), HandSocketName, FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTarget);
 		//UGameplayStatics::SpawnEmitterAttached(CastSpellVFX, GetMesh(), HandSocketName, FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTarget, true, EPSCPoolMethod::None, true);
 		//UGameplayStatics::SpawnEmitterAttached(CastSpellVFX, GetMesh(), HandSocketName, FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTarget);
+		//spawn particle effect from hand socket on mesh
+
+		UGameplayStatics::SpawnEmitterAttached(EquipedWeaponCastingEffectsAction, EquipedWeaponStaticMesh, EquipedSpawnSocketNameAction, FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTarget);
+
 
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
@@ -156,7 +163,7 @@ void USAction_WeaponAttack::AttackDelay_Elasped(ACharacter* InstigatorCharacter)
 
 		//replaced GetControlRotation with our new target rotation
 		const FTransform SpawnTM = FTransform(ProjRotation, HandLocation);
-		AActor* T = GetWorld()->SpawnActor<AActor>(WeaponProjectileSubclassAction, SpawnTM, SpawnParams);
+		AActor* T = GetWorld()->SpawnActor<AActor>(EquipedWeaponProjectileSubclassAction, SpawnTM, SpawnParams);
 	}
 
 	StopAction(InstigatorCharacter);

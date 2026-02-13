@@ -32,7 +32,7 @@ class ACTIONROUGELIKE_API ASCharacter : public ACharacter
 public:
 	// Sets default values for this character's properties
 	ASCharacter();
-
+	
 protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
@@ -94,6 +94,8 @@ protected:
 	void PrimaryAttack();
 
 	void PrimaryInteract();
+
+	void PrimaryReload();
 
 	void SelectHotbar1() { SetEquippedHotbar(0); };
 	void SelectHotbar2() { SetEquippedHotbar(1); };

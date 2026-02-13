@@ -31,6 +31,7 @@ bool USPlayerInventoryComponent::AddItemToEquipableHotbar(UItemBase* ItemToAdd)
 		{
 			foundSpace = true;
 			HotbarInventory[index]->AssignItem(ItemToAdd);
+			UpdateWeaponEquippedBool();
 		}
 	}
 
@@ -55,6 +56,7 @@ bool USPlayerInventoryComponent::RemoveItemFromInventory(UItemBase* ItemToRemove
 		{
 			foundItem = true;
 			Inventory.RemoveAt(index);
+			UpdateWeaponEquippedBool();
 		}
 	}
 
@@ -75,6 +77,8 @@ bool USPlayerInventoryComponent::RemoveItemToEquipableHotbar(UItemBase* Equipped
 			if (EquippedSlotIndex == index)
 			{
 				EquippedItem = nullptr;
+				hasWeaponEquipped = false;
+				EquipedWeaponFromInventory = nullptr;
 			}
 		}
 	}
@@ -97,6 +101,8 @@ bool USPlayerInventoryComponent::EquipItemAtIndex(int indexToFind, AActor* Insti
 			EquippedSlotIndex = index;
 			EquippedIdleAnim = HotbarInventory[index]->ItemData->IldeAnimWhenEquipped;
 
+			EquipedWeaponFromInventory = Cast<USBaseWeapon>(EquippedItem);
+
 			//if the hotbar weapon doesn't already have the physical weapon spawned, spawn it
 
 			//run animation to swap weapons
@@ -118,6 +124,8 @@ bool USPlayerInventoryComponent::EquipItemAtIndex(int indexToFind, AActor* Insti
 			EquippedItem->ItemActor->AttachToComponent(PlayerA->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale,
 			EquippedItem->HandSocketName);
 
+			UpdateWeaponEquippedBool();
+
 		}
 	}
 
@@ -136,10 +144,51 @@ bool USPlayerInventoryComponent::EquipItemByName(FName ItemName)
 			foundItem = true;
 			EquippedItem = HotbarInventory[index]->ItemData;
 			EquippedSlotIndex = index;
+			EquipedWeaponFromInventory = Cast<USBaseWeapon>(EquippedItem);
+			UpdateWeaponEquippedBool();
 		}
 	}
 
 	return foundItem;
+}
+
+/// <summary>
+/// Will first check if the equipped item is a weapon, if they have ammo to reload and then will assign the reload tag, run the 
+/// weapons reload behavior and then unset the reload tag
+/// </summary>
+bool USPlayerInventoryComponent::CanReload()
+{
+	bool ReloadableStatus = false;
+
+	UInventorySlot* ItemEquipped = GetEquippedItem();
+	
+	if (ItemEquipped->IsWeapon)
+	{
+		//USBaseWeapon* EquipedWeaponFromInventory = Cast<USBaseWeapon>(ItemEquipped->ItemData);
+		if (EquipedWeaponFromInventory->CanBeReloaded())
+		{
+			ReloadableStatus = true;
+		}
+	}
+
+	//perform action that then needs
+	return ReloadableStatus;
+}
+
+bool USPlayerInventoryComponent::CanFireWeapon()
+{
+	bool CanFireWeapon = false;
+
+	//USBaseWeapon* EquipedWeaponFromInventory = Cast<USBaseWeapon>(EquippedItem);
+	//reload if mag is less than max capacity
+	if (EquipedWeaponFromInventory->CurrentMagazineSize > 0 && 
+		EquipedWeaponFromInventory->CurrentMagazineSize <= EquipedWeaponFromInventory->StandardMagazineSized)
+	{
+		hasWeaponEquipped = true;
+		CanFireWeapon = true;
+	}
+
+	return CanFireWeapon;
 }
 
 /// <summary>
@@ -187,6 +236,34 @@ void USPlayerInventoryComponent::LoadInventory(AActor* Instigator)
 	}
 	if(TotalItemsInHotbar > 0)
 		EquipItemAtIndex(0, Instigator);
+}
+
+/// <summary>
+/// When mag is able to be let go, we spawn a mag at the proper rotation and transform
+/// More detail would be to make the mag we take from the gun disappear
+/// </summary>
+void USPlayerInventoryComponent::WeaponMagDropEvent()
+{
+	//@TODO: maybe add mags spawned to a first in first out queue that based on a setting, they slowely get deleted
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	//ACharacter* MyPawn = Cast<ACharacter>(MyController->GetPawn());
+	SpawnParams.Instigator = Cast<ASCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+	FTransform socketTransform = PlayerA->GetMesh()->GetSocketTransform(EquippedItem->HandSocketName);
+	AActor* WeaponMag = GetWorld()->SpawnActor<AActor>(EquipedWeaponFromInventory->MagazineActor, socketTransform, SpawnParams);
+
+
+}
+
+/// <summary>
+/// Ammo is now fully replenished, we can fire the gun again? or should it be the ammo is now updated in UI, still gotta finish the animation
+/// 
+/// @TODO: Maybe it could be cancelable at this stage?
+/// </summary>
+void USPlayerInventoryComponent::WeaponMagInEvent()
+{
+
 }
 
 /// <summary>
@@ -253,4 +330,15 @@ bool USPlayerInventoryComponent::MoveItemIntoHotbar(int IndexAHot, int IndexBInv
 	}
 
 	return foundItem;
+}
+
+/// <summary>
+/// Simply check if our equipped item is a weapon and update the hasWeaponEquipped state for animation
+/// </summary>
+/// <returns></returns>
+void USPlayerInventoryComponent::UpdateWeaponEquippedBool()
+{
+	UInventorySlot* ItemEquipped = GetEquippedItem();
+
+	hasWeaponEquipped = ItemEquipped!= nullptr ? ItemEquipped->IsWeapon : false;
 }

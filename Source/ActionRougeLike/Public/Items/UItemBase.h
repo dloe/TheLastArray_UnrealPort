@@ -26,6 +26,9 @@ class ACTIONROUGELIKE_API UItemBase : public UObject
 	// ------- Public Functions --------
 	// ---------------------------------
 
+	UFUNCTION(BlueprintCallable, Category = "Item Properties")
+	UStaticMeshComponent* GetItemStaticMesh() { return ItemActor->FindComponentByClass<UStaticMeshComponent>(); };
+
 	// ---------------------------------
 	// -------- Public Variables -------
 	// ---------------------------------
@@ -44,6 +47,8 @@ class ACTIONROUGELIKE_API UItemBase : public UObject
 	UPROPERTY(EditAnywhere, Category = "Item Model")
 	TSubclassOf<AActor> ItemActorSubclass;
 
+	//only populate when item is spawned cause is in hotbar?
+	//maybe other instances also
 	UPROPERTY(EditAnywhere, Category = "Item Model")
 	AActor* ItemActor;
 
@@ -51,8 +56,10 @@ class ACTIONROUGELIKE_API UItemBase : public UObject
 	UPROPERTY(VisibleAnywhere, Category = "Effects")
 	FName HandSocketName = "Muzzle_01";
 
-	UPROPERTY(EditAnywhere, Category = "Idle")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Idle")
 	UAnimMontage* IldeAnimWhenEquipped;
+
+	
 
 protected:
 
@@ -65,6 +72,5 @@ protected:
 	// ---------------------------------
 	// -- Internal state / variables --
 	// ---------------------------------
-	UPROPERTY(EditAnywhere, Category = "Item Model")
-	UStaticMeshComponent* ItemStaticMesh;
+	
 };

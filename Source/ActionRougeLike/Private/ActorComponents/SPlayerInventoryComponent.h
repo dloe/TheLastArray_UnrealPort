@@ -48,12 +48,28 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Inventory Behavior")
 	bool EquipItemByName(FName ItemName);
 
+	UFUNCTION(BlueprintCallable, Category = "Inventory Behavior")
+	bool CanReload();
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory Behavior")
+	bool CanFireWeapon();
+
 	virtual UInventorySlot* GetEquippedItem() override;
 
 	virtual void LoadInventory(AActor* Instigator) override;
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory Setup")
 	void SetPlayerActor(ASCharacter* playerToSet) { PlayerA  = playerToSet; };
+
+
+	//events specifically called from the anim blueprint
+	//since i have alot of weapon data, it would be more organized to handle weapon event functions directly in the player invntory
+	//might change to be directly in animbp
+	UFUNCTION(BlueprintCallable, BlueprintCallable, Category = "Inventory Setup")
+	void WeaponMagDropEvent();
+
+	UFUNCTION(BlueprintCallable, BlueprintCallable, Category = "Inventory Setup")
+	void WeaponMagInEvent();
 
 	//@TODO: This will eventually be an item (that weapons are a child class of)
 	//UFUNCTION(BlueprintCallable, Category = "Inventory Behavior")
@@ -80,6 +96,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Inventory")
 	int TotalItemsInHotbar = 0;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Inventory")
+	bool hasWeaponEquipped;
+
 	//utility functions to sweep usable items from inventory to hotbar
 
 	//integration to swap through hotbar (maybe use 1-3 or scroll?)
@@ -95,9 +114,15 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "Inventory Behavior")
 	bool MoveItemIntoHotbar(int IndexAHot, int IndexBInv);
 
+	UFUNCTION(BlueprintCallable, Category = "Inventory Behavior")
+	void UpdateWeaponEquippedBool();
+
 	// ---------------------------------
 	// -- Internal state / variables --
 	// ---------------------------------
+
+	UPROPERTY(EditAnywhere, Category = "Attack")
+	USBaseWeapon* EquipedWeaponFromInventory;
 	
 	//@todo: this will eventually be an item that weapon is a child of
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Inventory")

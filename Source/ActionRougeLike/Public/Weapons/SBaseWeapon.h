@@ -33,17 +33,21 @@ public:
 	// Called every frame
 	//virtual void Tick(float DeltaTime) override;
 
-	UFUNCTION(BlueprintCallable, Category = "Weapon Behavior")
-	virtual void Attack();
+	//IS THIS IN USE RN? since we have actions for attack and reload
+	//UFUNCTION(BlueprintCallable, Category = "Weapon Behavior")
+	//virtual void Attack();
 
-	UFUNCTION(BlueprintCallable, Category = "Weapon Behavior")
-	virtual void Reload();
+	//UFUNCTION(BlueprintCallable, Category = "Weapon Behavior")
+	//virtual void Reload();
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon Behavior")
 	virtual void OnEquip();
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon Behavior")
 	virtual void Unequip();
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon Behavior")
+	virtual bool CanBeReloaded();
 
 
 	//@TODO: This should be tied to bullet or projectile
@@ -74,7 +78,13 @@ public:
 
 	//how much can we use the weapon?
 	UPROPERTY(EditAnywhere, Category = "Weapon Stats")
-	int AmmoCount;
+	int TotalAmmoReserves;
+
+	UPROPERTY(EditAnywhere, Category = "Weapon Stats")
+	int CurrentMagazineSize;
+
+	UPROPERTY(EditAnywhere, Category = "Weapon Stats")
+	int StandardMagazineSized;
 
 	//@TODO: maybe make enum in future?
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
@@ -82,6 +92,9 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 	FName WeaponDescription;
+
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+	FName WeaponSocketName = "Muzzle_01";
 
 	//skeletal mesh / static mesh comp?
 
@@ -93,13 +106,19 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Attack")
 	TSubclassOf<AActor> ProjectileClass;
 
-	UPROPERTY(VisibleAnywhere, Category = "Attack")
+	UPROPERTY(EditAnywhere, Category = "Reload")
+	TSubclassOf<AActor> MagazineActor;
+
+	UPROPERTY(EditAnywhere, Category = "Attack")
 	float AttacAnimDelay = 0.2f;
 	UPROPERTY(EditAnywhere, Category = "Attack")
 	UAnimMontage* AttackAnim;
 
-	UPROPERTY(EditAnywhere, Category = "Attack")
+	UPROPERTY(EditAnywhere, Category = "Reload")
 	UAnimMontage* ReloadAnim;
+	UPROPERTY(VisibleAnywhere, Category = "Reload")
+	float ReloadAnimDelay = 0.4f;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Effects")
 	UParticleSystem* CastingEffects;
 
@@ -118,7 +137,7 @@ protected:
 	// ---------------------------------
 	// -- Internal state / variables --
 	// ---------------------------------
-
+	
 
 
 };

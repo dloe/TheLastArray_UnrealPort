@@ -23,6 +23,7 @@ void USAction::StartAction_Implementation(AActor* Instigator)
 	USActionComponent* Comp = GetOwningComponent();
 
 	//add them all
+	//add corresponding tag (is removed from stop action)
 	Comp->ActiveGameplayTags.AppendTags(GrantsTags);
 
 	RepData.bIsRunning = true;

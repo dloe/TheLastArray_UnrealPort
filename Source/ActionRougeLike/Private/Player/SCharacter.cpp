@@ -137,6 +137,10 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	PlayerInputComponent->BindAction(equip3, IE_Pressed, this, &ASCharacter::SelectHotbar3);
 	const FName equip4 = "Hotbar4";
 	PlayerInputComponent->BindAction(equip4, IE_Pressed, this, &ASCharacter::SelectHotbar4); //remember 0 indexed
+
+	//reload weapon
+	const FName reloadWeapon = "Reload";
+	PlayerInputComponent->BindAction(reloadWeapon, IE_Pressed, this, &ASCharacter::PrimaryReload);
 }
 
 //movement
@@ -205,15 +209,22 @@ void ASCharacter::PrimaryAttack()
 {
 	//if not melee weapon
 	//if weapon has equipped ammo and is able to fire
-	//ActionComp->StartActionByName(this, "PrimaryAttack");
-	ActionComp->StartActionByName(this, "WeaponAttack"); //swap with our equipped weapon attack
+
+	if (PlayerInventoryComponent->CanFireWeapon())
+	{
+		ActionComp->StartActionByName(this, "WeaponAttack");
+	}
+	else {
+		//else reload if we can reload
+		if (PlayerInventoryComponent->CanReload())
+		{
+			ActionComp->StartActionByName(this, "Reload");
+		}
+
+		//else we got no ammo boi
+		//give feedback to player that weapon cant be used
+	}
 	
-
-	//else reload if we can reload
-
-	//else we got no ammo boi
-	//give feedback to player that weapon cant be used
-
 }
 
 void ASCharacter::PrimaryInteract()
@@ -223,6 +234,18 @@ void ASCharacter::PrimaryInteract()
 		InteractiveComp->PrimaryInteract();
 	}
 	
+}
+
+/// <summary>
+/// In order to run the reload action we need to check if the equipped item is a weapon that is in a state it needs to be reloaded
+/// </summary>
+void ASCharacter::PrimaryReload()
+{
+	if (PlayerInventoryComponent->CanReload())
+	{
+		//should this be an action called from here?
+		ActionComp->StartActionByName(this, "Reload");
+	}
 }
 
 void ASCharacter::SetEquippedHotbar(int input)
