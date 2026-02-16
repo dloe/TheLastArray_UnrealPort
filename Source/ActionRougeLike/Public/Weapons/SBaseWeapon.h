@@ -109,6 +109,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Reload")
 	TSubclassOf<AActor> MagazineActor;
 
+	UPROPERTY(EditAnywhere, Category = "Firing")
+	TSubclassOf<AActor> EjectedCasingActor;
+
 	UPROPERTY(EditAnywhere, Category = "Attack")
 	float AttacAnimDelay = 0.2f;
 	UPROPERTY(EditAnywhere, Category = "Attack")

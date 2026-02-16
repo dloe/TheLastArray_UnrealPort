@@ -50,6 +50,7 @@ void USAction_WeaponAttack::StartAction_Implementation(AActor* Instigator)
 		EquipedSpawnSocketNameAction = EquipedWeaponFromInventory->WeaponMuzzleSocketName;
 		EquipedAttacAnimDelayAction = EquipedWeaponFromInventory->AttacAnimDelay;
 		EquipedWeaponProjectileSubclassAction = EquipedWeaponFromInventory->WeaponProjectile;
+		EquipedWeaponCasing = EquipedWeaponFromInventory->EjectedCasingActor;
 		EquipedWeaponStaticMesh = EquipedWeaponFromInventory->GetItemStaticMesh();
 
 
@@ -164,7 +165,21 @@ void USAction_WeaponAttack::AttackDelay_Elasped(ACharacter* InstigatorCharacter)
 		//replaced GetControlRotation with our new target rotation
 		const FTransform SpawnTM = FTransform(ProjRotation, HandLocation);
 		AActor* T = GetWorld()->SpawnActor<AActor>(EquipedWeaponProjectileSubclassAction, SpawnTM, SpawnParams);
+
+		EjectCasing(InstigatorCharacter);
 	}
 
 	StopAction(InstigatorCharacter);
+}
+
+void USAction_WeaponAttack::EjectCasing(ACharacter* InstigatorCharacter)
+{
+	const FVector CasingLocation = EquipedWeaponStaticMesh->GetSocketLocation("");
+	const FTransform SpawnTM = FTransform(CasingLocation);
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	SpawnParams.Instigator = InstigatorCharacter;
+
+	AActor* casing = GetWorld()->SpawnActor<AActor>(EquipedWeaponCasing, SpawnTM, SpawnParams);
 }

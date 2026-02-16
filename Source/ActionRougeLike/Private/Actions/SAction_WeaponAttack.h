@@ -42,6 +42,9 @@ class USAction_WeaponAttack : public USAction
 	UFUNCTION()
 	void AttackDelay_Elasped(ACharacter* InstigatorCharacter);
 
+	UFUNCTION()
+	void EjectCasing(ACharacter* InstigatorCharacter);
+
 	// ---------------------------------
 	// -- Internal state / variables --
 	// ---------------------------------
@@ -67,6 +70,9 @@ class USAction_WeaponAttack : public USAction
 
 	UPROPERTY(EditAnywhere, Category = "Equipped Weapon Properties")
 	UStaticMeshComponent* EquipedWeaponStaticMesh;
+
+	UPROPERTY(EditAnywhere, Category = "Equipped Weapon Properties")
+	TSubclassOf<AActor> EquipedWeaponCasing;
 
 	//runs attack procedure for currently equipped weapon in actor's inventory
 	//this should be assigned when we a reference to this class is established to the controller class?
