@@ -46,6 +46,7 @@ void USAction_WeaponAttack::StartAction_Implementation(AActor* Instigator)
 
 		ensure(EquipedWeaponFromInventory);
 		EquipedWeaponAttackAnimAction = EquipedWeaponFromInventory->AttackAnim;
+		EquippedWeaponPostAttackAnimation = EquipedWeaponFromInventory->PostATtackIronSights;
 		EquipedWeaponCastingEffectsAction = EquipedWeaponFromInventory->CastingEffects;
 		EquipedSpawnSocketNameAction = EquipedWeaponFromInventory->WeaponMuzzleSocketName;
 		EquipedAttacAnimDelayAction = EquipedWeaponFromInventory->AttacAnimDelay;
@@ -167,6 +168,7 @@ void USAction_WeaponAttack::AttackDelay_Elasped(ACharacter* InstigatorCharacter)
 		AActor* T = GetWorld()->SpawnActor<AActor>(EquipedWeaponProjectileSubclassAction, SpawnTM, SpawnParams);
 
 		EjectCasing(InstigatorCharacter);
+		InstigatorCharacter->PlayAnimMontage(EquippedWeaponPostAttackAnimation);
 	}
 
 	StopAction(InstigatorCharacter);

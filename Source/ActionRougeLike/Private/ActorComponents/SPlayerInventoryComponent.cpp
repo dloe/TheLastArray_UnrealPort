@@ -99,7 +99,7 @@ bool USPlayerInventoryComponent::EquipItemAtIndex(int indexToFind, AActor* Insti
 			foundItem = true;
 			EquippedItem = HotbarInventory[index]->ItemData;
 			EquippedSlotIndex = index;
-			EquippedIdleAnim = HotbarInventory[index]->ItemData->IldeAnimWhenEquipped;
+			//EquippedIdleAnim = HotbarInventory[index]->ItemData->IldeAnimWhenEquipped;
 
 			EquipedWeaponFromInventory = Cast<USBaseWeapon>(EquippedItem);
 

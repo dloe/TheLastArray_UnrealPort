@@ -57,6 +57,9 @@ class USAction_WeaponAttack : public USAction
 	UAnimMontage* EquipedWeaponAttackAnimAction;
 
 	UPROPERTY(EditAnywhere,  Category = "Equipped Weapon Properties")
+	UAnimMontage* EquippedWeaponPostAttackAnimation;
+
+	UPROPERTY(EditAnywhere,  Category = "Equipped Weapon Properties")
 	UParticleSystem* EquipedWeaponCastingEffectsAction;
 
 	UPROPERTY(EditAnywhere, Category = "Equipped Weapon Properties")

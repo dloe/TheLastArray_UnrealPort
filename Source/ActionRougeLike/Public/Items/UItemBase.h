@@ -11,6 +11,18 @@
 //#include "Engine/DataAsset.h"
 #include "UItemBase.generated.h"
 
+UENUM(BlueprintType)
+enum class EItemType : uint8 {
+	ENone UMETA(DisplayName = "None"),
+	EEquipable UMETA(DisplayName = "Equipable"),
+	EWeaponRifle UMETA(DisplayName = "WeaponRifle"),
+	EWeaponShotgun UMETA(DisplayName = "WeaponShotgun"),
+	EWeaponHandheld UMETA(DisplayName = "WeaponHandheld"),
+	EWeaponMelee UMETA(DisplayName = "WeaponMelee"),
+	EWeaponShlong UMETA(DisplayName = "WeaponShlong"),
+	EWeaponFisticuffs UMETA(DisplayName = "WeaponFisticuffs")
+};
+
 /**
  * Should this be a UObject or AActor?
  * 
@@ -56,9 +68,11 @@ class ACTIONROUGELIKE_API UItemBase : public UObject
 	UPROPERTY(VisibleAnywhere, Category = "Effects")
 	FName HandSocketName = "Muzzle_01";
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Idle")
-	UAnimMontage* IldeAnimWhenEquipped;
+	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Idle")
+	//UAnimMontage* IldeAnimWhenEquipped;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Properties")
+	EItemType ItemType;
 	
 
 protected:

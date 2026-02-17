@@ -117,6 +117,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Attack")
 	UAnimMontage* AttackAnim;
 
+	UPROPERTY(EditAnywhere, Category = "Attack")
+	UAnimMontage* PostATtackIronSights;
+
 	UPROPERTY(EditAnywhere, Category = "Reload")
 	UAnimMontage* ReloadAnim;
 	UPROPERTY(VisibleAnywhere, Category = "Reload")
