@@ -45,6 +45,11 @@ struct FTileInfoStruct
 {
 	GENERATED_BODY()
 
+	FTileInfoStruct()
+	{
+		tile = nullptr;
+	}
+
 public:
 
 	UPROPERTY()

@@ -9,6 +9,7 @@ public class ActionRougeLikeTarget : TargetRules
 	{
 		Type = TargetType.Game;
 		DefaultBuildSettings = BuildSettingsVersion.V6;
-		ExtraModuleNames.AddRange( new string[] { "ActionRougeLike" } );
+        IncludeOrderVersion = EngineIncludeOrderVersion.Latest;
+        ExtraModuleNames.AddRange( new string[] { "ActionRougeLike" } );
 	}
 }

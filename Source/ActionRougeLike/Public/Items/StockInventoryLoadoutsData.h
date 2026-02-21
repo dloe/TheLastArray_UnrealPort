@@ -15,11 +15,17 @@ USTRUCT(BlueprintType)
 struct FSlot {
 	GENERATED_BODY()
 
+	FSlot()
+	{
+		IsWeapon = false;
+		IsEquipable = false;
+	}
+
 	public:
 
 	//must be subclass of because the itemdata isnt spawned in teh real world right? its a uobject
 	//its not really created and exposed to the editor to see and reference
-	//the blueprint is what we want tehrefore it has to be the one we use
+	//the blueprint is what we want therefore it has to be the one we use
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<UItemBase> ItemDataClass; //winner winner chicken AHHHHHHH
 
