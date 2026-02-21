@@ -412,7 +412,7 @@ bool UTileGridBranchComponent::VariantCandidateAnalysis(ASTile* CurrentTile, USF
 			//which type of abnormal tile variant are we going to place? (like the preset, which preset?)
 			int variantIndex = GameStreamRef.RandRange(0, CurrentVariant->TileVariantEnviornmentsLocal.Num() - 1);
 			TSubclassOf<ASTileVariantEnviornment> ChoosenVariant = CurrentVariant->TileVariantEnviornmentsLocal[variantIndex];
-			FVector SpawnPos;
+			//FVector SpawnPos;
 			FRotator SpawnRot = FRotator(0.0f, 0.0f, 0.0f);
 
 			//set rotation of TilePrefab
@@ -455,8 +455,9 @@ bool UTileGridBranchComponent::VariantCandidateAnalysis(ASTile* CurrentTile, USF
 			
 			//SpawnedVariant->SetActorRotation(SpawnRot);
 			FString VariantTileName = "VariantTileMap_" + FString::FromInt(CurrentVariant->Size.X) + "_" + FString::FromInt(CurrentVariant->Size.Y);
-			SpawnedVariant->SetActorLabel(VariantTileName);
+			
 #if WITH_EDITOR
+			SpawnedVariant->SetActorLabel(VariantTileName);
 			SpawnedVariant->SetFolderPath(TileManagerRef->VariantTileMapSubFolderName);
 			DrawDebugSphere(GetWorld(), SpawnedVariant->GetActorLocation(), 225.0f, 20, FColor::Orange, false, 100);
 
@@ -787,10 +788,12 @@ void UTileGridBranchComponent::CreateSecretRoom()
 	//UE_LOG(LogTemp, Log, TEXT("Picked - %d - side of [%d,%d]"), selected.neighborArray[loc], selected.tile->XIndex, selected.tile->ZIndex);
 	//UE_LOG(LogTemp, Log, TEXT("Selected:  x= %d, y = %d], z = %d"), test->GetActorLocation().X, test->GetActorLocation().Y, test->GetActorLocation().Z);
 
+#if WITH_EDITOR
 	FString name = test->GetActorLabel();
+#endif
 	//UE_LOG(LogTemp, Log, TEXT("Tile: %s"), *name);
-	FVector Origin;
-	FVector Extents;
+	//FVector Origin;
+	//FVector Extents;
 	FString TileDoorName;
 
 	int selectedRotation = 0;
@@ -904,8 +907,9 @@ void UTileGridBranchComponent::CreateSecretRoom()
 
 	// TO DO: this will need to be updated to a specific Secrete Room BP set in LocalLevel
 
-	SecretRoom->SetActorLabel("SecretRoom");
+	
 #if WITH_EDITOR
+	SecretRoom->SetActorLabel("SecretRoom");
 	SecretRoom->SetFolderPath(TileManagerRef->TileSubFolderName);
 	SecretRoom->ShadeSecretRoom();
 #endif
@@ -961,8 +965,9 @@ void UTileGridBranchComponent::CreateSecretRoom()
 
 	//SecretRoomVariant->SetActorRotation(SpawnRotPrefab);
 	FString VariantTileName = "Secret_VariantTileMap_" + FString::FromInt(SecretRoom->XIndex) + "_" + FString::FromInt(SecretRoom->ZIndex);
-	SecretRoomVariant->SetActorLabel(VariantTileName);
+	
 #if WITH_EDITOR
+	SecretRoomVariant->SetActorLabel(VariantTileName);
 	SecretRoomVariant->SetFolderPath(TileManagerRef->VariantTileMapSubFolderName);
 	DrawDebugSphere(GetWorld(), SecretRoomVariant->GetActorLocation(), 225.0f, 20, FColor::Orange, false, 100);
 #endif
@@ -1019,7 +1024,7 @@ void UTileGridBranchComponent::SpawnEndRoom()
 	else {
 		rotationToSpawn = EndTileRef->bossRoomRotationDirection;
 	}
-	FVector SpawnPos;
+	//FVector SpawnPos;
 	FRotator SpawnRot = FRotator(0.0f, 0.0f, 0.0f);
 
 	//set rotation of TilePrefab
@@ -1054,8 +1059,9 @@ void UTileGridBranchComponent::SpawnEndRoom()
 
 	//EndRoomVariant->SetActorRotation(SpawnRot);
 	FString VariantTileName = "EndRoom_VariantTileMap_" + FString::FromInt(EndTileRef->XIndex) + "_" + FString::FromInt(EndTileRef->ZIndex);
-	EndRoomVariant->SetActorLabel(VariantTileName);
+	
 #if WITH_EDITOR
+	EndRoomVariant->SetActorLabel(VariantTileName);
 	EndRoomVariant->SetFolderPath(TileManagerRef->VariantTileMapSubFolderName);
 	DrawDebugSphere(GetWorld(), EndRoomVariant->GetActorLocation(), 225.0f, 20, FColor::Orange, false, 100);
 
@@ -1483,9 +1489,10 @@ void UTileGridBranchComponent::SetupDoor(ASTile* tile, ETileSide SideToSpawnDoor
 	tile->RemoveCurrentWall(SideToSpawnDoor);
 
 	DoorArrayRef.Add(door);
-	door->SetActorLabel(TileDoorName);
+	
 	door->SetOwner(TileManagerRef);
 #if WITH_EDITOR
+	door->SetActorLabel(TileDoorName);
 	door->SetFolderPath(TileManagerRef->DoorSubFolderName);
 #endif
 

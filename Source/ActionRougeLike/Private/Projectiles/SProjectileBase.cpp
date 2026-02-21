@@ -51,7 +51,7 @@ void ASProjectileBase::Explode_Implementation()
 {
 	//check to make sure we aren't already being destroyed
 	//adding ensure to see if we counter this situation at all
-	if (ensure(!IsPendingKill()))//!IsValidChecked(this)) //future me: did we need that ensure here?
+	if (ensure(!this->IsActorBeingDestroyed()))//!IsValidChecked(this)) //future me: did we need that ensure here?
 	{
 		UGameplayStatics::SpawnEmitterAtLocation(this, ImpactVFX, GetActorLocation(), GetActorRotation());
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), ImpactSound, GetActorLocation(), GetActorRotation());

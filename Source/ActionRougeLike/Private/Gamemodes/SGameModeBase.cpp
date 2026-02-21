@@ -221,7 +221,7 @@ void ASGameModeBase::OnQueryBotSpawnCompleted(UEnvQueryInstanceBlueprintWrapper*
 
 			//SelectedRow->SpawnCost
 
-			UAssetManager* Manager = UAssetManager::GetIfValid();
+			UAssetManager* Manager = UAssetManager::GetIfInitialized();
 			if (Manager)
 			{
 				LogOnScreen(this, "Loading Monster...", FColor::Green);
@@ -247,7 +247,7 @@ void ASGameModeBase::OnMonsterLoaded(FPrimaryAssetId LoadedId, FVector SpawnLoca
 {
 	LogOnScreen(this, "Finished Loading Monster...", FColor::Green);
 
-	UAssetManager* Manager = UAssetManager::GetIfValid();
+	UAssetManager* Manager = UAssetManager::GetIfInitialized();
 	if (Manager)
 	{
 		USMonsterData* MonsterData = Cast<USMonsterData>(Manager->GetPrimaryAssetObject(LoadedId));

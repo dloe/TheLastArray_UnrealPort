@@ -22,6 +22,7 @@
 // Sets default values
 ASAICharacter::ASAICharacter()
 {
+    //TODO: UPawnSensingComponent getting deprecated! Replace during AI overhaul!
     PawnSensingComp = CreateDefaultSubobject<UPawnSensingComponent>("PawnSensingComp");
     AttributeComponent = CreateDefaultSubobject<USAttributeComponent>("AttributeComp");
     ActionComp = CreateDefaultSubobject<USActionComponent>("ActionComp");
@@ -29,7 +30,7 @@ ASAICharacter::ASAICharacter()
 
     AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
-    //fix an issue with collision on our capsule collider
+    //fix an issue with collision on our capsule colliders
     //GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Ignore);
     //added our own projectile channel
 
@@ -43,7 +44,7 @@ ASAICharacter::ASAICharacter()
 void ASAICharacter::PostInitializeComponents()
 {
     Super::PostInitializeComponents();
-
+    //TODO: UPawnSensingComponent getting deprecated! Replace during AI overhaul!
     PawnSensingComp->OnSeePawn.AddDynamic(this, &ASAICharacter::OnPawnSeen);
 
     //Add dynamic bind is known for not being found through unreal magic (AKA INTELLISENSE), its ok that it doesnt see it here

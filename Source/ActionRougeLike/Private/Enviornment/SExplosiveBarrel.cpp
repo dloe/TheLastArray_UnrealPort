@@ -64,7 +64,12 @@ void ASExplosiveBarrel::OnCompHit(UPrimitiveComponent* HitComp, AActor* OtherAct
 
 		UE_LOG(LogTemp, Warning, TEXT("OtherActor: %s, at game time: %f"), *GetNameSafe(OtherActor), GetWorld()->TimeSeconds);
 
-		FString CombinedString = FString::Printf(TEXT("Hit at location: %s, at game time %f"), *Hit.ImpactPoint.ToString());
+		//5.0 -> 5.7 change
+		FString CombinedString = FString::Printf(
+			TEXT("Hit at location: %s, at game time %f"), 
+			*Hit.ImpactPoint.ToString(),
+			GetWorld()->TimeSeconds
+		);
 		DrawDebugString(GetWorld(), Hit.ImpactPoint, CombinedString, nullptr, FColor::Green, 2.0f, true);
 	}
 

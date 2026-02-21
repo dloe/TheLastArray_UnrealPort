@@ -223,7 +223,9 @@ void ASTile::ShadeTestRoom()
 void ASTile::ShadeEndRoom()
 {
 	DrawDebugSphere(GetWorld(), this->GetActorLocation(), 200.0f, 20, FColor::Black, false, 100);
+#if WITH_EDITOR
 	this->SetActorLabel("Tile_FinalRoom");
+#endif
 	TileStatus = ETileStatus::ETile_BOSSROOM;
 }
 
@@ -546,8 +548,9 @@ ASTileWall* ASTile::SpawnDoorConnector(ETileSide side, TSubclassOf<ASTileDoorWal
 		SpawnedDoorWallConnector = UpWall;
 		break;
 	}
+#if WITH_EDITOR
 	SpawnedDoorWallConnector->SetActorLabel(ConnectorName);
-
+#endif
 	return SpawnedDoorWallConnector;
 }
 

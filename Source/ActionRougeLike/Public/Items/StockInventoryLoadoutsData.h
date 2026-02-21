@@ -8,7 +8,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
-#include "InventorySlot.h"
+#include "Items/InventorySlot.h"
 #include "StockInventoryLoadoutsData.generated.h"
 
 USTRUCT(BlueprintType)

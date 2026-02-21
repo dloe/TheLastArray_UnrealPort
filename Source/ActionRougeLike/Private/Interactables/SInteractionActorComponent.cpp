@@ -64,7 +64,7 @@ void USInteractionActorComponent::FindBestInteractable()
 
 	AActor* MyOwner = GetOwner();
 
-	FVector Start;
+	//FVector Start;
 	FVector End;
 
 	FVector EyeLocation;
