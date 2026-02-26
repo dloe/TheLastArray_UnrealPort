@@ -7,25 +7,16 @@
 		{
 			"Name": "ActionRougeLike",
 			"Type": "Runtime",
-			"LoadingPhase": "Default",
-			"AdditionalDependencies": [
-				"Engine",
-				"AIModule",
-				"UMG",
-				"CoreUObject"
-			]
+			"LoadingPhase": "Default"
 		}
 	],
 	"Plugins": [
 		{
 			"Name": "ModelingToolsEditorMode",
-			"Enabled": true,
-			"TargetAllowList": [
-				"Editor"
-			]
+			"Enabled": true
 		},
 		{
-			"Name": "Bridge",
+			"Name": "AnalyticsBlueprintLibrary",
 			"Enabled": true
 		}
 	]
