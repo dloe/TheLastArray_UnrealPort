@@ -80,8 +80,8 @@ TArray<FIntPointPair> USFTileVariantDefinitionData::RotateConnectedSides(TArray<
 	{
 		FIntPointPair Transformed;
 		 //test it rotates both okayFIntPoint StartCord 
-		FIntPoint StartCord;
-		FIntPoint EndCord;
+		FIntPoint StartCord = 0;
+		FIntPoint EndCord = 0;
 
 		//new approach, convert to radians then do maths to make it back to cords to apply to array
 		switch (RotationStepsClockwise)

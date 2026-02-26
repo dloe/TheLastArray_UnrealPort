@@ -224,7 +224,13 @@ void ULevelAssetSetupComponent::ActivateSecretRoom()
 			UE_LOG(LogTemp, Log, TEXT("Item %d placed"), PickupsPlaced);
 		}
 	}
-	UE_LOG(LogTemp, Log, TEXT("Secret Tile complete %s, local total: %d"), *SecretRoom->GetActorLabel(), currentAssetPlacedCount);
+#if WITH_EDITOR
+	//UE5.0 -> 5.7 edits needed here also
+	UE_LOG(LogTemp, Log, TEXT("Secret Tile complete %s, local total: %d"), 
+		*SecretRoom->GetActorLabel(), 
+		currentAssetPlacedCount
+	);
+#endif
 }
 
 /// <summary>
@@ -348,7 +354,9 @@ void ULevelAssetSetupComponent::ActivateItems()
 				//UE_LOG(LogTemp, Log, TEXT("Comparing noise val: %f <= threshold: %f -- Status: %d"), noiseMeasurement, itemThreshold, debug);
 			}
 		}
+#if WITH_EDITOR
 		UE_LOG(LogTemp, Log, TEXT(" --- Tile complete %s, local total: %d --- "), *TilePlaced->GetActorLabel(), currentAssetPlacedCount);
+#endif
 	}
 	//each tile has an array of the possible preplaced items
 	//if each noise output exceeds a thresholds, we can place
@@ -417,7 +425,7 @@ void ULevelAssetSetupComponent::PlaceItemPickup(UStaticMeshComponent* PickupMark
 	//calls OnMonsterLoad when loaded, pass along AssetData and FVector to this OnMonsterLoaded function
 	FStreamableDelegate Delegate = FStreamableDelegate::CreateUObject(this, &ULevelAssetSetupComponent::OnPickupLoaded, AssetToSpawn, spawnLocation, spawnRotation, AttachedTile, PlacementNum);
 
-	UAssetManager* Manager = UAssetManager::GetIfValid();
+	UAssetManager* Manager = UAssetManager::GetIfInitialized();
 	Manager->LoadPrimaryAsset(AssetToSpawn->ItemId, Bundles, Delegate);
 	
 #if WITH_EDITOR
@@ -440,7 +448,7 @@ void ULevelAssetSetupComponent::PlaceEnemy(UStaticMeshComponent* PickupMarker, A
 	//calls OnMonsterLoad when loaded, pass along AssetData and FVector to this OnMonsterLoaded function
 	FStreamableDelegate Delegate = FStreamableDelegate::CreateUObject(this, &ULevelAssetSetupComponent::OnEnemyLoaded, EnemyToSpawnInfo, spawnLocation, numberSpawned);
 
-	UAssetManager* Manager = UAssetManager::GetIfValid();
+	UAssetManager* Manager = UAssetManager::GetIfInitialized();
 	Manager->LoadPrimaryAsset(EnemyToSpawnInfo->MonsterId, Bundles, Delegate);
 	
 #if WITH_EDITOR
@@ -543,7 +551,9 @@ void ULevelAssetSetupComponent::ActivateEnemies()
 				spawnedLocal++;
 			}
 		}
+#if WITH_EDITOR
 		UE_LOG(LogTemp, Log, TEXT("Tile complete %s, local total: %d"), *TilePlaced->GetActorLabel(), spawnedLocal);
+#endif
 	}
 
 	UE_LOG(LogTemp, Log, TEXT(" --- Done spawning enemies! Grand Total Spawned Enemies in level: %d --- "), EnemiesPlaced);
@@ -601,7 +611,9 @@ void ULevelAssetSetupComponent::SetupStartingTile()
 			//UE_LOG(LogTemp, Log, TEXT("Comparing noise val: %f <= threshold: %f -- Status: %d"), noiseMeasurement, itemThreshold, debug);
 		}
 	}
+#if WITH_EDITOR
 	UE_LOG(LogTemp, Log, TEXT(" --- Tile complete %s, local total: %d --- "), *SpawnTileEnvRef->GetActorLabel(), currentAssetPlacedCount);
+#endif
 }
 
 /// <summary>
@@ -701,7 +713,7 @@ float ULevelAssetSetupComponent::GetNoiseVec(FVector2D inputCords, float MinNois
 void ULevelAssetSetupComponent::OnEnemyLoaded(FEnemySpawnInfo* EnemySpawnInfo, FVector SpawnLocation, int enemyNum)
 {
 	//LogOnScreen(this, "Finished Loading Monster...", FColor::Green);
-	UAssetManager* Manager = UAssetManager::GetIfValid();
+	UAssetManager* Manager = UAssetManager::GetIfInitialized();
 	if (Manager)
 	{
 		USMonsterData* MonsterData = Cast<USMonsterData>(Manager->GetPrimaryAssetObject(EnemySpawnInfo->MonsterId));
@@ -712,9 +724,10 @@ void ULevelAssetSetupComponent::OnEnemyLoaded(FEnemySpawnInfo* EnemySpawnInfo, F
 			{
 				SpawnedEnemiesInLevel.Add(NewBot);
 				FString EnemyName = EnemySpawnInfo->EnemyName + "_" + FString::FromInt(enemyNum);
-				NewBot->SetActorLabel(EnemyName);
+				
 
 #if WITH_EDITOR
+				NewBot->SetActorLabel(EnemyName);
 				NewBot->SetFolderPath(TileManagerRef->EnemySubFolderName);
 #endif
 
@@ -740,7 +753,7 @@ void ULevelAssetSetupComponent::OnEnemyLoaded(FEnemySpawnInfo* EnemySpawnInfo, F
 /// <param name="AttachedTile"></param>
 void ULevelAssetSetupComponent::OnPickupLoaded(FItemPickupAsset* ItemSpawnInfo, FVector SpawnLocation, FRotator spawnRotation ,ASTileVariantEnviornment* AttachedTile, int itemNum)
 {
-	UAssetManager* Manager = UAssetManager::GetIfValid();
+	UAssetManager* Manager = UAssetManager::GetIfInitialized();
 	if (Manager)
 	{
 		//ASPickupBase* ItemData = Cast<ASPickupBase>(Manager->GetPrimaryAssetObject(ItemSpawnInfo->ItemId));
@@ -751,9 +764,10 @@ void ULevelAssetSetupComponent::OnPickupLoaded(FItemPickupAsset* ItemSpawnInfo, 
 			{
 				SpawnedPickupsInLevel.Add(NewPickup);
 				FString ItemName = ItemSpawnInfo->ItemName + "_" + FString::FromInt(itemNum) + "_" + UEnum::GetValueAsString(AttachedTile->TileVariDefinition->EVariantSize);
-				NewPickup->SetActorLabel(ItemName);
+				
 
 #if WITH_EDITOR
+				NewPickup->SetActorLabel(ItemName);
 				NewPickup->SetFolderPath(TileManagerRef->AssetSubFolderName);
 #endif
 
@@ -820,7 +834,10 @@ UTexture2D* ULevelAssetSetupComponent::DebugCreatePerlinNoiseTexture(int32 size,
 	//blue has 8 bits, g has 8 bits, r has 8 buts and alpha has 8 bits. looks like we are setting the properties of this texture
 	
 	//tell unreal not to generate mipmaps, this should be pixel-perfect visualization of our debug perlin noise
-	Texture->MipGenSettings = TMGS_NoMipmaps; //also is intense to keep on so why bother
+	Texture->NeverStream = true;
+	
+	//UE 5.7 changed MipGenSettings? VERIFY THIS iS STILL GOOD!
+	//Texture->MipGenSettings = TextureMipGenSettings::TMGS_NoMipmaps; //also is intense to keep on so why bother
 	Texture->SRGB = false; //treat this as linear data not color data (because we are using perlin noise). keep more numeric
 
 	TArray<FColor> Pixels; //set array of pixels to be our texture

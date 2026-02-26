@@ -161,10 +161,10 @@ void ASTileManager::Create2DTileArray()
 			
 			ASTile* T = GetWorld()->SpawnActor<ASTile>(TileBaseClass, TileSpawnLocation, this->GetActorRotation(), SpawnParams);
 			//UE_LOG(LogTemp, Log, TEXT("TileName %s, OG: %s, New: %s"), *TileName, *ORLocal.ToString(), *TileSpawnLocation.ToString());
-
-			T->SetActorLabel(TileName);
+	
 			T->SetOwner(this);
 #if WITH_EDITOR
+			T->SetActorLabel(TileName);
 			T->SetFolderPath(TileSubFolderName);
 #endif
 
@@ -577,9 +577,10 @@ void ASTileManager::LinkTile(ASTile* ThisTile, FMultiTileStruct Col)
 			//UE_LOG(LogTemp, Log, TEXT("UpDoorSpawnLocation: %s"), *UpDoorSpawnLocation.ToString());
 			ThisTile->UpDoor = GetWorld()->SpawnActor<ASTileDoor>(TileDoorClass, SpawmTrans, SpawnParams);
 			DoorArray.Add(ThisTile->UpDoor);
-			ThisTile->UpDoor->SetActorLabel(TileUpDoorName);
+			
 			ThisTile->UpDoor->SetOwner(ThisTile);
 #if WITH_EDITOR
+			ThisTile->UpDoor->SetActorLabel(TileUpDoorName);
 			ThisTile->UpDoor->SetFolderPath(DoorSubFolderName);
 #endif
 			UpNeighbor->DownDoor = ThisTile->UpDoor;
@@ -627,10 +628,11 @@ void ASTileManager::LinkTile(ASTile* ThisTile, FMultiTileStruct Col)
 
 			ThisTile->LeftDoor = GetWorld()->SpawnActor<ASTileDoor>(TileDoorClass, Spawm, SpawnParams);
 			DoorArray.Add(ThisTile->LeftDoor);
-			ThisTile->LeftDoor->SetActorLabel(TileLeftDoorName);
+			
 			ThisTile->LeftDoor->SetOwner(ThisTile);
 
 #if WITH_EDITOR
+			ThisTile->LeftDoor->SetActorLabel(TileLeftDoorName);
 			ThisTile->LeftDoor->SetFolderPath(DoorSubFolderName);
 #endif
 			LeftNeighbor->RightDoor = ThisTile->LeftDoor;

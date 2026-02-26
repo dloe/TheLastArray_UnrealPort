@@ -8,7 +8,8 @@ public class ActionRougeLikeTarget : TargetRules
 	public ActionRougeLikeTarget( TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Game;
-		DefaultBuildSettings = BuildSettingsVersion.V2;
-		ExtraModuleNames.AddRange( new string[] { "ActionRougeLike" } );
+		DefaultBuildSettings = BuildSettingsVersion.V6;
+        IncludeOrderVersion = EngineIncludeOrderVersion.Latest;
+        ExtraModuleNames.AddRange( new string[] { "ActionRougeLike" } );
 	}
 }

@@ -177,7 +177,9 @@ void ASCharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponent*
 			USkeletalMeshComponent* SkeletalMesh = GetMesh();
 			SkeletalMesh->SetScalarParameterValueOnMaterials(TimeToHitParameterName, GetWorld()->TimeSeconds);
 			//SkeletalMesh->SetParameterValueOnMaterials("HitFlashColor", HitFlashColor);
-			FVector4 ColortoVector = HitFlashColor;
+
+
+			FVector4d ColortoVector = FVector4d(HitFlashColor);
 			SkeletalMesh->SetVectorParameterValueOnMaterials("HitFlashColor", ColortoVector);
 			
 			SkeletalMesh->SetScalarParameterValueOnMaterials("HitFlashSpeed", HitFlashSpeed);
