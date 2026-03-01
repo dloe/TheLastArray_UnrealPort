@@ -18,6 +18,10 @@
 		{
 			"Name": "AnalyticsBlueprintLibrary",
 			"Enabled": true
+		},
+		{
+			"Name": "AnimationWarping",
+			"Enabled": true
 		}
 	]
 }
