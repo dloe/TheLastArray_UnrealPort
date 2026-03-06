@@ -62,9 +62,13 @@ void USBaseInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 UInventorySlot* USBaseInventoryComponent::GetEquippedItem()
 {
 	//THIS WILL BE SWAPPED WITH HOTBAR ARRAY BTW
-	ensure(EquippedSlotIndex < Inventory.Num() && EquippedSlotIndex >= 0);
+	//ensure(EquippedSlotIndex < Inventory.Num() && EquippedSlotIndex >= 0);
 
-	return Inventory[EquippedSlotIndex];
+	if (EquippedSlotIndex < Inventory.Num() && EquippedSlotIndex >= 0)
+		return Inventory[EquippedSlotIndex];
+	else
+		return nullptr;
+
 }
 
 /// <summary>

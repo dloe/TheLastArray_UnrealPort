@@ -197,9 +197,10 @@ bool USPlayerInventoryComponent::CanFireWeapon()
 /// <returns></returns>
 UInventorySlot* USPlayerInventoryComponent::GetEquippedItem()
 {
-	ensure(EquippedSlotIndex < HotbarInventory.Num() && EquippedSlotIndex >= 0);
-
-	return HotbarInventory[EquippedSlotIndex];
+	if(EquippedSlotIndex < HotbarInventory.Num() && EquippedSlotIndex >= 0)
+		return HotbarInventory[EquippedSlotIndex];
+	else
+		return nullptr;
 }
 
 /// <summary>
