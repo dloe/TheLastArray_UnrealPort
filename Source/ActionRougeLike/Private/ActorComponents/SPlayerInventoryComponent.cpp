@@ -101,7 +101,11 @@ bool USPlayerInventoryComponent::EquipItemAtIndex(int indexToFind, AActor* Insti
 			EquippedSlotIndex = index;
 			//EquippedIdleAnim = HotbarInventory[index]->ItemData->IldeAnimWhenEquipped;
 
+			//TODO: Check if we need equipped weapon
 			EquipedWeaponFromInventory = Cast<USBaseWeapon>(EquippedItem);
+			// do we need that info for spawning? it should share handsocket name
+
+			// if its a weapon, use the weapon handsocket?
 
 			//if the hotbar weapon doesn't already have the physical weapon spawned, spawn it
 
@@ -117,6 +121,9 @@ bool USPlayerInventoryComponent::EquipItemAtIndex(int indexToFind, AActor* Insti
 
 			//@TODO: socket might change based on what item, take that into account (if weapon vs equippable item)
 			FTransform socketTransform = PlayerA->GetMesh()->GetSocketTransform(EquippedItem->HandSocketName);
+
+
+
 			EquippedItem->ItemActor = GetWorld()->SpawnActor<AActor>(EquippedItem->ItemActorSubclass, socketTransform, SpawnParams);
 			
 

@@ -65,8 +65,8 @@ class ACTIONROUGELIKE_API UItemBase : public UObject
 	AActor* ItemActor;
 
 	//A catch all for every time we have a weapon or equiptable item. where does it spawn on the skeletal mesh
-	UPROPERTY(VisibleAnywhere, Category = "Effects")
-	FName HandSocketName = "Muzzle_01";
+	UPROPERTY(EditAnywhere, Category = "Effects")
+	FName HandSocketName;
 
 	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Idle")
 	//UAnimMontage* IldeAnimWhenEquipped;

@@ -176,12 +176,18 @@ void USAction_WeaponAttack::AttackDelay_Elasped(ACharacter* InstigatorCharacter)
 
 void USAction_WeaponAttack::EjectCasing(ACharacter* InstigatorCharacter)
 {
-	const FVector CasingLocation = EquipedWeaponStaticMesh->GetSocketLocation("");
-	const FTransform SpawnTM = FTransform(CasingLocation);
+	const FVector CastingLocation = EquipedWeaponStaticMesh->GetSocketLocation("BulletEject");
+	const FRotator CastingRotation = EquipedWeaponStaticMesh->GetSocketRotation("BulletEject");
+	const FTransform SpawnTM = FTransform(CastingLocation);
 
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	SpawnParams.Instigator = InstigatorCharacter;
 
 	AActor* casing = GetWorld()->SpawnActor<AActor>(EquipedWeaponCasing, SpawnTM, SpawnParams);
+
+	//eject it in a motion with impulse
+	UStaticMeshComponent* casingSM = casing->FindComponentByClass<UStaticMeshComponent>();
+	FVector EjectDir = CastingRotation.Vector();
+	casingSM->AddImpulse(EjectDir * 40.f, NAME_None, true);
 }

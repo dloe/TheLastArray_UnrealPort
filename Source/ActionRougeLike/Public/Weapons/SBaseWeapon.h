@@ -93,8 +93,8 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 	FName WeaponDescription;
 
-	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
-	FName WeaponSocketName = "Muzzle_01";
+	//UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+	//FName WeaponSocketName = "Muzzle_01";
 
 	//skeletal mesh / static mesh comp?
 
