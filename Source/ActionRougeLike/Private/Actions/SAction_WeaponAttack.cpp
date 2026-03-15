@@ -184,10 +184,10 @@ void USAction_WeaponAttack::EjectCasing(ACharacter* InstigatorCharacter)
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	SpawnParams.Instigator = InstigatorCharacter;
 
-	AActor* casing = GetWorld()->SpawnActor<AActor>(EquipedWeaponCasing, SpawnTM, SpawnParams);
+	AAEjectedBulletCasing* casing = GetWorld()->SpawnActor<AAEjectedBulletCasing>(EquipedWeaponCasing, SpawnTM, SpawnParams);
 
 	//eject it in a motion with impulse
-	UStaticMeshComponent* casingSM = casing->FindComponentByClass<UStaticMeshComponent>();
+	UStaticMeshComponent* casingSM = casing->CasingStaticMesh;
 	FVector EjectDir = CastingRotation.Vector();
-	casingSM->AddImpulse(EjectDir * 40.f, NAME_None, true);
+	casingSM->AddImpulse(EjectDir * casing->EjectionStrength, NAME_None, true);
 }

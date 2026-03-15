@@ -75,7 +75,7 @@ class USAction_WeaponAttack : public USAction
 	UStaticMeshComponent* EquipedWeaponStaticMesh;
 
 	UPROPERTY(EditAnywhere, Category = "Equipped Weapon Properties")
-	TSubclassOf<AActor> EquipedWeaponCasing;
+	TSubclassOf<AAEjectedBulletCasing> EquipedWeaponCasing;
 
 	//runs attack procedure for currently equipped weapon in actor's inventory
 	//this should be assigned when we a reference to this class is established to the controller class?

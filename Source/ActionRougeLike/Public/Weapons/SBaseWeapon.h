@@ -10,6 +10,7 @@
 #include "GameFramework/Actor.h"
 #include "Projectiles/SProjectileBase.h"
 #include "Items/UItemBase.h"
+#include "../Private/Items/AEjectedBulletCasing.h"
 #include "SBaseWeapon.generated.h"
 
 class UAnimMontage;
@@ -110,7 +111,7 @@ public:
 	TSubclassOf<AActor> MagazineActor;
 
 	UPROPERTY(EditAnywhere, Category = "Firing")
-	TSubclassOf<AActor> EjectedCasingActor;
+	TSubclassOf<AAEjectedBulletCasing> EjectedCasingActor;
 
 	UPROPERTY(EditAnywhere, Category = "Attack")
 	float AttacAnimDelay = 0.2f;
