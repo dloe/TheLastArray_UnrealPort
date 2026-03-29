@@ -1,4 +1,7 @@
-// Copyright (c) 2026 Dylan. Personal Game Project. \nThis code is provided as-is for development and experimentation.\nUnauthorized use, distribution, or modification is not permitted.
+// Copyright (c) 2026 Dylan. Personal Game Project. 
+// This code is provided as-is for development and experimentation.
+// 
+// Unauthorized use, distribution, or modification is not permitted.
 
 #include "Weapons/SBaseWeapon.h"
 #include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
@@ -23,7 +26,7 @@ USBaseWeapon::USBaseWeapon()
 //and runs the selected action (StartAction)
 
 //ideal architecture: player hits button -> runs primaryattack function
-// -> start action("PrimaryAttack") -> ActionComponent functiuon for primary attack
+// -> start action("PrimaryAttack") -> ActionComponent function for primary attack
 // -> currently equiped weapon has attack function
 
 //action should look up weapon not the other way around
@@ -75,5 +78,23 @@ void USBaseWeapon::Unequip()
 bool USBaseWeapon::CanBeReloaded()
 {
 	return (CurrentMagazineSize < StandardMagazineSized && TotalAmmoReserves > StandardMagazineSized);
+}
+
+
+/// <summary>
+/// refill the mag after reload animation finishes
+/// </summary>
+/// <returns></returns>
+void USBaseWeapon::PerformReloadBehavior()
+{
+	if(TotalAmmoReserves > StandardMagazineSized)
+	{ 
+		TotalAmmoReserves =-StandardMagazineSized;
+		CurrentMagazineSize = StandardMagazineSized;
+	}
+	else {
+		CurrentMagazineSize = TotalAmmoReserves;
+		TotalAmmoReserves = 0;
+	}
 }
 

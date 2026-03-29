@@ -50,6 +50,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Weapon Behavior")
 	virtual bool CanBeReloaded();
 
+	UFUNCTION(BlueprintCallable, Category = "Weapon Behavior")
+	void PerformReloadBehavior();
+
 
 	//@TODO: This should be tied to bullet or projectile
 	//UFUNCTION(BlueprintCallable, Category = "Weapon Behavior")
@@ -113,8 +116,15 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Firing")
 	TSubclassOf<AAEjectedBulletCasing> EjectedCasingActor;
 
+	//delaying the start of firing projectile
+	UPROPERTY(EditAnywhere, Category = "Attack")
+	float StartAttacDelay = 0.f;
+
+	//the delay from the animation to end the attack action (so different from AttacDelay)
 	UPROPERTY(EditAnywhere, Category = "Attack")
 	float AttacAnimDelay = 0.2f;
+
+
 	UPROPERTY(EditAnywhere, Category = "Attack")
 	UAnimMontage* AttackAnim;
 
@@ -123,7 +133,7 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Reload")
 	UAnimMontage* ReloadAnim;
-	UPROPERTY(VisibleAnywhere, Category = "Reload")
+	UPROPERTY(EditAnywhere, Category = "Reload")
 	float ReloadAnimDelay = 0.4f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Effects")

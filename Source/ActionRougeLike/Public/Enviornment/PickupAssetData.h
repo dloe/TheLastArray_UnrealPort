@@ -84,7 +84,7 @@ struct FLevelTiersItemInfo {
 
 	public:
 		FLevelTiersItemInfo() {
-
+			LevelTier = ELevelTier::ELevel_1;
 		}
 
 	UPROPERTY(EditAnywhere, Category = "Enemy Tier")

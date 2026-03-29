@@ -63,6 +63,10 @@ class ACTIONROUGELIKE_API ASGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
 
+public:
+	UPROPERTY(EditDefaultsOnly,BlueprintReadWrite, Category = "Env")
+	bool DebugActive;
+
 protected:
 
 	FString SlotName;

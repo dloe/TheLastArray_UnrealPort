@@ -178,12 +178,9 @@ void ASCharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponent*
 			SkeletalMesh->SetScalarParameterValueOnMaterials(TimeToHitParameterName, GetWorld()->TimeSeconds);
 			//SkeletalMesh->SetParameterValueOnMaterials("HitFlashColor", HitFlashColor);
 
-
 			FVector4d ColortoVector = FVector4d(HitFlashColor);
 			SkeletalMesh->SetVectorParameterValueOnMaterials("HitFlashColor", ColortoVector);
-			
 			SkeletalMesh->SetScalarParameterValueOnMaterials("HitFlashSpeed", HitFlashSpeed);
-
 
 			//Thorns buff here
 			//thorns run here - will need to move to StartAction
@@ -209,7 +206,7 @@ void ASCharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponent*
 
 void ASCharacter::PrimaryAttack()
 {
-	//if not melee weapon
+	//TODO: if not melee weapon
 	//if weapon has equipped ammo and is able to fire
 
 	if (PlayerInventoryComponent->CanFireWeapon())
@@ -220,13 +217,12 @@ void ASCharacter::PrimaryAttack()
 		//else reload if we can reload
 		if (PlayerInventoryComponent->CanReload())
 		{
-			ActionComp->StartActionByName(this, "Reload");
+			ActionComp->StartActionByName(this, "WeaponReload");
 		}
-
-		//else we got no ammo boi
-		//give feedback to player that weapon cant be used
+		else {                                                             //else we got no ammo boi
+			UE_LOG(LogTemp, Log, TEXT("Out of ammo!"));                    //give feedback to player that weapon cant be used
+		}
 	}
-	
 }
 
 void ASCharacter::PrimaryInteract()
@@ -235,7 +231,6 @@ void ASCharacter::PrimaryInteract()
 	{
 		InteractiveComp->PrimaryInteract();
 	}
-	
 }
 
 /// <summary>
@@ -246,7 +241,7 @@ void ASCharacter::PrimaryReload()
 	if (PlayerInventoryComponent->CanReload())
 	{
 		//should this be an action called from here?
-		ActionComp->StartActionByName(this, "Reload");
+		ActionComp->StartActionByName(this, "WeaponReload");
 	}
 }
 

@@ -45,11 +45,13 @@ void USAction_WeaponAttack::StartAction_Implementation(AActor* Instigator)
 		EquipedWeaponFromInventory = Cast<USBaseWeapon>(ItemEquipped->ItemData);
 
 		ensure(EquipedWeaponFromInventory);
+		//do i even need these copies anymore?
 		EquipedWeaponAttackAnimAction = EquipedWeaponFromInventory->AttackAnim;
 		EquippedWeaponPostAttackAnimation = EquipedWeaponFromInventory->PostATtackIronSights;
 		EquipedWeaponCastingEffectsAction = EquipedWeaponFromInventory->CastingEffects;
 		EquipedSpawnSocketNameAction = EquipedWeaponFromInventory->WeaponMuzzleSocketName;
 		EquipedAttacAnimDelayAction = EquipedWeaponFromInventory->AttacAnimDelay;
+		EquipedDelayAttack = EquipedWeaponFromInventory->StartAttacDelay;
 		EquipedWeaponProjectileSubclassAction = EquipedWeaponFromInventory->WeaponProjectile;
 		EquipedWeaponCasing = EquipedWeaponFromInventory->EjectedCasingActor;
 		EquipedWeaponStaticMesh = EquipedWeaponFromInventory->GetItemStaticMesh();
@@ -57,24 +59,20 @@ void USAction_WeaponAttack::StartAction_Implementation(AActor* Instigator)
 
 		//get our attacking character
 		//todo: put in character condition (or combine with ai one?)
-		if (Character)
+		if (Character && Character->HasAuthority())
 		{
-			Character->PlayAnimMontage(EquipedWeaponAttackAnimAction); //start animation, then wait until animation is finished to spawn projectile physically
-
-			if (Character->HasAuthority()) {
+			//when timer finishes, start spawn projectile and attack anim
+			if (EquipedDelayAttack != 0.0f) {
 				FTimerHandle TimerHandle_AttackDelay;
-				FTimerDelegate Delegate;
-				
-				//when timer finishes, spawn projectile
-				if(EquipedAttacAnimDelayAction != 0.0f) {
-					//unless there is a 'warm up' animation that has to run before we can fire the weapon or make the attack, this will most likely be near 0
-					Delegate.BindUFunction(this, "AttackDelay_Elasped", Character);
-					GetWorld()->GetTimerManager().SetTimer(TimerHandle_AttackDelay, Delegate, EquipedAttacAnimDelayAction, false);
-				} else {
-					//run immediately if no delay is there
-					AttackDelay_Elasped(Character);
-				}
+				FTimerDelegate DelegateAttackDelay;
+				DelegateAttackDelay.BindUFunction(this, "AttackDelay_Elasped", Character);
+				GetWorld()->GetTimerManager().SetTimer(TimerHandle_AttackDelay, DelegateAttackDelay, EquipedAttacAnimDelayAction, false);
 			}
+			else {
+				//run immediately if no delay is there
+				AttackDelay_Elasped(Character);
+			}
+
 		}
 		else if (AI)
 		{
@@ -92,11 +90,53 @@ void USAction_WeaponAttack::StartAction_Implementation(AActor* Instigator)
 /// After animation players we spawn projectiles or do the attack physically 
 /// </summary>
 /// <param name="InstigatorCharacter"></param>
-void USAction_WeaponAttack::AttackDelay_Elasped(ACharacter* InstigatorCharacter)
+void USAction_WeaponAttack::AttackAnimDelay_Elasped(ACharacter* InstigatorCharacter)
 {
 	//very similar behavior as the magic projectile, except we get alot of the properties from teh weapon instead of beiung
 	//stored in this action class
 
+	StopAction(InstigatorCharacter);
+}
+
+/// <summary>
+/// Might have to adjust this later, but the delay to the start of the animation was for certain big attacks with weapons, might need to add the logic for running the big gun anim setup
+/// For now basic weapons will have no delay so this isnt in use, AttackDelay_Elasped is called instantly
+/// </summary>
+/// <param name="InstigatorCharacter"></param>
+void USAction_WeaponAttack::AttackDelay_Elasped(ACharacter* InstigatorCharacter)
+{
+	InstigatorCharacter->PlayAnimMontage(EquipedWeaponAttackAnimAction); //start animation, then wait until animation is finished to spawn projectile physically
+	//set post animation end animation (hold gun but not shoot it kinda)
+	FireProjectile(InstigatorCharacter); //fire projectile immediately, when notify ends, we stop the action officially
+	EquipedWeaponFromInventory->CurrentMagazineSize--; //could refactor this a bit to better organize who sees the equipped weapon and whatnot
+
+	//unless there is a 'warm up' animation that has to run before we can fire the weapon or make the attack, this will most likely be near 0
+	FTimerHandle TimerHandle_AttackAnimDelay;
+	FTimerDelegate DelegateAnimationDelay;
+	DelegateAnimationDelay.BindUFunction(this, "AttackAnimDelay_Elasped", InstigatorCharacter);
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle_AttackAnimDelay, DelegateAnimationDelay, EquipedAttacAnimDelayAction, false);
+}
+
+void USAction_WeaponAttack::EjectCasing(ACharacter* InstigatorCharacter)
+{
+	const FVector CastingLocation = EquipedWeaponStaticMesh->GetSocketLocation("BulletEject");
+	const FRotator CastingRotation = EquipedWeaponStaticMesh->GetSocketRotation("BulletEject");
+	const FTransform SpawnTM = FTransform(CastingLocation);
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	SpawnParams.Instigator = InstigatorCharacter;
+
+	AAEjectedBulletCasing* casing = GetWorld()->SpawnActor<AAEjectedBulletCasing>(EquipedWeaponCasing, SpawnTM, SpawnParams);
+
+	//eject it in a motion with impulse
+	UStaticMeshComponent* casingSM = casing->CasingStaticMesh;
+	FVector EjectDir = CastingRotation.Vector();
+	casingSM->AddImpulse(EjectDir * casing->EjectionStrength, NAME_None, true);
+}
+
+void USAction_WeaponAttack::FireProjectile(ACharacter* InstigatorCharacter)
+{
 	if (ensureAlways(EquipedWeaponProjectileSubclassAction))
 	{
 		//use weapons projectiles name instead of 'muzzle'
@@ -104,7 +144,7 @@ void USAction_WeaponAttack::AttackDelay_Elasped(ACharacter* InstigatorCharacter)
 
 		//EPSCPoolMethod PoolingMethod; //defaults to none
 		//attach location can be KeepWorldPosition or KeepRelativeOffset
-		// scale shouldnt be needed if we use keepworldposition
+		// scale shouldn't be needed if we use keepworldposition
 
 		//have particle effect in players hand when shooting projectile
 		//should be where our hand socket is, where the projectile spawns in
@@ -168,26 +208,20 @@ void USAction_WeaponAttack::AttackDelay_Elasped(ACharacter* InstigatorCharacter)
 		AActor* T = GetWorld()->SpawnActor<AActor>(EquipedWeaponProjectileSubclassAction, SpawnTM, SpawnParams);
 
 		EjectCasing(InstigatorCharacter);
-		InstigatorCharacter->PlayAnimMontage(EquippedWeaponPostAttackAnimation);
-	}
+		//used to have post fire animatoin but it conflicts with immedateite spawnming of bullets
 
-	StopAction(InstigatorCharacter);
+	}
 }
 
-void USAction_WeaponAttack::EjectCasing(ACharacter* InstigatorCharacter)
+/// <summary>
+/// set when we run the fire animation, after firing we want to hold a pose like we are kinda still aiming but not shooting for a short bit the return to whatever animation
+/// 
+/// MIGHT NOT NEED THIS
+/// </summary>
+/// <param name="PostFireMon"></param>
+/// <param name="bInterrupted"></param>
+void USAction_WeaponAttack::OnFireMontageFinished(ACharacter* InstigatorCharacter, UAnimMontage* PostFireMon, bool bInterrupted)
 {
-	const FVector CastingLocation = EquipedWeaponStaticMesh->GetSocketLocation("BulletEject");
-	const FRotator CastingRotation = EquipedWeaponStaticMesh->GetSocketRotation("BulletEject");
-	const FTransform SpawnTM = FTransform(CastingLocation);
-
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	SpawnParams.Instigator = InstigatorCharacter;
-
-	AAEjectedBulletCasing* casing = GetWorld()->SpawnActor<AAEjectedBulletCasing>(EquipedWeaponCasing, SpawnTM, SpawnParams);
-
-	//eject it in a motion with impulse
-	UStaticMeshComponent* casingSM = casing->CasingStaticMesh;
-	FVector EjectDir = CastingRotation.Vector();
-	casingSM->AddImpulse(EjectDir * casing->EjectionStrength, NAME_None, true);
+	//note: this runs after the delay which is basically instant since we don't have attack delay, what we should have is animation delay?
+	InstigatorCharacter->PlayAnimMontage(EquippedWeaponPostAttackAnimation);
 }

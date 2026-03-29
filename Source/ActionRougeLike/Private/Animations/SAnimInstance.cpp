@@ -29,6 +29,6 @@ void USAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	if (ActionComp)
 	{
 		bIsStunned = ActionComp->ActiveGameplayTags.HasTag(StunnedTag);
-		bIsReloading = ActionComp->ActiveGameplayTags.HasTag(StunnedTag);
+		bIsReloading = ActionComp->ActiveGameplayTags.HasTag(ReloadingTag); //why was this stunned before?
 	}
 }

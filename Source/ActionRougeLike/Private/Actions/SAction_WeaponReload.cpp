@@ -73,5 +73,6 @@ void USAction_WeaponReload::StartAction_Implementation(AActor* Instigator)
 /// <param name="InstigatorCharacter"></param>
 void USAction_WeaponReload::ReloadDelay_Elasped(ACharacter* InstigatorCharacter)
 {
+	EquipedWeaponFromInventory->PerformReloadBehavior();
 	StopAction(InstigatorCharacter);
 }

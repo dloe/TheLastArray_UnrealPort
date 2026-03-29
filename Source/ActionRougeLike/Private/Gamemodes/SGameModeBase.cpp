@@ -41,7 +41,7 @@ void ASGameModeBase::InitGame(const FString& MapName, const FString& Options, FS
 {
 	Super::InitGame(MapName, Options, ErrorMessage);
 
-	FString SelectedSaveSlot = UGameplayStatics::ParseOption(Options, "SaveGame");
+	FString SelectedSaveSlot = UGameplayStatics::ParseOption(Options, "SaveGame"); //TODO: will need to improve on this or expand to full inevntory in future
 
 	if (SelectedSaveSlot.Len() > 0)
 	{
@@ -58,7 +58,8 @@ void ASGameModeBase::StartPlay()
 	Super::StartPlay();
 
 	SpawnPowerups();
-	GetWorldTimerManager().SetTimer(TimerHandle_SpawnBots, this, &ASGameModeBase::SpawnBotTimerElapsed, SpawnTimerInterval, true);
+	if(DebugActive) //for now will be simple toggle for debug
+		GetWorldTimerManager().SetTimer(TimerHandle_SpawnBots, this, &ASGameModeBase::SpawnBotTimerElapsed, SpawnTimerInterval, true);
 
 
 }

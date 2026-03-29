@@ -39,42 +39,57 @@ class USAction_WeaponAttack : public USAction
 	// -------- Helper Functions -------
 	// ---------------------------------
 
+	//delay from animation to end action
+	UFUNCTION()
+	void AttackAnimDelay_Elasped(ACharacter* InstigatorCharacter);
+
+	//delay overall attack
 	UFUNCTION()
 	void AttackDelay_Elasped(ACharacter* InstigatorCharacter);
 
 	UFUNCTION()
 	void EjectCasing(ACharacter* InstigatorCharacter);
 
+	UFUNCTION()
+	void FireProjectile(ACharacter* InstigatorCharacter);
+
+	//might not need this anymore because of new custom notify
+	UFUNCTION()
+	void OnFireMontageFinished(ACharacter* InstigatorCharacter, UAnimMontage* PostFireMon, bool bInterrupted);
+
 	// ---------------------------------
 	// -- Internal state / variables --
 	// ---------------------------------
 
 	//vars tied directly to actions, only set when action starts and those props maintained until the aciton ends
-	UPROPERTY(EditAnywhere, Category = "Equipped Weapon Properties")
+	UPROPERTY(EditAnywhere, Category = "Equipped Weapon Properties - Overriden by equipped item")
 	USBaseWeapon* EquipedWeaponFromInventory;
 
-	UPROPERTY(EditAnywhere,  Category = "Equipped Weapon Properties")
+	UPROPERTY(EditAnywhere,  Category = "Equipped Weapon Properties - Overriden by equipped item")
 	UAnimMontage* EquipedWeaponAttackAnimAction;
 
-	UPROPERTY(EditAnywhere,  Category = "Equipped Weapon Properties")
+	UPROPERTY(EditAnywhere,  Category = "Equipped Weapon Properties - Overriden by equipped item")
 	UAnimMontage* EquippedWeaponPostAttackAnimation;
 
-	UPROPERTY(EditAnywhere,  Category = "Equipped Weapon Properties")
+	UPROPERTY(EditAnywhere,  Category = "Equipped Weapon Properties - Overriden by equipped item")
 	UParticleSystem* EquipedWeaponCastingEffectsAction;
 
-	UPROPERTY(EditAnywhere, Category = "Equipped Weapon Properties")
+	UPROPERTY(EditAnywhere, Category = "Equipped Weapon Properties - Overriden by equipped item")
 	FName EquipedSpawnSocketNameAction;
 
-	UPROPERTY(EditAnywhere, Category = "Equipped Weapon Properties")
+	UPROPERTY(EditAnywhere, Category = "Equipped Weapon Properties - Overriden by equipped item")
 	float EquipedAttacAnimDelayAction;
 
-	UPROPERTY(EditAnywhere, Category = "Equipped Weapon Properties")
+	UPROPERTY(EditAnywhere, Category = "Equipped Weapon Properties - Overriden by equipped item")
+	float EquipedDelayAttack;
+
+	UPROPERTY(EditAnywhere, Category = "Equipped Weapon Properties - Overriden by equipped item")
 	TSubclassOf<AActor> EquipedWeaponProjectileSubclassAction;
 
-	UPROPERTY(EditAnywhere, Category = "Equipped Weapon Properties")
+	UPROPERTY(EditAnywhere, Category = "Equipped Weapon Properties - Overriden by equipped item")
 	UStaticMeshComponent* EquipedWeaponStaticMesh;
 
-	UPROPERTY(EditAnywhere, Category = "Equipped Weapon Properties")
+	UPROPERTY(EditAnywhere, Category = "Equipped Weapon Properties - Overriden by equipped item")
 	TSubclassOf<AAEjectedBulletCasing> EquipedWeaponCasing;
 
 	//runs attack procedure for currently equipped weapon in actor's inventory
