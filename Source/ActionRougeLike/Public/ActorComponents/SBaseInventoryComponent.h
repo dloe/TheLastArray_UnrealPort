@@ -42,6 +42,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Inventory Behavior")
 	virtual UInventorySlot* GetEquippedItem();
 
+	/// <summary>
+	/// To get weapon info (if possible)
+	/// </summary>
+	UFUNCTION(BlueprintCallable)
+	USBaseWeapon* GetCurrentWeaponInfo();
+
 	UFUNCTION(BlueprintCallable, Category = "Inventory Behavior")
 	bool AddItemToInventory(UItemBase* ItemToAdd);
 

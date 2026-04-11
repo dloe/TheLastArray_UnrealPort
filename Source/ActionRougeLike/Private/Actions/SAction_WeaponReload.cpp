@@ -12,6 +12,7 @@ void USAction_WeaponReload::StartAction_Implementation(AActor* Instigator)
 	//if instigator is type player
 	ASCharacter* Character = Cast<ASCharacter>(Instigator);
 	ASAICharacter* AI = Cast<ASAICharacter>(Instigator);
+	UE_LOG(LogTemp, Log, TEXT("In start action implementation of reload"));
 
 	if (Character)
 	{

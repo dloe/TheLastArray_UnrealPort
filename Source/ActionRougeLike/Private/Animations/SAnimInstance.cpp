@@ -7,15 +7,20 @@
 #include "Animations/SAnimInstance.h"
 #include <Runtime/GameplayTags/Classes/GameplayTagContainer.h>
 #include "Actions/SActionComponent.h"
+#include "Player/SCharacter.h"
+
 
 void USAnimInstance::NativeInitializeAnimation()
 {
 	Super::NativeInitializeAnimation();
 
 	AActor* OwningActor = GetOwningActor();
-	if (OwningActor)
+	APawn* OwningPawn = TryGetPawnOwner();
+
+	if (OwningActor && OwningPawn)
 	{
-		ActionComp = Cast<USActionComponent>(OwningActor->GetComponentByClass(USActionComponent::StaticClass()));
+		Character = Cast<ASCharacter>(OwningPawn);
+		ActionComp = Character->GetActionComp(); //Cast<USActionComponent>(OwningActor->GetComponentByClass(USActionComponent::StaticClass()));
 	}
 
 }
@@ -26,9 +31,15 @@ void USAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 
 	static FGameplayTag StunnedTag = FGameplayTag::RequestGameplayTag("Status.Stunned"); //status tag
 	static FGameplayTag ReloadingTag = FGameplayTag::RequestGameplayTag("Action.Reloading"); //action tag
+	//static FGameplayTag FiringTag = FGameplayTag::RequestGameplayTag("Action.PrimaryAttack"); //action tag
 	if (ActionComp)
 	{
 		bIsStunned = ActionComp->ActiveGameplayTags.HasTag(StunnedTag);
 		bIsReloading = ActionComp->ActiveGameplayTags.HasTag(ReloadingTag); //why was this stunned before?
+	}
+
+	if (Character)
+	{
+		bIsAiming = Character->bIsAiming;
 	}
 }

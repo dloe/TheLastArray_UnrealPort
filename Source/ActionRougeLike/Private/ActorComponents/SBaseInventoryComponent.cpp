@@ -71,6 +71,15 @@ UInventorySlot* USBaseInventoryComponent::GetEquippedItem()
 
 }
 
+USBaseWeapon* USBaseInventoryComponent::GetCurrentWeaponInfo()
+{
+	UInventorySlot* CurrentSlot = GetEquippedItem();
+	if(CurrentSlot)
+		return CurrentSlot->GetWeaponData();
+	else
+		return nullptr;
+}
+
 /// <summary>
 /// Takes weapon and ads to overall inventory
 /// 

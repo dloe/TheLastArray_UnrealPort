@@ -11,6 +11,7 @@
 #include "UItemBase.h"
 #include "InventorySlot.generated.h"
 
+class USBaseWeapon;
 /**
  * 
  */
@@ -45,6 +46,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void AssignItem(UItemBase* itemToAssign);
+
+	UFUNCTION(BlueprintCallable)
+	USBaseWeapon* GetWeaponData();
 
 	UFUNCTION(BlueprintCallable)
 	void Initialize(UItemBase* itemDataP, bool isweaponP, bool isequipableP);

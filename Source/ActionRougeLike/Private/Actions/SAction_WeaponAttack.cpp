@@ -12,6 +12,7 @@
 #include "Player/SCharacter.h"
 #include "AI/SAICharacter.h"
 #include "Engine/World.h"
+#include "Animations/SAnimInstance.h"
 
 /// <summary>
 /// Attack Action Behavior from equipped weapon stored in inventory
@@ -47,7 +48,7 @@ void USAction_WeaponAttack::StartAction_Implementation(AActor* Instigator)
 		ensure(EquipedWeaponFromInventory);
 		//do i even need these copies anymore?
 		EquipedWeaponAttackAnimAction = EquipedWeaponFromInventory->AttackAnim;
-		EquippedWeaponPostAttackAnimation = EquipedWeaponFromInventory->PostATtackIronSights;
+		//EquippedWeaponPostAttackAnimation = EquipedWeaponFromInventory->PostAttackIronSights;
 		EquipedWeaponCastingEffectsAction = EquipedWeaponFromInventory->CastingEffects;
 		EquipedSpawnSocketNameAction = EquipedWeaponFromInventory->WeaponMuzzleSocketName;
 		EquipedAttacAnimDelayAction = EquipedWeaponFromInventory->AttacAnimDelay;
@@ -90,12 +91,17 @@ void USAction_WeaponAttack::StartAction_Implementation(AActor* Instigator)
 /// After animation players we spawn projectiles or do the attack physically 
 /// </summary>
 /// <param name="InstigatorCharacter"></param>
-void USAction_WeaponAttack::AttackAnimDelay_Elasped(ACharacter* InstigatorCharacter)
+void USAction_WeaponAttack::AttackAnimDelay_Elasped(ASCharacter* InstigatorCharacter)
 {
 	//very similar behavior as the magic projectile, except we get alot of the properties from teh weapon instead of beiung
 	//stored in this action class
 
 	StopAction(InstigatorCharacter);
+
+
+	//InstigatorCharacter->PlayAnimMontage(EquippedWeaponPostAttackAnimation);
+	//begin post ads animation, turns off via animBP
+	InstigatorCharacter->bIsAiming = true;
 }
 
 /// <summary>
@@ -106,6 +112,20 @@ void USAction_WeaponAttack::AttackAnimDelay_Elasped(ACharacter* InstigatorCharac
 void USAction_WeaponAttack::AttackDelay_Elasped(ACharacter* InstigatorCharacter)
 {
 	InstigatorCharacter->PlayAnimMontage(EquipedWeaponAttackAnimAction); //start animation, then wait until animation is finished to spawn projectile physically
+
+	////fire event for animbp
+	//USkeletalMeshComponent* Mesh = InstigatorCharacter->GetMesh();
+	//if (Mesh)
+	//{
+	//	USAnimInstance* PlayerAnimInstance = Cast<USAnimInstance>(Mesh->GetAnimInstance());
+	//	if (PlayerAnimInstance)
+	//	{
+	//		PlayerAnimInstance->TriggerFire();
+	//	}
+
+	//}
+
+
 	//set post animation end animation (hold gun but not shoot it kinda)
 	FireProjectile(InstigatorCharacter); //fire projectile immediately, when notify ends, we stop the action officially
 	EquipedWeaponFromInventory->CurrentMagazineSize--; //could refactor this a bit to better organize who sees the equipped weapon and whatnot
@@ -220,8 +240,10 @@ void USAction_WeaponAttack::FireProjectile(ACharacter* InstigatorCharacter)
 /// </summary>
 /// <param name="PostFireMon"></param>
 /// <param name="bInterrupted"></param>
-void USAction_WeaponAttack::OnFireMontageFinished(ACharacter* InstigatorCharacter, UAnimMontage* PostFireMon, bool bInterrupted)
+void USAction_WeaponAttack::OnPostFireMontageFinished(ACharacter* InstigatorCharacter, UAnimMontage* PostFireMon, bool bInterrupted)
 {
 	//note: this runs after the delay which is basically instant since we don't have attack delay, what we should have is animation delay?
-	InstigatorCharacter->PlayAnimMontage(EquippedWeaponPostAttackAnimation);
+	//InstigatorCharacter->PlayAnimMontage(EquippedWeaponPostAttackAnimation);
+
+
 }

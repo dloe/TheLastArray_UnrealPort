@@ -89,7 +89,7 @@ void USBaseWeapon::PerformReloadBehavior()
 {
 	if(TotalAmmoReserves > StandardMagazineSized)
 	{ 
-		TotalAmmoReserves =-StandardMagazineSized;
+		TotalAmmoReserves = TotalAmmoReserves - StandardMagazineSized;
 		CurrentMagazineSize = StandardMagazineSized;
 	}
 	else {

@@ -13,8 +13,6 @@ USPlayerInventoryComponent::USPlayerInventoryComponent()
 	
 }
 
-
-
 /// <summary>
 /// Item is added to immediate hot-bar for use
 /// </summary>
@@ -99,7 +97,6 @@ bool USPlayerInventoryComponent::EquipItemAtIndex(int indexToFind, AActor* Insti
 			foundItem = true;
 			EquippedItem = HotbarInventory[index]->ItemData;
 			EquippedSlotIndex = index;
-			//EquippedIdleAnim = HotbarInventory[index]->ItemData->IldeAnimWhenEquipped;
 
 			//TODO: Check if we need equipped weapon
 			EquipedWeaponFromInventory = Cast<USBaseWeapon>(EquippedItem);
@@ -116,17 +113,13 @@ bool USPlayerInventoryComponent::EquipItemAtIndex(int indexToFind, AActor* Insti
 			
 			FActorSpawnParameters SpawnParams;
 			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-			//ACharacter* MyPawn = Cast<ACharacter>(MyController->GetPawn());
 			SpawnParams.Instigator = PlayerA;
 
 			//@TODO: socket might change based on what item, take that into account (if weapon vs equippable item)
 			FTransform socketTransform = PlayerA->GetMesh()->GetSocketTransform(EquippedItem->HandSocketName);
 
-
-
 			EquippedItem->ItemActor = GetWorld()->SpawnActor<AActor>(EquippedItem->ItemActorSubclass, socketTransform, SpawnParams);
 			
-
 			//attach to socket
 			EquippedItem->ItemActor->AttachToComponent(PlayerA->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale,
 			EquippedItem->HandSocketName);
@@ -166,15 +159,14 @@ bool USPlayerInventoryComponent::EquipItemByName(FName ItemName)
 bool USPlayerInventoryComponent::CanReload()
 {
 	bool ReloadableStatus = false;
-
 	UInventorySlot* ItemEquipped = GetEquippedItem();
 	
 	if (ItemEquipped->IsWeapon)
 	{
-		//USBaseWeapon* EquipedWeaponFromInventory = Cast<USBaseWeapon>(ItemEquipped->ItemData);
 		if (EquipedWeaponFromInventory->CanBeReloaded())
 		{
 			ReloadableStatus = true;
+			UE_LOG(LogTemp, Log, TEXT("Weapon can be reloaded!"));
 		}
 	}
 
@@ -260,8 +252,6 @@ void USPlayerInventoryComponent::WeaponMagDropEvent()
 	SpawnParams.Instigator = Cast<ASCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	FTransform socketTransform = PlayerA->GetMesh()->GetSocketTransform(EquippedItem->HandSocketName);
 	AActor* WeaponMag = GetWorld()->SpawnActor<AActor>(EquipedWeaponFromInventory->MagazineActor, socketTransform, SpawnParams);
-
-
 }
 
 /// <summary>

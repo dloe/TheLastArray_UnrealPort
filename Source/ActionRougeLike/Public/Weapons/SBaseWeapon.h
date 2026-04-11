@@ -87,7 +87,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Weapon Stats")
 	int CurrentMagazineSize;
 
-	UPROPERTY(EditAnywhere, Category = "Weapon Stats")
+	UPROPERTY(VisibleAnywhere, Category = "Weapon Stats")
 	int StandardMagazineSized;
 
 	//@TODO: maybe make enum in future?
@@ -128,11 +128,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Attack")
 	UAnimMontage* AttackAnim;
 
-	UPROPERTY(EditAnywhere, Category = "Attack")
-	UAnimMontage* PostATtackIronSights;
-
 	UPROPERTY(EditAnywhere, Category = "Reload")
 	UAnimMontage* ReloadAnim;
+
 	UPROPERTY(EditAnywhere, Category = "Reload")
 	float ReloadAnimDelay = 0.4f;
 
@@ -141,6 +139,19 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon Properties")
 	FName WeaponMuzzleSocketName;
+
+	//animation based
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
+	UAnimSequence* PostAttackIronsightsSeq;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
+	UAnimSequence* EquippedIdleSeq;
+
+	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
+	//UAnimSequence* EquippedSprintSeq;
+
+	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
+	//UAnimSequence* EquippedJogSeq;
 
 protected:
 	// Called when the game starts or when spawned

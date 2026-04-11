@@ -7,7 +7,6 @@
 #include "Items/InventorySlot.h"
 #include "Weapons/SBaseWeapon.h"
 
-
 UInventorySlot::UInventorySlot()
 {
 
@@ -36,8 +35,14 @@ void UInventorySlot::AssignItem(UItemBase* itemToAssign)
 		IsWeapon = true;
 		IsEquipable = true;
 	}
+	ItemData = itemToAssign;
 
 	//@TODO check if consumable also here
 	//
 
+}
+
+USBaseWeapon* UInventorySlot::GetWeaponData()
+{
+	return (IsWeapon) ? Cast<USBaseWeapon>(ItemData) : nullptr;
 }

@@ -27,11 +27,15 @@ class USAction_WeaponAttack : public USAction
 	//UFUNCTION(BlueprintNativeEvent, Category = "Action")
 	virtual void StartAction_Implementation(AActor* Instigator) override;
 
+	UFUNCTION()
+	void SetInventoryComp(USBaseInventoryComponent* InventoryCompRef) { InventoryComponent = InventoryCompRef; };
+
 	// ---------------------------------
 	// -------- Public Variables -------
 	// ---------------------------------
-	UFUNCTION()
-	void SetInventoryComp(USBaseInventoryComponent* InventoryCompRef) { InventoryComponent = InventoryCompRef; };
+	
+	
+
 	
 	private:
 
@@ -41,7 +45,7 @@ class USAction_WeaponAttack : public USAction
 
 	//delay from animation to end action
 	UFUNCTION()
-	void AttackAnimDelay_Elasped(ACharacter* InstigatorCharacter);
+	void AttackAnimDelay_Elasped(ASCharacter* InstigatorCharacter);
 
 	//delay overall attack
 	UFUNCTION()
@@ -55,7 +59,7 @@ class USAction_WeaponAttack : public USAction
 
 	//might not need this anymore because of new custom notify
 	UFUNCTION()
-	void OnFireMontageFinished(ACharacter* InstigatorCharacter, UAnimMontage* PostFireMon, bool bInterrupted);
+	void OnPostFireMontageFinished(ACharacter* InstigatorCharacter, UAnimMontage* PostFireMon, bool bInterrupted);
 
 	// ---------------------------------
 	// -- Internal state / variables --

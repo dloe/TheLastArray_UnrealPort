@@ -28,12 +28,12 @@ UCLASS()
 class ACTIONROUGELIKE_API ASCharacter : public ACharacter
 {
 	GENERATED_BODY()
-
-public:
-	// Sets default values for this character's properties
-	ASCharacter();
 	
 protected:
+
+	// ---------------------------------
+	// -------- Public Variables -------
+	// ---------------------------------
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UParticleSystemComponent* EffectSpellCastComp;
@@ -77,6 +77,11 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Damage")
 	TSubclassOf<USActionEffect> ThornActionClass;
 
+
+	// ---------------------------------
+	// -------- Helper Functions -------
+	// ---------------------------------
+
 	//actions
 	void SprintStart();
 	void SprintStop();
@@ -113,6 +118,14 @@ protected:
 	virtual FVector GetPawnViewLocation() const override;
 
 public:	
+
+	// Sets default values for this character's properties
+	ASCharacter();
+
+	// ---------------------------------
+	// ------- Public Functions --------
+	// ---------------------------------
+
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
@@ -124,5 +137,17 @@ public:
 
 	UFUNCTION()
 	USPlayerInventoryComponent* GetPlayerInventoryComp() {return PlayerInventoryComponent; };
+
+	UFUNCTION()
+	USActionComponent* GetActionComp() { return ActionComp; };
+
+	// ---------------------------------
+	// -------- Public Variables -------
+	// ---------------------------------
+	/// <summary>
+	/// When the player shoots the gun, we want a post fire blend animation to run where the player ironsights idle
+	/// </summary>
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Animation")
+	bool bIsAiming;
 
 };
