@@ -5,6 +5,8 @@
 // Unauthorized use, distribution, or modification is not permitted.
 
 #include "ActorComponents/SBaseInventoryComponent.h"
+#include "Player/SCharacter.h"
+#include "Components/SkinnedMeshComponent.h"
 
 // Sets default values for this component's properties
 USBaseInventoryComponent::USBaseInventoryComponent()
@@ -78,6 +80,38 @@ USBaseWeapon* USBaseInventoryComponent::GetCurrentWeaponInfo()
 		return CurrentSlot->GetWeaponData();
 	else
 		return nullptr;
+}
+
+FTransform USBaseInventoryComponent::GetLeftHandTransform(ASCharacter* Instigator)
+{
+	FTransform result = FTransform::Identity;
+	FTransform OutTransform = FTransform::Identity;
+	FVector loc = FVector::ZeroVector;
+	FRotator rot = FRotator::ZeroRotator;
+
+
+	USBaseWeapon* CurrentWeapon = GetCurrentWeaponInfo();
+	if (CurrentWeapon)
+	{
+		UStaticMeshComponent* SM = CurrentWeapon->GetItemStaticMesh();
+		FTransform FLeftSocketTrans = SM->GetSocketTransform("LeftHandSocket", RTS_World);
+
+		//transform into bone space of our player character (the space between the item we pull this from and the player are different)
+		//get ref to player
+		if (Instigator)
+		{
+			
+			UStaticMeshComponent* PlayerSM = Instigator->FindComponentByClass<UStaticMeshComponent>();
+			//PlayerSM->TransformToBoneSpace
+			USkeletalMeshComponent* Mesh = Instigator->GetMesh();
+			Mesh->TransformToBoneSpace("hand_r", FLeftSocketTrans.GetLocation(), FLeftSocketTrans.Rotator(), loc, rot);
+			FVector scale = FVector::ZeroVector;
+			DrawDebugSphere(GetWorld(), FLeftSocketTrans.GetLocation(), 4.0f, 6, FColor::Red, false, 100);
+			FTransform solution(rot, loc, scale);
+			result = solution;
+		}
+	}
+	return result;
 }
 
 /// <summary>

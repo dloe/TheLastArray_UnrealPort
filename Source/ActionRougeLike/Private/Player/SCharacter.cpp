@@ -90,6 +90,7 @@ void ASCharacter::BeginPlay()
 void ASCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	SetLeftHandIKTrans();
 
 }
 
@@ -249,6 +250,20 @@ void ASCharacter::SetEquippedHotbar(int input)
 {
 	PlayerInventoryComponent->EquipItemAtIndex(input, this);
 }
+
+/// <summary>
+/// before we had the left hand transform set up via BPI, but since we are swapping to multiple animBP and therefor the
+/// BPI cant be run (since it cannot be guaranteed thread safe), move BP logic into raw CPP logic.
+/// 
+/// TODO: Maybe have to move this into a better place later
+/// </summary>
+/// <returns></returns>
+void ASCharacter::SetLeftHandIKTrans()
+{
+	WeaponLeftHandIKTrans = PlayerInventoryComponent->GetLeftHandTransform(this);
+
+}
+
 
 //blackhole assignment 2
 void ASCharacter::BlackholeAttack()

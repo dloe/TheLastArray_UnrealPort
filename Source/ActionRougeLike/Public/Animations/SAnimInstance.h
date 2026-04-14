@@ -54,6 +54,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 	bool bWantsToFire;
 
+	//reading in player input via player vp. used in loco state machine in animBP
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+	bool bWantsToMove;
+
 
 	UPROPERTY(BlueprintReadOnly, Category = "Animation")
 	USActionComponent* ActionComp;

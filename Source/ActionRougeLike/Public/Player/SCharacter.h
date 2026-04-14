@@ -109,6 +109,9 @@ protected:
 	void SetEquippedHotbar(int input);
 
 	UFUNCTION()
+	void SetLeftHandIKTrans();
+
+	UFUNCTION()
 	void OnHealthChanged(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewHealth, float Delta);
 
 
@@ -149,5 +152,12 @@ public:
 	/// </summary>
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Animation")
 	bool bIsAiming;
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+	bool bIsPlayingEmote;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon Left Hand Adjustments")
+	FTransform WeaponLeftHandIKTrans;
 
 };

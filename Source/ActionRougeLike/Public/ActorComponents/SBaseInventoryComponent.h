@@ -14,6 +14,8 @@
 #include "Items/StockInventoryLoadoutsData.h"
 #include "SBaseInventoryComponent.generated.h"
 
+class ASCharacter;
+
 /// <summary>
 /// Base inventory, will be overloaded for player and enemy AI
 /// 
@@ -47,6 +49,9 @@ public:
 	/// </summary>
 	UFUNCTION(BlueprintCallable)
 	USBaseWeapon* GetCurrentWeaponInfo();
+
+	UFUNCTION(BlueprintCallable)
+	FTransform GetLeftHandTransform(ASCharacter* Instigator);
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory Behavior")
 	bool AddItemToInventory(UItemBase* ItemToAdd);
