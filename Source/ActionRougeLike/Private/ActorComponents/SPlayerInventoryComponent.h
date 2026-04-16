@@ -13,6 +13,10 @@
 
 class ASCharacter;
 
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnWeaponEquipped, EItemType, PrevEquippedItemType, EItemType, NewEquippedItemType);
+
+
 /**
  * 
  */
@@ -74,11 +78,16 @@ public:
 	//@TODO: This will eventually be an item (that weapons are a child class of)
 	//UFUNCTION(BlueprintCallable, Category = "Inventory Behavior")
 	//ASBaseWeapon* GetEquippedWeapon();
+
+	
 	
 
 	// ---------------------------------
 	// -------- Public Variables -------
 	// ---------------------------------
+
+	UPROPERTY(BlueprintAssignable)
+	FOnWeaponEquipped OnWeaponEquipped;
 
 	//data structure to incorporate hot bar
 	//@TODO: should hotbar be an extension of the inventory? or be x amount of highlighted references to 
@@ -133,4 +142,8 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Player")
 	ASCharacter* PlayerA;
+
+	//Helps with transitions
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Properties")
+	EItemType PrevEquippedItemType = EItemType::ENone;
 };

@@ -106,7 +106,7 @@ FTransform USBaseInventoryComponent::GetLeftHandTransform(ASCharacter* Instigato
 			USkeletalMeshComponent* Mesh = Instigator->GetMesh();
 			Mesh->TransformToBoneSpace("hand_r", FLeftSocketTrans.GetLocation(), FLeftSocketTrans.Rotator(), loc, rot);
 			FVector scale = FVector::ZeroVector;
-			DrawDebugSphere(GetWorld(), FLeftSocketTrans.GetLocation(), 4.0f, 6, FColor::Red, false, 100);
+			DrawDebugSphere(GetWorld(), FLeftSocketTrans.GetLocation(), 4.0f, 6, FColor::Red, false, 0.0f);
 			FTransform solution(rot, loc, scale);
 			result = solution;
 		}

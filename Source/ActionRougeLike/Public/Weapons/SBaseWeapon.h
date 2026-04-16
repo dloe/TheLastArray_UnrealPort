@@ -34,13 +34,6 @@ public:
 	// Called every frame
 	//virtual void Tick(float DeltaTime) override;
 
-	//IS THIS IN USE RN? since we have actions for attack and reload
-	//UFUNCTION(BlueprintCallable, Category = "Weapon Behavior")
-	//virtual void Attack();
-
-	//UFUNCTION(BlueprintCallable, Category = "Weapon Behavior")
-	//virtual void Reload();
-
 	UFUNCTION(BlueprintCallable, Category = "Weapon Behavior")
 	virtual void OnEquip();
 
@@ -97,9 +90,6 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 	FName WeaponDescription;
 
-	//UPROPERTY(EditAnywhere, Category = "Weapon Properties")
-	//FName WeaponSocketName = "Muzzle_01";
-
 	//skeletal mesh / static mesh comp?
 
 
@@ -140,18 +130,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Weapon Properties")
 	FName WeaponMuzzleSocketName;
 
-	//animation based
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
-	UAnimSequence* PostAttackIronsightsSeq;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
-	UAnimSequence* EquippedIdleSeq;
-
-	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
-	//UAnimSequence* EquippedSprintSeq;
-
-	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
-	//UAnimSequence* EquippedJogSeq;
 
 protected:
 	// Called when the game starts or when spawned

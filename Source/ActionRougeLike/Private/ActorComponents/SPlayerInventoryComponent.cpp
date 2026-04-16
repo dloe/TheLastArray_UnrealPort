@@ -94,9 +94,12 @@ bool USPlayerInventoryComponent::EquipItemAtIndex(int indexToFind, AActor* Insti
 		//find first one that is null, assign and return and return
 		if (index == indexToFind)
 		{
+			UItemBase* PrevEquippedItem = EquippedItem;
 			foundItem = true;
 			EquippedItem = HotbarInventory[index]->ItemData;
 			EquippedSlotIndex = index;
+
+			
 
 			//TODO: Check if we need equipped weapon
 			EquipedWeaponFromInventory = Cast<USBaseWeapon>(EquippedItem);
@@ -107,6 +110,9 @@ bool USPlayerInventoryComponent::EquipItemAtIndex(int indexToFind, AActor* Insti
 			//if the hotbar weapon doesn't already have the physical weapon spawned, spawn it
 
 			//run animation to swap weapons
+
+			//set anim linked state
+			OnWeaponEquipped.Broadcast(PrevEquippedItemType, EquippedItem->ItemType);
 
 			//for now will just have it spawn and immediately attach to player, no swap animation yet
 			//despawn old weapon
