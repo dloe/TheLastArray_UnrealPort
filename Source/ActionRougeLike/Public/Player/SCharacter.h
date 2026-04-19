@@ -32,7 +32,7 @@ class ACTIONROUGELIKE_API ASCharacter : public ACharacter
 protected:
 
 	// ---------------------------------
-	// -------- Public Variables -------
+	// -------- Protected Variables -------
 	// ---------------------------------
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
@@ -125,6 +125,8 @@ public:
 	// Sets default values for this character's properties
 	ASCharacter();
 
+
+
 	// ---------------------------------
 	// ------- Public Functions --------
 	// ---------------------------------
@@ -144,6 +146,9 @@ public:
 	UFUNCTION()
 	USActionComponent* GetActionComp() { return ActionComp; };
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void PostInitBlueprint();
+
 	// ---------------------------------
 	// -------- Public Variables -------
 	// ---------------------------------
@@ -152,7 +157,6 @@ public:
 	/// </summary>
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Animation")
 	bool bIsAiming;
-
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 	bool bIsPlayingEmote;

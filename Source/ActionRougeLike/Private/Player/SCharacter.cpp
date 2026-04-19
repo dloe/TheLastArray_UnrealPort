@@ -60,7 +60,8 @@ void ASCharacter::PostInitializeComponents()
 	//Add dynamic is known for not being found through unreal magic (AKA INTELLISENSE), its ok that it doesnt see it here
 	AttributeComponent->OnHealthChanged.AddDynamic(this, &ASCharacter::OnHealthChanged);
 
-	
+	//OnPlayerPostInit.Broadcast(this, PState);
+	PostInitBlueprint();
 }
 
 // Called when the game starts or when spawned
