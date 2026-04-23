@@ -249,6 +249,7 @@ void ASCharacter::PrimaryReload()
 
 void ASCharacter::SetEquippedHotbar(int input)
 {
+	UE_LOG(LogTemp, Log, TEXT("Equipping at hotbar %d"), input);
 	PlayerInventoryComponent->EquipItemAtIndex(input, this);
 }
 

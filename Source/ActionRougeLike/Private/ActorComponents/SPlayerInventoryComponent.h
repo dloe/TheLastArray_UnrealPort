@@ -14,7 +14,7 @@
 class ASCharacter;
 
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnWeaponEquipped, EItemType, PrevEquippedItemType, EItemType, NewEquippedItemType);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnWeaponEquipped, EItemType, PrevEquippedItemType, EItemType, NewEquippedItemType, UAnimSequence*, PrevItemUnequipSeq, UAnimSequence*, NewItemEquipMontagSeq);
 
 
 /**
@@ -79,7 +79,8 @@ public:
 	//UFUNCTION(BlueprintCallable, Category = "Inventory Behavior")
 	//ASBaseWeapon* GetEquippedWeapon();
 
-	
+	UFUNCTION(BlueprintPure, Category = "Inventory State")
+	bool HasWeaponEquipped() const;
 	
 
 	// ---------------------------------
@@ -96,6 +97,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Inventory")
 	int BaseHotbarSize = 3;
 
+	//TODO: Make inventory a map based on index, faster lookups
 	UPROPERTY(EditAnywhere, Category = "Inventory")
 	TArray<UInventorySlot*> HotbarInventory;
 
@@ -105,7 +107,11 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Inventory")
 	int TotalItemsInHotbar = 0;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Inventory")
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	int CurrentHotbarIndex = 0;
+
+	//TODO: is this redundant? should be removed or refacted to opnly use the current weapon data
+	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Inventory")
 	bool hasWeaponEquipped;
 
 	//utility functions to sweep usable items from inventory to hotbar
@@ -123,8 +129,8 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "Inventory Behavior")
 	bool MoveItemIntoHotbar(int IndexAHot, int IndexBInv);
 
-	UFUNCTION(BlueprintCallable, Category = "Inventory Behavior")
-	void UpdateWeaponEquippedBool();
+	//UFUNCTION(BlueprintCallable, Category = "Inventory Behavior")
+	//void UpdateWeaponEquippedBool();
 
 	// ---------------------------------
 	// -- Internal state / variables --
@@ -137,8 +143,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Inventory")
 	UItemBase* EquippedItem;
 
-	UPROPERTY(EditAnywhere, Category = "Inventory")
-	int HotbarSlotsAssigned = 0;
+	//TBD: potential upgrade? maybe this is saved and loaded in else where. Hotbar size should be dynamic and recorded as so
+	//UPROPERTY(EditAnywhere, Category = "Inventory")
+	//int HotbarSlotsAssigned = 0;
 
 	UPROPERTY(EditAnywhere, Category = "Player")
 	ASCharacter* PlayerA;

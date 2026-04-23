@@ -23,6 +23,16 @@ enum class EItemType : uint8 {
 	EWeaponFisticuffs UMETA(DisplayName = "WeaponFisticuffs")
 };
 
+//Which holser place should they go?
+//2 for sidarms
+//2 for bigger guns (rifle sized)
+UENUM(BlueprintType)
+enum class EHoldsterType : uint8 {
+	ENone UMETA(DisplayName = "None"),
+	ESidearm UMETA(DisplayName = "Small Arms Sidearn"),
+	ERifle UMETA(DisplayName = "Heavier Rifle Arms")
+};
+
 /**
  * Should this be a UObject or AActor?
  * 
@@ -73,7 +83,16 @@ class ACTIONROUGELIKE_API UItemBase : public UObject
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Properties")
 	EItemType ItemType;
+
+	UPROPERTY(EditAnywhere, Category = "Equip Behavior")
+	UAnimSequence* EquipMontage;
+
+	UPROPERTY(EditAnywhere, Category = "Equip Behavior")
+	UAnimSequence* DeEquipMontage;
 	
+	//will need logic to set up which available holster we can keep it in
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Properties")
+	EHoldsterType HolsertType;
 
 protected:
 

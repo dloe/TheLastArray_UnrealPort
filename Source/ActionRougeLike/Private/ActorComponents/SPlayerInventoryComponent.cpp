@@ -29,7 +29,7 @@ bool USPlayerInventoryComponent::AddItemToEquipableHotbar(UItemBase* ItemToAdd)
 		{
 			foundSpace = true;
 			HotbarInventory[index]->AssignItem(ItemToAdd);
-			UpdateWeaponEquippedBool();
+			//UpdateWeaponEquippedBool();
 		}
 	}
 
@@ -54,7 +54,7 @@ bool USPlayerInventoryComponent::RemoveItemFromInventory(UItemBase* ItemToRemove
 		{
 			foundItem = true;
 			Inventory.RemoveAt(index);
-			UpdateWeaponEquippedBool();
+			//UpdateWeaponEquippedBool();
 		}
 	}
 
@@ -75,7 +75,7 @@ bool USPlayerInventoryComponent::RemoveItemToEquipableHotbar(UItemBase* Equipped
 			if (EquippedSlotIndex == index)
 			{
 				EquippedItem = nullptr;
-				hasWeaponEquipped = false;
+				//hasWeaponEquipped = false;
 				EquipedWeaponFromInventory = nullptr;
 			}
 		}
@@ -84,58 +84,84 @@ bool USPlayerInventoryComponent::RemoveItemToEquipableHotbar(UItemBase* Equipped
 	return foundItem;
 }
 
+/// <summary>
+/// TODO: This needs to be reworked to account for the weapon swapping event
+/// </summary>
+/// <param name="indexToFind"></param>
+/// <param name="Instigator"></param>
+/// <returns></returns>
 bool USPlayerInventoryComponent::EquipItemAtIndex(int indexToFind, AActor* Instigator)
 {
-	bool foundItem = false;
-	PlayerA = Cast<ASCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+	bool realItem = true;
+	EquippedSlotIndex = indexToFind;
 
-	for (int index = 0; index < HotbarInventory.Num(); index++) //UInventorySlot* Slot : Inventory)
+	if ((EquippedItem == nullptr && HotbarInventory[EquippedSlotIndex]->ItemData == nullptr) || CurrentHotbarIndex == indexToFind)
 	{
-		//find first one that is null, assign and return and return
-		if (index == indexToFind)
-		{
-			UItemBase* PrevEquippedItem = EquippedItem;
-			foundItem = true;
-			EquippedItem = HotbarInventory[index]->ItemData;
-			EquippedSlotIndex = index;
-
-			
-
-			//TODO: Check if we need equipped weapon
-			EquipedWeaponFromInventory = Cast<USBaseWeapon>(EquippedItem);
-			// do we need that info for spawning? it should share handsocket name
-
-			// if its a weapon, use the weapon handsocket?
-
-			//if the hotbar weapon doesn't already have the physical weapon spawned, spawn it
-
-			//run animation to swap weapons
-
-			//set anim linked state
-			OnWeaponEquipped.Broadcast(PrevEquippedItemType, EquippedItem->ItemType);
-
-			//for now will just have it spawn and immediately attach to player, no swap animation yet
-			//despawn old weapon
-			
-			FActorSpawnParameters SpawnParams;
-			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-			SpawnParams.Instigator = PlayerA;
-
-			//@TODO: socket might change based on what item, take that into account (if weapon vs equippable item)
-			FTransform socketTransform = PlayerA->GetMesh()->GetSocketTransform(EquippedItem->HandSocketName);
-
-			EquippedItem->ItemActor = GetWorld()->SpawnActor<AActor>(EquippedItem->ItemActorSubclass, socketTransform, SpawnParams);
-			
-			//attach to socket
-			EquippedItem->ItemActor->AttachToComponent(PlayerA->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale,
-			EquippedItem->HandSocketName);
-
-			UpdateWeaponEquippedBool();
-
-		}
+		//nothing changes really
+		return false;
 	}
 
-	return foundItem;
+	PlayerA = Cast<ASCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+
+	//TODO: maybe make inventory a map for easier lookups (key value pairs based on an inventory number)
+	OnWeaponEquipped.Broadcast(PrevEquippedItemType, EquippedItem->ItemType, EquippedItem->DeEquipMontage, HotbarInventory[EquippedSlotIndex]->ItemData->EquipMontage);
+
+	UItemBase* PrevItemRef = EquippedItem;
+	EquippedItem = HotbarInventory[EquippedSlotIndex]->ItemData;
+
+	//regardless of the type of item, there is a swapping event if the current item is not None
+	//if nothing is equipped and nothing is being swapped, the swap should be super fast and easy
+
+
+	if(HotbarInventory[EquippedSlotIndex]->IsWeapon) {
+		//TODO: Check if we need equipped weapon
+		EquipedWeaponFromInventory = Cast<USBaseWeapon>(EquippedItem);
+		// do we need that info for spawning? it should share handsocket name
+
+		// if its a weapon, use the weapon handsocket?
+			
+		//if the hotbar weapon doesn't already have the physical weapon spawned, spawn it
+
+		//run animation to swap weapons
+		// AnimNotify: despawn old weapon (saved out locally as PrevItemRef
+		// 
+		//run animation to stow then run animation to equip?
+
+		//set anim linked state, set isSwapping flag for ABP
+		
+
+		//for now will just have it spawn and immediately attach to player, no swap animation yet
+		// this behavior will need to happen regardless of if its a weapon since the item will need to appear equipped and we will need to spawn the item in teh players hand
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		SpawnParams.Instigator = PlayerA;
+
+		//@TODO: socket might change based on what item, take that into account (if weapon vs equippable item)
+		FTransform socketTransform = PlayerA->GetMesh()->GetSocketTransform(EquippedItem->HandSocketName);
+
+		EquippedItem->ItemActor = GetWorld()->SpawnActor<AActor>(EquippedItem->ItemActorSubclass, socketTransform, SpawnParams);
+			
+		//attach to socket
+		EquippedItem->ItemActor->AttachToComponent(PlayerA->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+		EquippedItem->HandSocketName);
+
+		//UpdateWeaponEquippedBool();
+	}else if(EquippedItem != nullptr){
+		//not a weapon but something else
+		//TBD: consumable or other logic here
+		//if()
+		//hasWeaponEquipped = false;
+	}
+	else {
+		//no item equipped
+		realItem = false;
+		//hasWeaponEquipped = false;
+	}
+	//}
+	CurrentHotbarIndex = indexToFind;
+	
+
+	return realItem;
 }
 
 bool USPlayerInventoryComponent::EquipItemByName(FName ItemName)
@@ -151,7 +177,7 @@ bool USPlayerInventoryComponent::EquipItemByName(FName ItemName)
 			EquippedItem = HotbarInventory[index]->ItemData;
 			EquippedSlotIndex = index;
 			EquipedWeaponFromInventory = Cast<USBaseWeapon>(EquippedItem);
-			UpdateWeaponEquippedBool();
+			//UpdateWeaponEquippedBool();
 		}
 	}
 
@@ -189,7 +215,7 @@ bool USPlayerInventoryComponent::CanFireWeapon()
 	if (EquipedWeaponFromInventory->CurrentMagazineSize > 0 && 
 		EquipedWeaponFromInventory->CurrentMagazineSize <= EquipedWeaponFromInventory->StandardMagazineSized)
 	{
-		hasWeaponEquipped = true;
+		//hasWeaponEquipped = true;
 		CanFireWeapon = true;
 	}
 
@@ -271,6 +297,23 @@ void USPlayerInventoryComponent::WeaponMagInEvent()
 }
 
 /// <summary>
+/// do i need this simply check if we have a weapon equipped in current slot
+/// Called from ABP
+/// </summary>
+/// <returns></returns>
+bool USPlayerInventoryComponent::HasWeaponEquipped() const
+{
+	bool weaponEquipped = false;
+	if(EquippedSlotIndex < HotbarInventory.Num() &&  EquippedSlotIndex >= 0) {
+		if (HotbarInventory[EquippedSlotIndex] != nullptr && HotbarInventory[EquippedSlotIndex]->IsWeapon)
+		{
+			weaponEquipped = true;
+		}
+	}
+	return weaponEquipped;
+}
+
+/// <summary>
 /// Moves item (or weapon) into base inventory FROM hotbar
 /// </summary>
 /// <param name="IndexAInv"></param>
@@ -340,9 +383,9 @@ bool USPlayerInventoryComponent::MoveItemIntoHotbar(int IndexAHot, int IndexBInv
 /// Simply check if our equipped item is a weapon and update the hasWeaponEquipped state for animation
 /// </summary>
 /// <returns></returns>
-void USPlayerInventoryComponent::UpdateWeaponEquippedBool()
-{
-	UInventorySlot* ItemEquipped = GetEquippedItem();
-
-	hasWeaponEquipped = ItemEquipped!= nullptr ? ItemEquipped->IsWeapon : false;
-}
+//void USPlayerInventoryComponent::UpdateWeaponEquippedBool()
+//{
+//	UInventorySlot* ItemEquipped = GetEquippedItem();
+//
+//	hasWeaponEquipped = ItemEquipped!= nullptr ? ItemEquipped->IsWeapon : false;
+//}
