@@ -89,9 +89,8 @@ FTransform USBaseInventoryComponent::GetLeftHandTransform(ASCharacter* Instigato
 	FVector loc = FVector::ZeroVector;
 	FRotator rot = FRotator::ZeroRotator;
 
-
 	USBaseWeapon* CurrentWeapon = GetCurrentWeaponInfo();
-	if (CurrentWeapon)
+	if (CurrentWeapon && CurrentWeapon->ItemActor)
 	{
 		UStaticMeshComponent* SM = CurrentWeapon->GetItemStaticMesh();
 		FTransform FLeftSocketTrans = SM->GetSocketTransform("LeftHandSocket", RTS_World);
@@ -100,7 +99,6 @@ FTransform USBaseInventoryComponent::GetLeftHandTransform(ASCharacter* Instigato
 		//get ref to player
 		if (Instigator)
 		{
-			
 			UStaticMeshComponent* PlayerSM = Instigator->FindComponentByClass<UStaticMeshComponent>();
 			//PlayerSM->TransformToBoneSpace
 			USkeletalMeshComponent* Mesh = Instigator->GetMesh();

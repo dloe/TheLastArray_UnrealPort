@@ -8,13 +8,18 @@
 
 #include "CoreMinimal.h"
 #include "ActorComponents/SBaseInventoryComponent.h"
+#include "Animation/AnimSequence.h"
 //#include "Player/SCharacter.h"
 #include "SPlayerInventoryComponent.generated.h"
 
 class ASCharacter;
 
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnWeaponEquipped, EItemType, PrevEquippedItemType, EItemType, NewEquippedItemType, UAnimSequence*, PrevItemUnequipSeq, UAnimSequence*, NewItemEquipMontagSeq);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnItemEquippedFromItem, EItemType, PrevEquippedItemType, EItemType, NewEquippedItemType, UAnimSequence*, PrevItemUnequipSeq, UAnimSequence*, NewItemEquipMontagSeq);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnNotRealItemEquippedFromNone, EItemType, NewEquippedItemType, UAnimSequence*, NewItemEquipMontagSeq);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnNoneEquippedFromItem, EItemType, PrevEquippedItemType, UAnimSequence*, PrevItemUnequipSeq);
 
 
 /**
@@ -87,8 +92,17 @@ public:
 	// -------- Public Variables -------
 	// ---------------------------------
 
+	//Equipping item from prev real item
 	UPROPERTY(BlueprintAssignable)
-	FOnWeaponEquipped OnWeaponEquipped;
+	FOnItemEquippedFromItem OnEquippedItemToItem;
+
+	//equipping item from no prev item
+	UPROPERTY(BlueprintAssignable)
+	FOnNotRealItemEquippedFromNone OnEquippedNoneToItem;
+
+	//equipping none from prev item
+	UPROPERTY(BlueprintAssignable)
+	FOnNoneEquippedFromItem OnEquippedItemToNone;
 
 	//data structure to incorporate hot bar
 	//@TODO: should hotbar be an extension of the inventory? or be x amount of highlighted references to 

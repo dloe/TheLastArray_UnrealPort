@@ -91,7 +91,11 @@ void ASCharacter::BeginPlay()
 void ASCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	SetLeftHandIKTrans();
+	//if (!firstFrame) {
+		SetLeftHandIKTrans();
+	//	firstFrame = true;
+	//}
+	
 
 }
 

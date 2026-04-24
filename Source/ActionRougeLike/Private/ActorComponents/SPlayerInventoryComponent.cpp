@@ -87,15 +87,16 @@ bool USPlayerInventoryComponent::RemoveItemToEquipableHotbar(UItemBase* Equipped
 /// <summary>
 /// TODO: This needs to be reworked to account for the weapon swapping event
 /// </summary>
-/// <param name="indexToFind"></param>
+/// <param name="indexToFind">Item index we are swapping to. The new item</param>
 /// <param name="Instigator"></param>
 /// <returns></returns>
 bool USPlayerInventoryComponent::EquipItemAtIndex(int indexToFind, AActor* Instigator)
 {
 	bool realItem = true;
-	EquippedSlotIndex = indexToFind;
 
-	if ((EquippedItem == nullptr && HotbarInventory[EquippedSlotIndex]->ItemData == nullptr) || CurrentHotbarIndex == indexToFind)
+	//skip logic if no actual change is occurring, if prev item and new item are empty or the same index being swapped to
+	if ((EquippedItem == nullptr && HotbarInventory[indexToFind]->ItemData == nullptr) ||
+	(CurrentHotbarIndex == indexToFind && HotbarInventory[indexToFind]->ItemData == nullptr))
 	{
 		//nothing changes really
 		return false;
@@ -103,10 +104,31 @@ bool USPlayerInventoryComponent::EquipItemAtIndex(int indexToFind, AActor* Insti
 
 	PlayerA = Cast<ASCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 
-	//TODO: maybe make inventory a map for easier lookups (key value pairs based on an inventory number)
-	OnWeaponEquipped.Broadcast(PrevEquippedItemType, EquippedItem->ItemType, EquippedItem->DeEquipMontage, HotbarInventory[EquippedSlotIndex]->ItemData->EquipMontage);
+	//in the case of use equipping from nothing (like the first time we load inventory), we need a temp value to keep as the prev dequip item
+	//this wont be used if null but need a nonnull val to pass through delegate in case
+	//UAnimSequence* PrevDeqEquipSequence = HotbarInventory[EquippedSlotIndex]->ItemData->EquipMontage;
+	//EItemType localItemType = EItemType::ENone;
+	//if both are real slots, can use all 4 delegate parameters
+	if (EquippedItem && HotbarInventory[EquippedSlotIndex]->ItemData)
+	{
+		OnEquippedItemToItem.Broadcast(EquippedItem->ItemType, HotbarInventory[EquippedSlotIndex]->ItemData->ItemType, EquippedItem->DeEquipMontage, HotbarInventory[EquippedSlotIndex]->ItemData->EquipMontage);
+	}
+	else if (EquippedItem) //prev item exists to none 
+	{
+		OnEquippedItemToNone.Broadcast(EquippedItem->ItemType, EquippedItem->DeEquipMontage);
+	}
+	else { //going from no item equipped to a real item
+		OnEquippedNoneToItem.Broadcast(HotbarInventory[EquippedSlotIndex]->ItemData->ItemType, HotbarInventory[EquippedSlotIndex]->ItemData->EquipMontage);
+	}
+	EquippedSlotIndex = indexToFind;
 
-	UItemBase* PrevItemRef = EquippedItem;
+	//TODO: maybe make inventory a map for easier lookups (key value pairs based on an inventory number)
+	
+	
+	//save previous type for next time
+	if(EquippedItem)
+		PrevEquippedItemType = EquippedItem->ItemType;
+	UItemBase* PrevItemRef = EquippedItem; //TODO: needed?
 	EquippedItem = HotbarInventory[EquippedSlotIndex]->ItemData;
 
 	//regardless of the type of item, there is a swapping event if the current item is not None
@@ -159,6 +181,7 @@ bool USPlayerInventoryComponent::EquipItemAtIndex(int indexToFind, AActor* Insti
 	}
 	//}
 	CurrentHotbarIndex = indexToFind;
+	
 	
 
 	return realItem;
