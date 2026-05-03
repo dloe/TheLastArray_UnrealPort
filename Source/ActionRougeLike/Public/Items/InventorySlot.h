@@ -41,6 +41,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool IsEquipable;
 
+	
+
 	UFUNCTION(BlueprintCallable)
 	bool isEmptySlot() const { return ItemData == nullptr; };
 

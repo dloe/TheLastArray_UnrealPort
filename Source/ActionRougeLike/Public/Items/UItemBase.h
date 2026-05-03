@@ -94,6 +94,9 @@ class ACTIONROUGELIKE_API UItemBase : public UObject
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Properties")
 	EHoldsterType HolsertType;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int backSlot = -1;
+
 protected:
 
 

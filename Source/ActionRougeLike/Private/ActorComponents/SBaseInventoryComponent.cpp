@@ -61,7 +61,7 @@ void USBaseInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 /// Maybe specific weapon slot on AI? AI wont have the same type of inventory as player (just usable weapon, drops on kill, etc)
 /// </summary>
 /// <returns></returns>
-UInventorySlot* USBaseInventoryComponent::GetEquippedItem()
+UInventorySlot* USBaseInventoryComponent::GetEquippedSlot()
 {
 	//THIS WILL BE SWAPPED WITH HOTBAR ARRAY BTW
 	//ensure(EquippedSlotIndex < Inventory.Num() && EquippedSlotIndex >= 0);
@@ -75,7 +75,7 @@ UInventorySlot* USBaseInventoryComponent::GetEquippedItem()
 
 USBaseWeapon* USBaseInventoryComponent::GetCurrentWeaponInfo()
 {
-	UInventorySlot* CurrentSlot = GetEquippedItem();
+	UInventorySlot* CurrentSlot = GetEquippedSlot();
 	if(CurrentSlot)
 		return CurrentSlot->GetWeaponData();
 	else

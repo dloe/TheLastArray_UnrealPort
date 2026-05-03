@@ -7,10 +7,22 @@
 #include "ActorComponents/SPlayerInventoryComponent.h"
 #include "Player/SCharacter.h"
 #include "Kismet/GameplayStatics.h"
+#include "Animation/AnimInstance.h"
 
 USPlayerInventoryComponent::USPlayerInventoryComponent()
 {
-	
+	PlayerA = Cast<ASCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+
+	//maybe could eventually separate by item type? rifles go on back and pistols go on hip?
+	BackRifleStorage = {
+	FBackInventory("RifleWeaponStash1"),
+	FBackInventory("RifleWeaponStash2")
+	};
+
+	BackSidearmStorage = {
+	FBackInventory("SidearmWeaponStash1"),
+	FBackInventory("SidearmWeaponStash2")
+	};
 }
 
 /// <summary>
@@ -90,99 +102,12 @@ bool USPlayerInventoryComponent::RemoveItemToEquipableHotbar(UItemBase* Equipped
 /// <param name="indexToFind">Item index we are swapping to. The new item</param>
 /// <param name="Instigator"></param>
 /// <returns></returns>
-bool USPlayerInventoryComponent::EquipItemAtIndex(int indexToFind, AActor* Instigator)
+bool USPlayerInventoryComponent::EquipItemAtIndex(int indexToFind)
 {
 	bool realItem = true;
 
-	//skip logic if no actual change is occurring, if prev item and new item are empty or the same index being swapped to
-	if ((EquippedItem == nullptr && HotbarInventory[indexToFind]->ItemData == nullptr) ||
-	(CurrentHotbarIndex == indexToFind && HotbarInventory[indexToFind]->ItemData == nullptr))
-	{
-		//nothing changes really
-		return false;
-	}
-
-	PlayerA = Cast<ASCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-
-	//in the case of use equipping from nothing (like the first time we load inventory), we need a temp value to keep as the prev dequip item
-	//this wont be used if null but need a nonnull val to pass through delegate in case
-	//UAnimSequence* PrevDeqEquipSequence = HotbarInventory[EquippedSlotIndex]->ItemData->EquipMontage;
-	//EItemType localItemType = EItemType::ENone;
-	//if both are real slots, can use all 4 delegate parameters
-	if (EquippedItem && HotbarInventory[EquippedSlotIndex]->ItemData)
-	{
-		OnEquippedItemToItem.Broadcast(EquippedItem->ItemType, HotbarInventory[EquippedSlotIndex]->ItemData->ItemType, EquippedItem->DeEquipMontage, HotbarInventory[EquippedSlotIndex]->ItemData->EquipMontage);
-	}
-	else if (EquippedItem) //prev item exists to none 
-	{
-		OnEquippedItemToNone.Broadcast(EquippedItem->ItemType, EquippedItem->DeEquipMontage);
-	}
-	else { //going from no item equipped to a real item
-		OnEquippedNoneToItem.Broadcast(HotbarInventory[EquippedSlotIndex]->ItemData->ItemType, HotbarInventory[EquippedSlotIndex]->ItemData->EquipMontage);
-	}
-	EquippedSlotIndex = indexToFind;
-
-	//TODO: maybe make inventory a map for easier lookups (key value pairs based on an inventory number)
-	
-	
-	//save previous type for next time
-	if(EquippedItem)
-		PrevEquippedItemType = EquippedItem->ItemType;
-	UItemBase* PrevItemRef = EquippedItem; //TODO: needed?
-	EquippedItem = HotbarInventory[EquippedSlotIndex]->ItemData;
-
-	//regardless of the type of item, there is a swapping event if the current item is not None
-	//if nothing is equipped and nothing is being swapped, the swap should be super fast and easy
-
-
-	if(HotbarInventory[EquippedSlotIndex]->IsWeapon) {
-		//TODO: Check if we need equipped weapon
-		EquipedWeaponFromInventory = Cast<USBaseWeapon>(EquippedItem);
-		// do we need that info for spawning? it should share handsocket name
-
-		// if its a weapon, use the weapon handsocket?
-			
-		//if the hotbar weapon doesn't already have the physical weapon spawned, spawn it
-
-		//run animation to swap weapons
-		// AnimNotify: despawn old weapon (saved out locally as PrevItemRef
-		// 
-		//run animation to stow then run animation to equip?
-
-		//set anim linked state, set isSwapping flag for ABP
-		
-
-		//for now will just have it spawn and immediately attach to player, no swap animation yet
-		// this behavior will need to happen regardless of if its a weapon since the item will need to appear equipped and we will need to spawn the item in teh players hand
-		FActorSpawnParameters SpawnParams;
-		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		SpawnParams.Instigator = PlayerA;
-
-		//@TODO: socket might change based on what item, take that into account (if weapon vs equippable item)
-		FTransform socketTransform = PlayerA->GetMesh()->GetSocketTransform(EquippedItem->HandSocketName);
-
-		EquippedItem->ItemActor = GetWorld()->SpawnActor<AActor>(EquippedItem->ItemActorSubclass, socketTransform, SpawnParams);
-			
-		//attach to socket
-		EquippedItem->ItemActor->AttachToComponent(PlayerA->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale,
-		EquippedItem->HandSocketName);
-
-		//UpdateWeaponEquippedBool();
-	}else if(EquippedItem != nullptr){
-		//not a weapon but something else
-		//TBD: consumable or other logic here
-		//if()
-		//hasWeaponEquipped = false;
-	}
-	else {
-		//no item equipped
-		realItem = false;
-		//hasWeaponEquipped = false;
-	}
-	//}
-	CurrentHotbarIndex = indexToFind;
-	
-	
+	//TODO some redundancy check hence the bool, but needs more testing
+	HotbarToSwapTo = indexToFind;
 
 	return realItem;
 }
@@ -207,6 +132,11 @@ bool USPlayerInventoryComponent::EquipItemByName(FName ItemName)
 	return foundItem;
 }
 
+UItemBase* USPlayerInventoryComponent::GetEquippedItem()
+{
+	return EquippedItem;
+}
+
 /// <summary>
 /// Will first check if the equipped item is a weapon, if they have ammo to reload and then will assign the reload tag, run the 
 /// weapons reload behavior and then unset the reload tag
@@ -214,7 +144,7 @@ bool USPlayerInventoryComponent::EquipItemByName(FName ItemName)
 bool USPlayerInventoryComponent::CanReload()
 {
 	bool ReloadableStatus = false;
-	UInventorySlot* ItemEquipped = GetEquippedItem();
+	UInventorySlot* ItemEquipped = GetEquippedSlot();
 	
 	if (ItemEquipped->IsWeapon)
 	{
@@ -235,11 +165,13 @@ bool USPlayerInventoryComponent::CanFireWeapon()
 
 	//USBaseWeapon* EquipedWeaponFromInventory = Cast<USBaseWeapon>(EquippedItem);
 	//reload if mag is less than max capacity
-	if (EquipedWeaponFromInventory->CurrentMagazineSize > 0 && 
+	if(EquipedWeaponFromInventory != nullptr) {
+		if (EquipedWeaponFromInventory->CurrentMagazineSize > 0 && 
 		EquipedWeaponFromInventory->CurrentMagazineSize <= EquipedWeaponFromInventory->StandardMagazineSized)
-	{
-		//hasWeaponEquipped = true;
-		CanFireWeapon = true;
+		{
+			//hasWeaponEquipped = true;
+			CanFireWeapon = true;
+		}
 	}
 
 	return CanFireWeapon;
@@ -249,7 +181,7 @@ bool USPlayerInventoryComponent::CanFireWeapon()
 /// Get from hotbar
 /// </summary>
 /// <returns></returns>
-UInventorySlot* USPlayerInventoryComponent::GetEquippedItem()
+UInventorySlot* USPlayerInventoryComponent::GetEquippedSlot()
 {
 	if(EquippedSlotIndex < HotbarInventory.Num() && EquippedSlotIndex >= 0)
 		return HotbarInventory[EquippedSlotIndex];
@@ -263,7 +195,7 @@ UInventorySlot* USPlayerInventoryComponent::GetEquippedItem()
 void USPlayerInventoryComponent::LoadInventory(AActor* Instigator)
 {
 	BaseHotbarSize = LoadoutBaseData->StockLoadout.BaseHotbarSize;
-	HotbarInventory.Empty();
+	//HotbarInventory.Empty();
 	for(FSlot hotbarSlot : LoadoutBaseData->StockLoadout.HotbarInventory)
 	{
 		UInventorySlot* SlotToAdd = NewObject<UInventorySlot>(GetOwner()); //this is passed in so playerinventorycomp is the outer and owner?
@@ -289,8 +221,171 @@ void USPlayerInventoryComponent::LoadInventory(AActor* Instigator)
 		SlotToAdd->Initialize(itemToAdd, invSlot.IsWeapon, invSlot.IsEquipable);
 		Inventory.Add(SlotToAdd);
 	}
-	if(TotalItemsInHotbar > 0)
-		EquipItemAtIndex(0, Instigator);
+	if(TotalItemsInHotbar > 0) {
+		EquipItemAtIndex(0);
+
+		SetEquippedItem(HotbarInventory[0]->ItemData);
+		OnInventoryLoad.Broadcast(HotbarInventory[0]->ItemData->ItemType);
+		EquipItemBehavior();
+	}
+}
+
+/// <summary>
+/// Spawns in new item that we are swapping to
+/// </summary>
+void USPlayerInventoryComponent::EquipItemBehavior()
+{
+	PlayerA = Cast<ASCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+
+	//@TODO: socket might change based on what item, take that into account (if weapon vs equippable item)
+	FTransform socketTransform = PlayerA->GetMesh()->GetSocketTransform(EquippedItem->HandSocketName);
+
+	if(EquippedItem->ItemActor == nullptr) {
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		SpawnParams.Instigator = PlayerA;
+
+		EquippedItem->ItemActor = GetWorld()->SpawnActor<AActor>(
+			EquippedItem->ItemActorSubclass, FTransform::Identity, SpawnParams);
+	}
+	else {
+
+		// didnt have a slot for it if -1 so just turn it back on again (-1 means it was not visible)
+		if(EquippedItem->backSlot == -1) {
+			EquippedItem->ItemActor->GetRootComponent()->SetVisibility(true, true);
+			EquippedItem->ItemActor->SetActorTransform(socketTransform); //set back to hand transform
+		}
+		// reatach to socketTransform
+
+		switch (HotbarInventory[PrevItemIndex]->ItemData->ItemType)
+		{
+			case EItemType::EWeaponRifle:
+			case EItemType::EWeaponShotgun:
+				BackRifleStorage[EquippedItem->backSlot].ItemActor = nullptr;
+				break;
+			case EItemType::EWeaponHandheld:
+				BackSidearmStorage[EquippedItem->backSlot].ItemActor = nullptr;
+				break;
+		}
+		EquippedItem->backSlot = -1;
+	}
+	
+	//attach to socket
+	EquippedItem->ItemActor->AttachToComponent(
+		PlayerA->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, EquippedItem->HandSocketName);
+	EquippedItem->ItemActor->SetActorRelativeScale3D(FVector(1.0f, 1.0f, 1.0f)); //revert scaling to default 1,1,1 some reason reattaching messes that up
+
+	//assign if its a weapon
+	EquipedWeaponFromInventory = Cast<USBaseWeapon>(EquippedItem);
+
+	//Action turns off after swap delay set in swap item action (combination of whatever seq lengths is used else instant turn off)
+}
+
+/// <summary>
+/// Despawns old item we are swapping away from
+/// TODO: Might be a better way to swap out weapon actors
+/// </summary>
+void USPlayerInventoryComponent::DeEquipItemBehavior()
+{
+	RemoveItemVisibilitiyByIndex(PrevItemIndex);
+}
+
+/// <summary>
+/// When we remove equipped weapon we move it to back or turn off visibility
+/// </summary>
+/// <param name="IndexToRemove"></param>
+void USPlayerInventoryComponent::RemoveItemVisibilitiyByIndex(int IndexToRemove)
+{
+	//todo: some type of redundancy check to ensure its already take care of
+
+
+	//find first slot available
+	//if no slot available then doesn't matter
+	bool hasSlot = false;
+	//TODO: this might be refactored to just have one for loop with the vars swapped out for each type? what about for melee? maybe keep it as is for nwo
+	switch (HotbarInventory[PrevItemIndex]->ItemData->ItemType)
+	{
+		case EItemType::EWeaponRifle:
+		case EItemType::EWeaponShotgun:
+			for (int s = 0; s < BackRifleStorage.Num(); s++)
+			{
+				if (BackRifleStorage[s].ItemActor == nullptr && BackRifleStorage[s].ItemStorageSocketName != "")
+				{
+					HotbarInventory[PrevItemIndex]->ItemData->ItemActor->AttachToComponent(PlayerA->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+						BackRifleStorage[s].ItemStorageSocketName);
+					BackRifleStorage[s].ItemActor = HotbarInventory[PrevItemIndex]->ItemData->ItemActor;
+					HotbarInventory[PrevItemIndex]->ItemData->backSlot = s;
+					hasSlot = true;
+
+					//do we have to set the transform for the actor
+					UStaticMeshComponent* WeaponBaseSM = GetStaticMeshCompByName(HotbarInventory[PrevItemIndex]->ItemData->ItemActor, "SM_BaseWeapon");
+					if(WeaponBaseSM) {
+						//relative location (so distance away from weapon pivot)
+						FTransform socketCenter_Rifle = WeaponBaseSM->GetSocketTransform("StorageCenter", RTS_Component);
+
+						//will have to be adjusted on a per weapon basis to align the socketCenter_Rifle
+						FVector OffsetLocal = -socketCenter_Rifle.GetLocation();
+						FRotator OffsetRot = (-socketCenter_Rifle.GetRotation()).Rotator();
+
+						HotbarInventory[PrevItemIndex]->ItemData->ItemActor->SetActorRelativeLocation(OffsetLocal);
+						HotbarInventory[PrevItemIndex]->ItemData->ItemActor->SetActorRelativeRotation(OffsetRot);
+
+					}
+					else {
+						//just turn off visibility then
+						UE_LOG(LogTemp, Error, TEXT("Failed to get Sub SM on rifle type. Cant center weapon on back... [No SM found on weapon: %s]"),
+							*GetNameSafe(HotbarInventory[PrevItemIndex]->ItemData->ItemActor));
+						hasSlot = false;
+					}
+					break;
+				}
+			}
+			break;
+		case EItemType::EWeaponHandheld:
+			for (int s = 0; s < BackSidearmStorage.Num(); s++)
+			{
+				if (BackSidearmStorage[s].ItemActor == nullptr && BackSidearmStorage[s].ItemStorageSocketName != "")
+				{
+					HotbarInventory[PrevItemIndex]->ItemData->ItemActor->AttachToComponent(PlayerA->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+						BackSidearmStorage[s].ItemStorageSocketName);
+					BackSidearmStorage[s].ItemActor = HotbarInventory[PrevItemIndex]->ItemData->ItemActor;
+					HotbarInventory[PrevItemIndex]->ItemData->backSlot = s;
+					hasSlot = true;
+
+					UStaticMeshComponent* WeaponBaseSM = GetStaticMeshCompByName(HotbarInventory[PrevItemIndex]->ItemData->ItemActor, "SM_BaseWeapon");
+					if (WeaponBaseSM) {
+						FTransform socketCenter_Sidearm = WeaponBaseSM->GetSocketTransform("StorageCenter", RTS_Component);
+
+						//will have to be adjusted on a per weapon basis to align the socketCenter_Rifle
+						FVector OffsetLocal = -socketCenter_Sidearm.GetLocation();
+						FRotator OffsetRot = (-socketCenter_Sidearm.GetRotation()).Rotator();
+
+						HotbarInventory[PrevItemIndex]->ItemData->ItemActor->SetActorRelativeLocation(OffsetLocal);
+						HotbarInventory[PrevItemIndex]->ItemData->ItemActor->SetActorRelativeRotation(OffsetRot);
+					}
+					else {
+						//just turn off visibility then
+						UE_LOG(LogTemp, Error, TEXT("Failed to get Sub SM on sidearm type. Cant center weapon on back... [No SM found on sidearm: %s]"),
+							*GetNameSafe(HotbarInventory[PrevItemIndex]->ItemData->ItemActor));
+						hasSlot = false;
+					}
+					break;
+				}
+			}
+			break;
+	}
+
+	//if no slot available the nwe turn off the model visibility and put it at at adefault slot?
+	if (!hasSlot)
+	{
+		HotbarInventory[PrevItemIndex]->ItemData->backSlot = -1;
+		HotbarInventory[PrevItemIndex]->ItemData->ItemActor->GetRootComponent()->SetVisibility(false, true);
+		HotbarInventory[PrevItemIndex]->ItemData->ItemActor->AttachToComponent(PlayerA->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+			"BackItemStorageGeneral");
+
+		FTransform socketTransform = PlayerA->GetMesh()->GetSocketTransform("BackItemStorageGeneral");
+		HotbarInventory[PrevItemIndex]->ItemData->ItemActor->SetActorTransform(socketTransform);
+	}
 }
 
 /// <summary>
@@ -300,10 +395,8 @@ void USPlayerInventoryComponent::LoadInventory(AActor* Instigator)
 void USPlayerInventoryComponent::WeaponMagDropEvent()
 {
 	//@TODO: maybe add mags spawned to a first in first out queue that based on a setting, they slowely get deleted
-
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	//ACharacter* MyPawn = Cast<ACharacter>(MyController->GetPawn());
 	SpawnParams.Instigator = Cast<ASCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	FTransform socketTransform = PlayerA->GetMesh()->GetSocketTransform(EquippedItem->HandSocketName);
 	AActor* WeaponMag = GetWorld()->SpawnActor<AActor>(EquipedWeaponFromInventory->MagazineActor, socketTransform, SpawnParams);
@@ -322,9 +415,10 @@ void USPlayerInventoryComponent::WeaponMagInEvent()
 /// <summary>
 /// do i need this simply check if we have a weapon equipped in current slot
 /// Called from ABP
+/// TODO: Optimize this, it shouldn't be every frame. Only called when we load inventory or finish swapping weapons immediately
 /// </summary>
 /// <returns></returns>
-bool USPlayerInventoryComponent::HasWeaponEquipped() const
+bool USPlayerInventoryComponent::HasWeaponEquippedCheck() const
 {
 	bool weaponEquipped = false;
 	if(EquippedSlotIndex < HotbarInventory.Num() &&  EquippedSlotIndex >= 0) {
@@ -334,6 +428,18 @@ bool USPlayerInventoryComponent::HasWeaponEquipped() const
 		}
 	}
 	return weaponEquipped;
+}
+
+void USPlayerInventoryComponent::SetEquippedItem(UItemBase* NewItem)
+{
+	if(NewItem != nullptr) {
+		EquippedItem = NewItem; 
+		EquipedWeaponFromInventory = Cast<USBaseWeapon>(EquippedItem);
+	}
+	else {
+		EquippedItem = nullptr;
+		EquipedWeaponFromInventory = nullptr;
+	}
 }
 
 /// <summary>
@@ -402,13 +508,28 @@ bool USPlayerInventoryComponent::MoveItemIntoHotbar(int IndexAHot, int IndexBInv
 	return foundItem;
 }
 
+
 /// <summary>
-/// Simply check if our equipped item is a weapon and update the hasWeaponEquipped state for animation
+/// Utility function
+/// Weapons can have multiple meshes, will standardize the various parts of the weapon to make finding certain parts like mag
+/// or base weapon model easier. For example each weapon should have a center we use for storage on the back of player
 /// </summary>
+/// <param name="ActorToCheck"></param>
+/// <param name="CompName"></param>
 /// <returns></returns>
-//void USPlayerInventoryComponent::UpdateWeaponEquippedBool()
-//{
-//	UInventorySlot* ItemEquipped = GetEquippedItem();
-//
-//	hasWeaponEquipped = ItemEquipped!= nullptr ? ItemEquipped->IsWeapon : false;
-//}
+UStaticMeshComponent* USPlayerInventoryComponent::GetStaticMeshCompByName(AActor* ActorToCheck, FName CompName)
+{
+	TArray<UStaticMeshComponent*>Meshes;
+
+	//get all meshes from actor and then check which has the proper name we want
+	ActorToCheck->GetComponents<UStaticMeshComponent>(Meshes);
+	for (UStaticMeshComponent* subSM : Meshes)
+	{
+		if (subSM && subSM->GetFName() == CompName)
+		{
+			return subSM;
+		}
+	}
+
+	return nullptr;
+}

@@ -39,7 +39,8 @@ ASCharacter::ASCharacter()
 
 	//todo: may need to have in character cpp script but ideally i only want the attributes to mess with the inventory
 	PlayerInventoryComponent = CreateDefaultSubobject<USPlayerInventoryComponent>("PlayerInventoryComp");
-	PlayerInventoryComponent->SetPlayerActor(this);
+	//PlayerInventoryComponent->SetPlayerActor(this);
+	PlayerInventoryComponent->ActionComp = ActionComp; //TODO: more proper way to do this later btw
 
 	ActionComp = CreateDefaultSubobject<USActionComponent>("ActionComp");
 
@@ -254,7 +255,10 @@ void ASCharacter::PrimaryReload()
 void ASCharacter::SetEquippedHotbar(int input)
 {
 	UE_LOG(LogTemp, Log, TEXT("Equipping at hotbar %d"), input);
-	PlayerInventoryComponent->EquipItemAtIndex(input, this);
+	PlayerInventoryComponent->EquipItemAtIndex(input);
+
+	ActionComp->StartActionByName(this, "SwapItems");
+
 }
 
 /// <summary>

@@ -42,7 +42,9 @@ public:
 
 	//@TODO: This will eventually be an item (that weapons are a child class of)
 	UFUNCTION(BlueprintCallable, Category = "Inventory Behavior")
-	virtual UInventorySlot* GetEquippedItem();
+	virtual UInventorySlot* GetEquippedSlot();
+
+	
 
 	/// <summary>
 	/// To get weapon info (if possible)

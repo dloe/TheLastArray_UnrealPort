@@ -9,18 +9,37 @@
 #include "CoreMinimal.h"
 #include "ActorComponents/SBaseInventoryComponent.h"
 #include "Animation/AnimSequence.h"
+#include "Actions/SActionComponent.h"
 //#include "Player/SCharacter.h"
 #include "SPlayerInventoryComponent.generated.h"
 
 class ASCharacter;
 
+USTRUCT()
+struct FBackInventory
+{
+	GENERATED_BODY()
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnItemEquippedFromItem, EItemType, PrevEquippedItemType, EItemType, NewEquippedItemType, UAnimSequence*, PrevItemUnequipSeq, UAnimSequence*, NewItemEquipMontagSeq);
+	FBackInventory()
+	{
+		ItemActor = nullptr;
+	}
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnNotRealItemEquippedFromNone, EItemType, NewEquippedItemType, UAnimSequence*, NewItemEquipMontagSeq);
+	FBackInventory(FName name)
+	{
+		ItemStorageSocketName = name;
+		ItemActor = nullptr;
+	}
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnNoneEquippedFromItem, EItemType, PrevEquippedItemType, UAnimSequence*, PrevItemUnequipSeq);
+public:
+	UPROPERTY()
+	FName ItemStorageSocketName;
 
+	UPROPERTY()
+	AActor* ItemActor;
+};
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInventoryLoad, EItemType, SwapType);
 
 /**
  * 
@@ -52,10 +71,14 @@ public:
 	bool RemoveItemToEquipableHotbar(UItemBase* ItemToEquip);
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory Behavior")
-	bool EquipItemAtIndex(int index, AActor* Instigator);
+	bool EquipItemAtIndex(int index);
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory Behavior")
 	bool EquipItemByName(FName ItemName);
+
+	//gives item data
+	UFUNCTION(BlueprintCallable, Category = "Inventory Behavior")
+	virtual UItemBase* GetEquippedItem();
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory Behavior")
 	bool CanReload();
@@ -63,13 +86,21 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Inventory Behavior")
 	bool CanFireWeapon();
 
-	virtual UInventorySlot* GetEquippedItem() override;
+	virtual UInventorySlot* GetEquippedSlot() override;
 
 	virtual void LoadInventory(AActor* Instigator) override;
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory Setup")
 	void SetPlayerActor(ASCharacter* playerToSet) { PlayerA  = playerToSet; };
 
+	UFUNCTION(BlueprintCallable, Category = "Inventory Swap")
+	void EquipItemBehavior();
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory Swap")
+	void DeEquipItemBehavior();
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory Swap")
+	void RemoveItemVisibilitiyByIndex(int IndexToRemove);
 
 	//events specifically called from the anim blueprint
 	//since i have alot of weapon data, it would be more organized to handle weapon event functions directly in the player invntory
@@ -85,24 +116,24 @@ public:
 	//ASBaseWeapon* GetEquippedWeapon();
 
 	UFUNCTION(BlueprintPure, Category = "Inventory State")
-	bool HasWeaponEquipped() const;
+	bool HasWeaponEquippedCheck() const;
 	
+	UFUNCTION(BlueprintCallable, Category = "Swap Item Action")
+	void SetEquippedItem(UItemBase* NewItem);
+
+	UFUNCTION(BlueprintCallable, Category = "Swap Item Action")
+	int CurrentHotbarSlot() {return EquippedSlotIndex; };
+
+	//TODO: refactoring - combine the two numbers? why are they separate?
+	UFUNCTION(BlueprintCallable, Category = "Swap Item Action")
+	void SetHotbarSlot(int newSlot) { EquippedSlotIndex = newSlot; };
 
 	// ---------------------------------
 	// -------- Public Variables -------
 	// ---------------------------------
 
-	//Equipping item from prev real item
 	UPROPERTY(BlueprintAssignable)
-	FOnItemEquippedFromItem OnEquippedItemToItem;
-
-	//equipping item from no prev item
-	UPROPERTY(BlueprintAssignable)
-	FOnNotRealItemEquippedFromNone OnEquippedNoneToItem;
-
-	//equipping none from prev item
-	UPROPERTY(BlueprintAssignable)
-	FOnNoneEquippedFromItem OnEquippedItemToNone;
+	FOnInventoryLoad OnInventoryLoad;
 
 	//data structure to incorporate hot bar
 	//@TODO: should hotbar be an extension of the inventory? or be x amount of highlighted references to 
@@ -122,15 +153,27 @@ public:
 	int TotalItemsInHotbar = 0;
 
 	UPROPERTY(EditAnywhere, Category = "Inventory")
-	int CurrentHotbarIndex = 0;
+	TArray<FBackInventory> BackRifleStorage;
+
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	TArray<FBackInventory> BackSidearmStorage;
 
 	//TODO: is this redundant? should be removed or refacted to opnly use the current weapon data
 	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Inventory")
 	bool hasWeaponEquipped;
 
+	UPROPERTY(EditAnywhere, Category = "Swap Item Behavior")
+	int HotbarToSwapTo = 0;
+
+	UPROPERTY(EditAnywhere, Category = "PlayerComp")
+	USActionComponent* ActionComp;
+
 	//utility functions to sweep usable items from inventory to hotbar
 
 	//integration to swap through hotbar (maybe use 1-3 or scroll?)
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon Left Hand Adjustments")
+	bool bCanRunEquipBehavior;
 
 protected:
 	// ---------------------------------
@@ -142,6 +185,9 @@ protected:
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory Behavior")
 	bool MoveItemIntoHotbar(int IndexAHot, int IndexBInv);
+
+	UFUNCTION(BlueprintCallable, Category = "Utility")
+	UStaticMeshComponent* GetStaticMeshCompByName(AActor* ActorToCheck, FName CompName);
 
 	//UFUNCTION(BlueprintCallable, Category = "Inventory Behavior")
 	//void UpdateWeaponEquippedBool();
@@ -164,7 +210,15 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Player")
 	ASCharacter* PlayerA;
 
+	
+
 	//Helps with transitions
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Properties")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Swap")
 	EItemType PrevEquippedItemType = EItemType::ENone;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Item Swap")
+	UItemBase* PrevItemRef;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Item Swap")
+	int PrevItemIndex;
 };

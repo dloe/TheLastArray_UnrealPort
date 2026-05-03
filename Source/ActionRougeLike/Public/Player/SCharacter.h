@@ -167,4 +167,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon Left Hand Adjustments")
 	FTransform WeaponLeftHandIKTrans;
 
+	
+
 };

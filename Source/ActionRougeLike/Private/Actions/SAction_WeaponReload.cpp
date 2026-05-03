@@ -27,7 +27,7 @@ void USAction_WeaponReload::StartAction_Implementation(AActor* Instigator)
 	}
 
 	//if weapon, get weapon stats and run weapon action, else run consumable action
-	UInventorySlot* ItemEquipped = InventoryComponent->GetEquippedItem();
+	UInventorySlot* ItemEquipped = InventoryComponent->GetEquippedSlot();
 	if (ItemEquipped->IsWeapon) {
 
 		EquipedWeaponFromInventory = Cast<USBaseWeapon>(ItemEquipped->ItemData);
