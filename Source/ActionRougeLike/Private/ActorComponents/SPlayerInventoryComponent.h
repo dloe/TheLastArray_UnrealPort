@@ -88,6 +88,8 @@ public:
 
 	virtual UInventorySlot* GetEquippedSlot() override;
 
+	virtual void OnDeathInventoryDrop() override;
+
 	virtual void LoadInventory(AActor* Instigator) override;
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory Setup")

@@ -117,6 +117,8 @@ protected:
 	UFUNCTION()
 	void OnHealthChanged(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewHealth, float Delta);
 
+	UFUNCTION()
+	void HandleDeath();
 
 	//slightly better way to bind your events in timeline
 	virtual void PostInitializeComponents() override;

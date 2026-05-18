@@ -54,9 +54,10 @@ void USAction_SwapItem::StartAction_Implementation(AActor* Instigator)
 			EquippedItemToNoneEvent(ItemEquipped->ItemType, ItemEquipped->DeEquipMontage);
 
 		}
-	} else { //going from no item equipped to a real item
+	} else { //going from no item equipped to a real item (prev is none)
 		EquippedNoneToItemEvent(InventoryComponent->HotbarInventory[HotBarIndexSwappingTo]->ItemData->ItemType,
 		InventoryComponent->HotbarInventory[HotBarIndexSwappingTo]->ItemData->EquipMontage);
+
 		seqEquipTime = InventoryComponent->HotbarInventory[HotBarIndexSwappingTo]->ItemData->EquipMontage->GetPlayLength();
 	}
 	InventoryComponent->SetHotbarSlot(HotBarIndexSwappingTo);

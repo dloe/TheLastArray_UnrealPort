@@ -312,7 +312,7 @@ void ASGameModeBase::KillMinionEvent(AActor* InstigatorActor, int MinionCost)
 void ASGameModeBase::OnActorKilled(AActor* VictimActor, AActor* Killer)
 {
 	ASCharacter* Player = Cast<ASCharacter>(VictimActor);
-	if (Player)
+	if (Player && false) //TODO: disable this for now, until i finish the normal respawn behavior
 	{
 		FTimerHandle TimerHandle_RespawnDelay;
 		FTimerDelegate Delegate;

@@ -189,6 +189,27 @@ UInventorySlot* USPlayerInventoryComponent::GetEquippedSlot()
 		return nullptr;
 }
 
+//detach players weapon to fall on ground
+void USPlayerInventoryComponent::OnDeathInventoryDrop()
+{
+
+	if(EquippedItem) {
+		EquippedItem->ItemActor->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+
+		UStaticMeshComponent* itemMesh = EquippedItem->GetItemStaticMesh();
+		EquippedItem->ItemActor->SetActorEnableCollision(true);
+
+		itemMesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		itemMesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
+
+		itemMesh->SetSimulatePhysics(false);
+		itemMesh->SetSimulatePhysics(true);
+
+		itemMesh->SetEnableGravity(true);
+
+	}
+}
+
 /// <summary>
 /// Override based on loadout data object
 /// </summary>
@@ -238,7 +259,7 @@ void USPlayerInventoryComponent::EquipItemBehavior()
 	PlayerA = Cast<ASCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 
 	//@TODO: socket might change based on what item, take that into account (if weapon vs equippable item)
-	FTransform socketTransform = PlayerA->GetMesh()->GetSocketTransform(EquippedItem->HandSocketName);
+	FTransform socketTransform = PlayerA->GetMesh()->GetSocketTransform(EquippedItem->HandSocketName); //hit here
 
 	if(EquippedItem->ItemActor == nullptr) {
 		FActorSpawnParameters SpawnParams;

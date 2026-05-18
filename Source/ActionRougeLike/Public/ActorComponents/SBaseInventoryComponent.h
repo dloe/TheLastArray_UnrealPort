@@ -45,6 +45,8 @@ public:
 	virtual UInventorySlot* GetEquippedSlot();
 
 	
+	UFUNCTION(BlueprintCallable)
+	virtual void OnDeathInventoryDrop();
 
 	/// <summary>
 	/// To get weapon info (if possible)

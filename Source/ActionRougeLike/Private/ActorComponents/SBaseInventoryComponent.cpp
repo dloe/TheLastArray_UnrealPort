@@ -73,6 +73,20 @@ UInventorySlot* USBaseInventoryComponent::GetEquippedSlot()
 
 }
 
+/// <summary>
+/// When an actor dies with inventory, should be some behavior for dropping
+/// 
+/// Detach equipped item to fall on floor
+/// Will override to account for drop table
+/// Maybe player has slightly different behavior we override?
+/// </summary>
+void USBaseInventoryComponent::OnDeathInventoryDrop()
+{
+	
+	//Detach equipped item to fall on ground
+	
+}
+
 USBaseWeapon* USBaseInventoryComponent::GetCurrentWeaponInfo()
 {
 	UInventorySlot* CurrentSlot = GetEquippedSlot();

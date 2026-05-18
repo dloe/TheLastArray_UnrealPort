@@ -200,15 +200,35 @@ void ASCharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponent*
 			//}
 	}
 
+	//oops we dead
 	if (NewHealth <= 0.0f && Delta < 0.0f)
 	{
-		UE_LOG(LogTemp, Log, TEXT("Player Death!"));
-		APlayerController* PC = Cast<APlayerController>(GetController());
-		DisableInput(PC);
-
-		SetLifeSpan(8.0f);
+		HandleDeath();
 
 	}
+}
+
+/// <summary>
+/// Should this be handled by the player class or the level class?
+/// 
+/// Maybe for now character realted runs here, then we call the level class to handle OnPlayersDeath?
+/// </summary>
+void ASCharacter::HandleDeath()
+{
+	UE_LOG(LogTemp, Log, TEXT("Player Death!"));
+	APlayerController* PC = Cast<APlayerController>(GetController());
+
+	//should we ragdoll? or maybe a combo between ragdoll and some animation?
+
+	PlayerInventoryComponent->OnDeathInventoryDrop();
+
+	DisableInput(PC);
+
+	//after death animatoin runs
+	//GetMesh()->SetAllBodiesSimulatePhysics(true);
+	//GetMesh()->SetCollisionProfileName("Ragdoll");
+
+	SetLifeSpan(8.0f);
 }
 
 void ASCharacter::PrimaryAttack()
