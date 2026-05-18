@@ -82,32 +82,49 @@ USBaseWeapon* USBaseInventoryComponent::GetCurrentWeaponInfo()
 		return nullptr;
 }
 
+/// <summary>
+/// Using component space instead of bone space for weapon left hand ik socket
+/// otherwise causes AO related drifting when i look up and down. Left and right problably too but i used the 
+/// rotate in place to hid it.
+/// </summary>
+/// <param name="Instigator"></param>
+/// <returns></returns>
 FTransform USBaseInventoryComponent::GetLeftHandTransform(ASCharacter* Instigator)
 {
 	FTransform result = FTransform::Identity;
-	FTransform OutTransform = FTransform::Identity;
-	FVector loc = FVector::ZeroVector;
-	FRotator rot = FRotator::ZeroRotator;
+	FVector BoneLoc;
+	FRotator BoneRot;
 
 	USBaseWeapon* CurrentWeapon = GetCurrentWeaponInfo();
-	if (CurrentWeapon && CurrentWeapon->ItemActor)
+	if (CurrentWeapon && CurrentWeapon->ItemActor && Instigator)
 	{
 		UStaticMeshComponent* SM = CurrentWeapon->GetItemStaticMesh();
+		//get socket in world space
 		FTransform FLeftSocketTrans = SM->GetSocketTransform("LeftHandSocket", RTS_World);
 
 		//transform into bone space of our player character (the space between the item we pull this from and the player are different)
 		//get ref to player
-		if (Instigator)
-		{
-			UStaticMeshComponent* PlayerSM = Instigator->FindComponentByClass<UStaticMeshComponent>();
-			//PlayerSM->TransformToBoneSpace
-			USkeletalMeshComponent* Mesh = Instigator->GetMesh();
-			Mesh->TransformToBoneSpace("hand_r", FLeftSocketTrans.GetLocation(), FLeftSocketTrans.Rotator(), loc, rot);
-			FVector scale = FVector::ZeroVector;
-			DrawDebugSphere(GetWorld(), FLeftSocketTrans.GetLocation(), 4.0f, 6, FColor::Red, false, 0.0f);
-			FTransform solution(rot, loc, scale);
-			result = solution;
-		}
+		UStaticMeshComponent* PlayerSM = Instigator->FindComponentByClass<UStaticMeshComponent>();
+		USkeletalMeshComponent* Mesh = Instigator->GetMesh();
+
+		// component space
+		FTransform LeftHandCS = FLeftSocketTrans.GetRelativeTransform(Mesh->GetComponentTransform());
+
+		//bone space attempt, TODO: will remove after more testing
+		//the big part here, put our sockets transforms spacing in relation to hand_r
+		Mesh->TransformToBoneSpace(
+			"hand_l", //hand_r
+			FLeftSocketTrans.GetLocation(),
+			FLeftSocketTrans.Rotator(),
+			BoneLoc, 
+			BoneRot
+		);
+		DrawDebugSphere(GetWorld(), FLeftSocketTrans.GetLocation(), 4.0f, 6, FColor::Red, false, 0.0f);
+
+		//cs
+		result = FTransform(LeftHandCS.GetRotation(), LeftHandCS.GetLocation(), FVector(1,1,1));
+		//bone space - TODO: keep for just just in case
+		//result = FTransform(BoneRot, BoneLoc, FVector(1, 1, 1));
 	}
 	return result;
 }
