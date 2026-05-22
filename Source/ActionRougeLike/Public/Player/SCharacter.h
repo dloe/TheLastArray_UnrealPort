@@ -169,6 +169,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon Left Hand Adjustments")
 	FTransform WeaponLeftHandIKTrans;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
+	bool bPrintCurrentAnimGraphLayer = false;
 	
 
 };

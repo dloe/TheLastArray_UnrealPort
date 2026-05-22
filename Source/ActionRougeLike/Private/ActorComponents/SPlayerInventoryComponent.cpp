@@ -102,14 +102,12 @@ bool USPlayerInventoryComponent::RemoveItemToEquipableHotbar(UItemBase* Equipped
 /// <param name="indexToFind">Item index we are swapping to. The new item</param>
 /// <param name="Instigator"></param>
 /// <returns></returns>
-bool USPlayerInventoryComponent::EquipItemAtIndex(int indexToFind)
+void USPlayerInventoryComponent::EquipItemAtIndex(int indexToFind)
 {
-	bool realItem = true;
 
 	//TODO some redundancy check hence the bool, but needs more testing
 	HotbarToSwapTo = indexToFind;
 
-	return realItem;
 }
 
 bool USPlayerInventoryComponent::EquipItemByName(FName ItemName)
@@ -439,7 +437,7 @@ void USPlayerInventoryComponent::WeaponMagInEvent()
 /// TODO: Optimize this, it shouldn't be every frame. Only called when we load inventory or finish swapping weapons immediately
 /// </summary>
 /// <returns></returns>
-bool USPlayerInventoryComponent::HasWeaponEquippedCheck() const
+bool USPlayerInventoryComponent::HasWeaponEquippedCheck()
 {
 	bool weaponEquipped = false;
 	if(EquippedSlotIndex < HotbarInventory.Num() &&  EquippedSlotIndex >= 0) {
@@ -455,11 +453,19 @@ void USPlayerInventoryComponent::SetEquippedItem(UItemBase* NewItem)
 {
 	if(NewItem != nullptr) {
 		EquippedItem = NewItem; 
+		EquipedWeaponFromInventory = nullptr;
 		EquipedWeaponFromInventory = Cast<USBaseWeapon>(EquippedItem);
+		//TODO: should the bool check occur here?
+		if(HotbarInventory[EquippedSlotIndex]) {
+			bHasWeaponEquipped = HotbarInventory[EquippedSlotIndex]->IsWeapon;
+		}
+		else 
+			bHasWeaponEquipped = false;
 	}
 	else {
 		EquippedItem = nullptr;
 		EquipedWeaponFromInventory = nullptr;
+		bHasWeaponEquipped = false;
 	}
 }
 

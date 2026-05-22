@@ -71,7 +71,7 @@ public:
 	bool RemoveItemToEquipableHotbar(UItemBase* ItemToEquip);
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory Behavior")
-	bool EquipItemAtIndex(int index);
+	void EquipItemAtIndex(int index);
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory Behavior")
 	bool EquipItemByName(FName ItemName);
@@ -118,7 +118,7 @@ public:
 	//ASBaseWeapon* GetEquippedWeapon();
 
 	UFUNCTION(BlueprintPure, Category = "Inventory State")
-	bool HasWeaponEquippedCheck() const;
+	bool HasWeaponEquippedCheck();
 	
 	UFUNCTION(BlueprintCallable, Category = "Swap Item Action")
 	void SetEquippedItem(UItemBase* NewItem);
@@ -223,4 +223,7 @@ protected:
 
 	UPROPERTY(BlueprintReadWrite, Category = "Item Swap")
 	int PrevItemIndex;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Inventory")
+	bool bHasWeaponEquipped;
 };
