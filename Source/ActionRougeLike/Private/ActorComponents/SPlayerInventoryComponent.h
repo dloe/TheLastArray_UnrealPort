@@ -113,11 +113,7 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintCallable, Category = "Inventory Setup")
 	void WeaponMagInEvent();
 
-	//@TODO: This will eventually be an item (that weapons are a child class of)
-	//UFUNCTION(BlueprintCallable, Category = "Inventory Behavior")
-	//ASBaseWeapon* GetEquippedWeapon();
-
-	UFUNCTION(BlueprintPure, Category = "Inventory State")
+	UFUNCTION(BlueprintPure, Category = "Inventory State", meta = (DeprecatedFunction, DeprecationMessage = "Use NewFunction instead."))
 	bool HasWeaponEquippedCheck();
 	
 	UFUNCTION(BlueprintCallable, Category = "Swap Item Action")
