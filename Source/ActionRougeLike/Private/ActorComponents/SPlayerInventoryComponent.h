@@ -15,7 +15,7 @@
 
 class ASCharacter;
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FBackInventory
 {
 	GENERATED_BODY()
@@ -189,6 +189,9 @@ protected:
 
 	//UFUNCTION(BlueprintCallable, Category = "Inventory Behavior")
 	//void UpdateWeaponEquippedBool();
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory Swap")
+	bool AttachWeaponToStorage(TArray<FBackInventory> BackStorage, UItemBase* PrevItemData);
 
 	// ---------------------------------
 	// -- Internal state / variables --

@@ -39,15 +39,6 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void EquippedNoneToItemEvent(EItemType NewEquippedItemType, UAnimSequence* NewItemEquipMontagSeq);
 
-	//While manipulation of the inventory should only occur at the PlayerInventory comp, the management of the scene and whatnot should be triggered from the action 
-	//TODO: move that from the PlayerInventory into here
-	UFUNCTION(BlueprintCallable, Category = "Inventory Swap")
-	void UNUSED_EquipItemBehavior(AActor* Instigator);
-
-	UFUNCTION(BlueprintCallable, Category = "Inventory Swap")
-	void OLDDeEquipItemBehavior();
-
-
 	// ---------------------------------
 	// -------- Public Variables -------
 	// ---------------------------------
@@ -61,7 +52,7 @@ public:
 	USPlayerInventoryComponent* InventoryComponent;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Item Swap")
-	int HotBarIndexSwappingTo;
+	int TargetIndex;
 
 	//Helps with transitions
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Swap")

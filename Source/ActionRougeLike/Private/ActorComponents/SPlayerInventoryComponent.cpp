@@ -15,13 +15,13 @@ USPlayerInventoryComponent::USPlayerInventoryComponent()
 
 	//maybe could eventually separate by item type? rifles go on back and pistols go on hip?
 	BackRifleStorage = {
-	FBackInventory("RifleWeaponStash1"),
-	FBackInventory("RifleWeaponStash2")
+		FBackInventory("RifleWeaponStash1"),
+		FBackInventory("RifleWeaponStash2")
 	};
 
 	BackSidearmStorage = {
-	FBackInventory("SidearmWeaponStash1"),
-	FBackInventory("SidearmWeaponStash2")
+		FBackInventory("SidearmWeaponStash1"),
+		FBackInventory("SidearmWeaponStash2")
 	};
 }
 
@@ -251,6 +251,9 @@ void USPlayerInventoryComponent::LoadInventory(AActor* Instigator)
 
 /// <summary>
 /// Spawns in new item that we are swapping to
+/// 
+/// Action turns off after swap delay set in swap item action 
+/// (combination of whatever seq lengths is used else instant turn off)
 /// </summary>
 void USPlayerInventoryComponent::EquipItemBehavior()
 {
@@ -291,13 +294,13 @@ void USPlayerInventoryComponent::EquipItemBehavior()
 	
 	//attach to socket
 	EquippedItem->ItemActor->AttachToComponent(
-		PlayerA->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, EquippedItem->HandSocketName);
+		PlayerA->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, 
+		EquippedItem->HandSocketName
+	);
 	EquippedItem->ItemActor->SetActorRelativeScale3D(FVector(1.0f, 1.0f, 1.0f)); //revert scaling to default 1,1,1 some reason reattaching messes that up
 
 	//assign if its a weapon
 	EquipedWeaponFromInventory = Cast<USBaseWeapon>(EquippedItem);
-
-	//Action turns off after swap delay set in swap item action (combination of whatever seq lengths is used else instant turn off)
 }
 
 /// <summary>
@@ -316,94 +319,38 @@ void USPlayerInventoryComponent::DeEquipItemBehavior()
 void USPlayerInventoryComponent::RemoveItemVisibilitiyByIndex(int IndexToRemove)
 {
 	//todo: some type of redundancy check to ensure its already take care of
+	UItemBase* PrevItemData = HotbarInventory[PrevItemIndex]->ItemData;
 
-
-	//find first slot available
-	//if no slot available then doesn't matter
+	//find first slot available, if no slot available then doesn't matter
 	bool hasSlot = false;
-	//TODO: this might be refactored to just have one for loop with the vars swapped out for each type? what about for melee? maybe keep it as is for nwo
-	switch (HotbarInventory[PrevItemIndex]->ItemData->ItemType)
+
+	switch (PrevItemData->ItemType)
 	{
 		case EItemType::EWeaponRifle:
 		case EItemType::EWeaponShotgun:
-			for (int s = 0; s < BackRifleStorage.Num(); s++)
-			{
-				if (BackRifleStorage[s].ItemActor == nullptr && BackRifleStorage[s].ItemStorageSocketName != "")
-				{
-					HotbarInventory[PrevItemIndex]->ItemData->ItemActor->AttachToComponent(PlayerA->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale,
-						BackRifleStorage[s].ItemStorageSocketName);
-					BackRifleStorage[s].ItemActor = HotbarInventory[PrevItemIndex]->ItemData->ItemActor;
-					HotbarInventory[PrevItemIndex]->ItemData->backSlot = s;
-					hasSlot = true;
-
-					//do we have to set the transform for the actor
-					UStaticMeshComponent* WeaponBaseSM = GetStaticMeshCompByName(HotbarInventory[PrevItemIndex]->ItemData->ItemActor, "SM_BaseWeapon");
-					if(WeaponBaseSM) {
-						//relative location (so distance away from weapon pivot)
-						FTransform socketCenter_Rifle = WeaponBaseSM->GetSocketTransform("StorageCenter", RTS_Component);
-
-						//will have to be adjusted on a per weapon basis to align the socketCenter_Rifle
-						FVector OffsetLocal = -socketCenter_Rifle.GetLocation();
-						FRotator OffsetRot = (-socketCenter_Rifle.GetRotation()).Rotator();
-
-						HotbarInventory[PrevItemIndex]->ItemData->ItemActor->SetActorRelativeLocation(OffsetLocal);
-						HotbarInventory[PrevItemIndex]->ItemData->ItemActor->SetActorRelativeRotation(OffsetRot);
-
-					}
-					else {
-						//just turn off visibility then
-						UE_LOG(LogTemp, Error, TEXT("Failed to get Sub SM on rifle type. Cant center weapon on back... [No SM found on weapon: %s]"),
-							*GetNameSafe(HotbarInventory[PrevItemIndex]->ItemData->ItemActor));
-						hasSlot = false;
-					}
-					break;
-				}
-			}
+			hasSlot = AttachWeaponToStorage(BackRifleStorage, PrevItemData);
 			break;
 		case EItemType::EWeaponHandheld:
-			for (int s = 0; s < BackSidearmStorage.Num(); s++)
-			{
-				if (BackSidearmStorage[s].ItemActor == nullptr && BackSidearmStorage[s].ItemStorageSocketName != "")
-				{
-					HotbarInventory[PrevItemIndex]->ItemData->ItemActor->AttachToComponent(PlayerA->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale,
-						BackSidearmStorage[s].ItemStorageSocketName);
-					BackSidearmStorage[s].ItemActor = HotbarInventory[PrevItemIndex]->ItemData->ItemActor;
-					HotbarInventory[PrevItemIndex]->ItemData->backSlot = s;
-					hasSlot = true;
-
-					UStaticMeshComponent* WeaponBaseSM = GetStaticMeshCompByName(HotbarInventory[PrevItemIndex]->ItemData->ItemActor, "SM_BaseWeapon");
-					if (WeaponBaseSM) {
-						FTransform socketCenter_Sidearm = WeaponBaseSM->GetSocketTransform("StorageCenter", RTS_Component);
-
-						//will have to be adjusted on a per weapon basis to align the socketCenter_Rifle
-						FVector OffsetLocal = -socketCenter_Sidearm.GetLocation();
-						FRotator OffsetRot = (-socketCenter_Sidearm.GetRotation()).Rotator();
-
-						HotbarInventory[PrevItemIndex]->ItemData->ItemActor->SetActorRelativeLocation(OffsetLocal);
-						HotbarInventory[PrevItemIndex]->ItemData->ItemActor->SetActorRelativeRotation(OffsetRot);
-					}
-					else {
-						//just turn off visibility then
-						UE_LOG(LogTemp, Error, TEXT("Failed to get Sub SM on sidearm type. Cant center weapon on back... [No SM found on sidearm: %s]"),
-							*GetNameSafe(HotbarInventory[PrevItemIndex]->ItemData->ItemActor));
-						hasSlot = false;
-					}
-					break;
-				}
-			}
+			hasSlot = AttachWeaponToStorage(BackSidearmStorage, PrevItemData);
+			break;
+		default:
+			hasSlot = false;
 			break;
 	}
 
 	//if no slot available the nwe turn off the model visibility and put it at at adefault slot?
 	if (!hasSlot)
 	{
-		HotbarInventory[PrevItemIndex]->ItemData->backSlot = -1;
-		HotbarInventory[PrevItemIndex]->ItemData->ItemActor->GetRootComponent()->SetVisibility(false, true);
-		HotbarInventory[PrevItemIndex]->ItemData->ItemActor->AttachToComponent(PlayerA->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale,
-			"BackItemStorageGeneral");
+		PrevItemData->backSlot = -1;
+		PrevItemData->ItemActor->GetRootComponent()->SetVisibility(false, true);
+		PrevItemData->ItemActor->AttachToComponent(
+			PlayerA->GetMesh(), 
+			FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+			"BackItemStorageGeneral"
+		);
 
 		FTransform socketTransform = PlayerA->GetMesh()->GetSocketTransform("BackItemStorageGeneral");
-		HotbarInventory[PrevItemIndex]->ItemData->ItemActor->SetActorTransform(socketTransform);
+		PrevItemData->ItemActor->SetActorTransform(socketTransform);
 	}
 }
 
@@ -559,4 +506,50 @@ UStaticMeshComponent* USPlayerInventoryComponent::GetStaticMeshCompByName(AActor
 	}
 
 	return nullptr;
+}
+
+/// <summary>
+/// For direct logic on putting the items on the physical mesh of player, like a rifle showing up on their back when 
+/// unequipped.
+/// </summary>
+/// <param name="BackStorage"></param>
+/// <param name="PrevItemData"></param>
+/// <returns></returns>
+bool USPlayerInventoryComponent::AttachWeaponToStorage(TArray<FBackInventory> BackStorage, UItemBase* PrevItemData)
+{
+	bool hasSlot = false;
+	for (int s = 0; s < BackStorage.Num(); s++)
+	{
+		if (BackStorage[s].ItemActor == nullptr && BackStorage[s].ItemStorageSocketName != "")
+		{
+			PrevItemData->ItemActor->AttachToComponent(
+				PlayerA->GetMesh(),
+				FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+				BackStorage[s].ItemStorageSocketName
+			);
+			BackStorage[s].ItemActor = PrevItemData->ItemActor;
+			PrevItemData->backSlot = s;
+			hasSlot = true;
+
+			UStaticMeshComponent* WeaponBaseSM = GetStaticMeshCompByName(PrevItemData->ItemActor, "SM_BaseWeapon");
+			if (WeaponBaseSM) {
+				FTransform socketCenter_Sidearm = WeaponBaseSM->GetSocketTransform("StorageCenter", RTS_Component);
+
+				//will have to be adjusted on a per weapon basis to align the socketCenter_Rifle
+				FVector OffsetLocal = -socketCenter_Sidearm.GetLocation();
+				FRotator OffsetRot = (-socketCenter_Sidearm.GetRotation()).Rotator();
+
+				PrevItemData->ItemActor->SetActorRelativeLocation(OffsetLocal);
+				PrevItemData->ItemActor->SetActorRelativeRotation(OffsetRot);
+			}
+			else {
+				//just turn off visibility then
+				UE_LOG(LogTemp, Error, TEXT("Failed to get Sub SM on item type. Cant center weapon on back... [No SM found on item: %s]"),
+					*GetNameSafe(PrevItemData->ItemActor));
+				hasSlot = false;
+			}
+			break;
+		}
+	}
+	return hasSlot;
 }

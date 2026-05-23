@@ -16,88 +16,87 @@
 void USAction_SwapItem::StartAction_Implementation(AActor* Instigator)
 {
 	Character = Cast<ASCharacter>(Instigator);
-	if (Character)
+
+	if (!Character)
 	{
-		InventoryComponent = Character->GetPlayerInventoryComp();
-		SMComp = Character->FindComponentByClass<UStaticMeshComponent>(); //TODO: Dont need anymore - verify in bp
+		UE_LOG(LogTemp, Warning, TEXT("StartAction_Implementation is not running off character %s"), *Instigator->GetName());
 	}
+	//SMComp = Character->FindComponentByClass<UStaticMeshComponent>(); //TODO: Dont need anymore - verify in bp
+
+	InventoryComponent = Character->GetPlayerInventoryComp();
 	InventoryComponent->bCanRunEquipBehavior = true; //dont want dub calls to anim notifies for equip
+
 	ItemEquipped = InventoryComponent->GetEquippedItem(); //item we currently have equipped
-	int WeaponSlotIndex = InventoryComponent->CurrentHotbarSlot(); //which index are we currently on
-	UE_LOG(LogTemp, Log, TEXT("Current Slot Index %d"), WeaponSlotIndex);
-	HotBarIndexSwappingTo = InventoryComponent->HotbarToSwapTo; //index we are swapping to
+	//TODO: use consts more lol
+	const int WeaponSlotIndex = InventoryComponent->CurrentHotbarSlot(); //which index are we currently on
+	TargetIndex = InventoryComponent->HotbarToSwapTo; //index we are swapping to
+
+	//UE_LOG(LogTemp, Log, TEXT("Swapping Current Slot Index %d"), WeaponSlotIndex);
 
 	//first check if we need to start the action at all
+	UItemBase* TargetItemData = InventoryComponent->HotbarInventory[TargetIndex]->ItemData;
+
 	//skip logic if no actual change is occurring, if prev item and new item are empty or the same index being swapped to
-	if ((ItemEquipped == nullptr && InventoryComponent->HotbarInventory[HotBarIndexSwappingTo]->ItemData == nullptr) ||
-		(WeaponSlotIndex == HotBarIndexSwappingTo))// && InventoryComponent->HotbarInventory[HotBarIndexSwappingTo]->ItemData == nullptr))
+	if ((ItemEquipped == nullptr && TargetItemData == nullptr) || (WeaponSlotIndex == TargetIndex))
 	{
 		//nothing changes really
 		return;
 	}
 
-	//standard start action routine
+	//standard start action start
 	Super::StartAction_Implementation(Instigator);
 
 	float seqEquipTime = 0.0f;
 	float seqDeEquipTime = 0.0f;
-	//if both are real slots, can use all 4 delegate parameters
-	if (ItemEquipped != nullptr)
+
+	//three possible cases for swapping items
+	//case 1 Item to item swappage
+	if (ItemEquipped && TargetItemData)
 	{
 		seqDeEquipTime = ItemEquipped->DeEquipMontage->GetPlayLength();
-		if(InventoryComponent->HotbarInventory[HotBarIndexSwappingTo]->ItemData != nullptr) { //both are not null, full swap
-			EquippedItemToItemEvent(ItemEquipped->ItemType, InventoryComponent->HotbarInventory[WeaponSlotIndex]->ItemData->ItemType, 
-			ItemEquipped->DeEquipMontage,InventoryComponent->HotbarInventory[WeaponSlotIndex]->ItemData->EquipMontage);
-			seqEquipTime = InventoryComponent->HotbarInventory[WeaponSlotIndex]->ItemData->EquipMontage->GetPlayLength();
-		}
-		else { //index we swapping to null, dont need to have the equip behavior, only deequip
-			EquippedItemToNoneEvent(ItemEquipped->ItemType, ItemEquipped->DeEquipMontage);
+		seqEquipTime = TargetItemData->EquipMontage->GetPlayLength();
+		EquippedItemToItemEvent(
+			ItemEquipped->ItemType, 
+			TargetItemData->ItemType,
+			ItemEquipped->DeEquipMontage, 
+			TargetItemData->EquipMontage
+		);
 
-		}
-	} else { //going from no item equipped to a real item (prev is none)
-		EquippedNoneToItemEvent(InventoryComponent->HotbarInventory[HotBarIndexSwappingTo]->ItemData->ItemType,
-		InventoryComponent->HotbarInventory[HotBarIndexSwappingTo]->ItemData->EquipMontage);
-
-		seqEquipTime = InventoryComponent->HotbarInventory[HotBarIndexSwappingTo]->ItemData->EquipMontage->GetPlayLength();
 	}
-	InventoryComponent->SetHotbarSlot(HotBarIndexSwappingTo);
+	//case 2 item to none swappage
+	else if (ItemEquipped && TargetItemData == nullptr)
+	{
+		seqDeEquipTime = ItemEquipped->DeEquipMontage->GetPlayLength();
+		EquippedItemToNoneEvent(
+			ItemEquipped->ItemType, 
+			ItemEquipped->DeEquipMontage
+		);
+	}
+	//case 3 none to item swappage
+	else if (!ItemEquipped && TargetItemData)
+	{
+		seqEquipTime = TargetItemData->EquipMontage->GetPlayLength();
+		EquippedNoneToItemEvent(
+			TargetItemData->ItemType,
+			TargetItemData->EquipMontage
+		);
+	}
+
+	//update inventory status
+	InventoryComponent->SetHotbarSlot(TargetIndex);
 
 	//save previous type for next time
 	if (ItemEquipped)
 		PrevEquippedItemType = ItemEquipped->ItemType;
-	InventoryComponent->SetEquippedItem(InventoryComponent->HotbarInventory[HotBarIndexSwappingTo]->ItemData);
+	InventoryComponent->SetEquippedItem(TargetItemData);
 
 	//wait for the amount of time of the 2 sequences
 	FTimerHandle TimerHandle_SwapDelay;
 	FTimerDelegate DelegateSwapDelay;
-	float SwapDelayTotal = seqEquipTime + seqDeEquipTime + 1.00f; //add a sec delay after animations end
 	DelegateSwapDelay.BindUFunction(this, "SwapDelay_Elasped", Character);
+
+	const float SwapDelayTotal = seqEquipTime + seqDeEquipTime + 1.00f; //add a sec delay after animations end
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle_SwapDelay, DelegateSwapDelay, SwapDelayTotal, false);
-}
-
-void USAction_SwapItem::UNUSED_EquipItemBehavior(AActor* Instigator)
-{
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	SpawnParams.Instigator = Character;
-
-	//@TODO: socket might change based on what item, take that into account (if weapon vs equippable item)
-	FTransform socketTransform = Character->GetMesh()->GetSocketTransform(ItemEquipped->HandSocketName);
-
-	ItemEquipped->ItemActor = GetWorld()->SpawnActor<AActor>(ItemEquipped->ItemActorSubclass, socketTransform, SpawnParams);
-
-	//attach to socket
-	ItemEquipped->ItemActor->AttachToComponent(Character->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale,
-		ItemEquipped->HandSocketName);
-
-	//can turn off swap weapon action
-	if(ActionComp && ActionComp->CheckActionName("SwapItems"))
-		Character->GetActionComp()->StopActionByName(Character, "SwapItems");
-}
-
-void USAction_SwapItem::OLDDeEquipItemBehavior()
-{
-	InventoryComponent->RemoveItemVisibilitiyByIndex(PrevItemIndex);
 }
 
 void USAction_SwapItem::SwapDelay_Elasped(ACharacter* InstigatorCharacter)
