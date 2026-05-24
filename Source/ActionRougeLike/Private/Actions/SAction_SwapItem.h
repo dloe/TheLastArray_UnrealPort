@@ -31,13 +31,15 @@ public:
 	void SetInventoryComp(USPlayerInventoryComponent* InventoryCompRef) { InventoryComponent = InventoryCompRef; };
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void EquippedItemToItemEvent(EItemType PrevEquippedItemType2, EItemType NewEquippedItemType, UAnimSequence* PrevItemUnequipSeq, UAnimSequence* NewItemEquipMontagSeq);
+	void EquippedItemToItemEvent(EItemType PrevEquippedItemType2, EItemType NewEquippedItemType, 
+		UAnimSequence* PrevItemUnequipSeq, UAnimSequence* NewItemEquipMontagSeq,
+		EWeaponType PrevWeaponType, EWeaponType NewWeaponType);
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void EquippedItemToNoneEvent(EItemType PrevEquippedItemType2, UAnimSequence* PrevItemUnequipSeq);
+	void EquippedItemToNoneEvent(EItemType PrevEquippedItemType2, UAnimSequence* PrevItemUnequipSeq, EWeaponType PrevWeaponType);
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void EquippedNoneToItemEvent(EItemType NewEquippedItemType, UAnimSequence* NewItemEquipMontagSeq);
+	void EquippedNoneToItemEvent(EItemType NewEquippedItemType, UAnimSequence* NewItemEquipMontagSeq, EWeaponType NewWeaponType);
 
 	// ---------------------------------
 	// -------- Public Variables -------

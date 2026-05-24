@@ -243,14 +243,28 @@ void USPlayerInventoryComponent::LoadInventory(AActor* Instigator)
 	if(TotalItemsInHotbar > 0) {
 		EquipItemAtIndex(0);
 
+		if(!HotbarInventory[0]->ItemData) {
+			UE_LOG(LogTemp, Warning, TEXT("Possible reload issue, skipping error %s"), *Instigator->GetName());
+			return;
+		}
+		
 		SetEquippedItem(HotbarInventory[0]->ItemData);
-		OnInventoryLoad.Broadcast(HotbarInventory[0]->ItemData->ItemType);
+
+		EWeaponType WeaponType = EWeaponType::ENone;
+		if (HotbarInventory[0]->ItemData->ItemType == EItemType::EWeapon)
+		{
+			USBaseWeapon* Weapon = Cast< USBaseWeapon>(HotbarInventory[0]->ItemData);
+			WeaponType = Weapon->WeaponType;
+		}
+
+		OnInventoryLoad.Broadcast(HotbarInventory[0]->ItemData->ItemType, WeaponType);
 		EquipItemBehavior();
 	}
 }
 
 /// <summary>
 /// Spawns in new item that we are swapping to
+/// EQUIPPING BEHAVIOR NOT DEEQUIPPING btw
 /// 
 /// Action turns off after swap delay set in swap item action 
 /// (combination of whatever seq lengths is used else instant turn off)
@@ -277,18 +291,28 @@ void USPlayerInventoryComponent::EquipItemBehavior()
 			EquippedItem->ItemActor->GetRootComponent()->SetVisibility(true, true);
 			EquippedItem->ItemActor->SetActorTransform(socketTransform); //set back to hand transform
 		}
-		// reatach to socketTransform
+		// reattach to socketTransform
+		UItemBase* PrevItem = HotbarInventory[PrevItemIndex]->ItemData;
 
-		switch (HotbarInventory[PrevItemIndex]->ItemData->ItemType)
+		if (PrevItem->ItemType == EItemType::EWeapon)
 		{
-			case EItemType::EWeaponRifle:
-			case EItemType::EWeaponShotgun:
-				BackRifleStorage[EquippedItem->backSlot].ItemActor = nullptr;
-				break;
-			case EItemType::EWeaponHandheld:
-				BackSidearmStorage[EquippedItem->backSlot].ItemActor = nullptr;
-				break;
+			USBaseWeapon* WeaponItem = Cast<USBaseWeapon>(PrevItem);
+			switch (WeaponItem->WeaponType)
+			{
+				case EWeaponType::EWeaponRifle:
+				case EWeaponType::EWeaponShotgun:
+					BackRifleStorage[EquippedItem->backSlot].ItemActor = nullptr;
+					break;
+				case EWeaponType::EWeaponHandheld:
+					BackSidearmStorage[EquippedItem->backSlot].ItemActor = nullptr;
+					break;
+			}
 		}
+		else {
+			//TODO: Consumable slots
+
+		}
+		
 		EquippedItem->backSlot = -1;
 	}
 	
@@ -324,21 +348,30 @@ void USPlayerInventoryComponent::RemoveItemVisibilitiyByIndex(int IndexToRemove)
 	//find first slot available, if no slot available then doesn't matter
 	bool hasSlot = false;
 
-	switch (PrevItemData->ItemType)
+	UItemBase* PrevItem = HotbarInventory[PrevItemIndex]->ItemData;
+
+	if (PrevItem->ItemType == EItemType::EWeapon)
 	{
-		case EItemType::EWeaponRifle:
-		case EItemType::EWeaponShotgun:
-			hasSlot = AttachWeaponToStorage(BackRifleStorage, PrevItemData);
-			break;
-		case EItemType::EWeaponHandheld:
-			hasSlot = AttachWeaponToStorage(BackSidearmStorage, PrevItemData);
-			break;
-		default:
-			hasSlot = false;
-			break;
+		USBaseWeapon* WeaponItem = Cast<USBaseWeapon>(PrevItem);
+		switch (WeaponItem->WeaponType)
+		{
+			case EWeaponType::EWeaponRifle:
+			case EWeaponType::EWeaponShotgun:
+				hasSlot = AttachWeaponToStorage(BackRifleStorage, PrevItemData);
+				break;
+			case EWeaponType::EWeaponHandheld:
+				hasSlot = AttachWeaponToStorage(BackSidearmStorage, PrevItemData);
+				break;
+			default:
+				hasSlot = false;
+				break;
+		}
+	}
+	else {
+		//TODO: consumable?
 	}
 
-	//if no slot available the nwe turn off the model visibility and put it at at adefault slot?
+	//if no slot available the nwe turn off the model visibility and put it at at a default slot?
 	if (!hasSlot)
 	{
 		PrevItemData->backSlot = -1;
@@ -378,41 +411,14 @@ void USPlayerInventoryComponent::WeaponMagInEvent()
 
 }
 
-/// <summary>
-/// do i need this simply check if we have a weapon equipped in current slot
-/// Called from ABP
-/// TODO: Optimize this, it shouldn't be every frame. Only called when we load inventory or finish swapping weapons immediately
-/// </summary>
-/// <returns></returns>
-bool USPlayerInventoryComponent::HasWeaponEquippedCheck()
-{
-	bool weaponEquipped = false;
-	if(EquippedSlotIndex < HotbarInventory.Num() &&  EquippedSlotIndex >= 0) {
-		if (HotbarInventory[EquippedSlotIndex] != nullptr && HotbarInventory[EquippedSlotIndex]->IsWeapon)
-		{
-			weaponEquipped = true;
-		}
-	}
-	return weaponEquipped;
-}
-
 void USPlayerInventoryComponent::SetEquippedItem(UItemBase* NewItem)
 {
-	if(NewItem != nullptr) {
-		EquippedItem = NewItem; 
-		EquipedWeaponFromInventory = nullptr;
+	EquippedItem = NewItem;
+	if(EquippedItem != nullptr && EquippedItem->ItemType == EItemType::EWeapon) {
 		EquipedWeaponFromInventory = Cast<USBaseWeapon>(EquippedItem);
-		//TODO: should the bool check occur here?
-		if(HotbarInventory[EquippedSlotIndex]) {
-			bHasWeaponEquipped = HotbarInventory[EquippedSlotIndex]->IsWeapon;
-		}
-		else 
-			bHasWeaponEquipped = false;
 	}
 	else {
-		EquippedItem = nullptr;
 		EquipedWeaponFromInventory = nullptr;
-		bHasWeaponEquipped = false;
 	}
 }
 

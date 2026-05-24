@@ -29,8 +29,6 @@ class USAction_WeaponReload : public USAction
 	UPROPERTY(EditAnywhere, Category = "Equipped Weapon Properties")
 	USBaseWeapon* EquipedWeaponFromInventory;
 
-	//TBD: @TODO: reload audio from baseweapon class?
-
 		private:
 
 	// ---------------------------------

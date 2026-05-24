@@ -8,8 +8,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Projectiles/SProjectileBase.h"
 #include "Items/UItemBase.h"
+#include "Projectiles/SProjectileBase.h"
 #include "../Private/Items/AEjectedBulletCasing.h"
 #include "SBaseWeapon.generated.h"
 
@@ -30,9 +30,6 @@ public:
 	// ---------------------------------
 	//how bad do i want to copy warframe's damage system? 0.0
 	//REMINDER: This needs to be tied to action system i implemented in player
-	
-	// Called every frame
-	//virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon Behavior")
 	virtual void OnEquip();
@@ -46,14 +43,17 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Weapon Behavior")
 	void PerformReloadBehavior();
 
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Item Properties")
+	bool IsEquippable_Implementation() const;
 
-	//@TODO: This should be tied to bullet or projectile
-	//UFUNCTION(BlueprintCallable, Category = "Weapon Behavior")
-	//virtual void OnActorHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+	virtual EWeaponType GetWeaponType_Implementation() const;
 
 	// ---------------------------------
 	// -------- Public Variables -------
 	// ---------------------------------
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon Stats")
+	EWeaponType WeaponType;
 
 	//base damage we start with
 	UPROPERTY(EditAnywhere, Category = "Weapon Stats")
@@ -92,6 +92,9 @@ public:
 
 	//skeletal mesh / static mesh comp?
 
+	//audio
+	UPROPERTY(EditAnywhere, Category = "Weapon Audio")
+	USoundBase* ReloadSound;
 
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 	TSubclassOf<AActor> WeaponProjectile;
@@ -114,7 +117,6 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Attack")
 	float AttacAnimDelay = 0.2f;
 
-
 	UPROPERTY(EditAnywhere, Category = "Attack")
 	UAnimMontage* AttackAnim;
 
@@ -132,8 +134,6 @@ public:
 
 
 protected:
-	// Called when the game starts or when spawned
-	//virtual void BeginPlay() override;
 
 	// ---------------------------------
 	// -------- Helper Functions -------

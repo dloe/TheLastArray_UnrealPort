@@ -49,36 +49,53 @@ void USAction_SwapItem::StartAction_Implementation(AActor* Instigator)
 	float seqEquipTime = 0.0f;
 	float seqDeEquipTime = 0.0f;
 
+	EWeaponType PrevWeaponType = EWeaponType::ENone;
+	EWeaponType NewWeaponType = EWeaponType::ENone;
+	if(ItemEquipped && ItemEquipped->ItemType == EItemType::EWeapon) {
+		USBaseWeapon* PrevWeapon = Cast< USBaseWeapon>(ItemEquipped);
+		PrevWeaponType = PrevWeapon->WeaponType;
+	}
+	if (TargetItemData && TargetItemData->ItemType == EItemType::EWeapon) {
+		USBaseWeapon* NewWeapon = Cast< USBaseWeapon>(TargetItemData);
+		NewWeaponType = NewWeapon->WeaponType;
+	}
+
 	//three possible cases for swapping items
 	//case 1 Item to item swappage
 	if (ItemEquipped && TargetItemData)
 	{
+		UE_LOG(LogTemp, Log, TEXT("item to item swap"));
 		seqDeEquipTime = ItemEquipped->DeEquipMontage->GetPlayLength();
 		seqEquipTime = TargetItemData->EquipMontage->GetPlayLength();
 		EquippedItemToItemEvent(
-			ItemEquipped->ItemType, 
+			ItemEquipped->ItemType, //prev
 			TargetItemData->ItemType,
-			ItemEquipped->DeEquipMontage, 
-			TargetItemData->EquipMontage
+			ItemEquipped->DeEquipMontage, //prev
+			TargetItemData->EquipMontage,
+			PrevWeaponType, NewWeaponType
 		);
 
 	}
 	//case 2 item to none swappage
 	else if (ItemEquipped && TargetItemData == nullptr)
 	{
+		UE_LOG(LogTemp, Log, TEXT("item to None swap"));
 		seqDeEquipTime = ItemEquipped->DeEquipMontage->GetPlayLength();
 		EquippedItemToNoneEvent(
-			ItemEquipped->ItemType, 
-			ItemEquipped->DeEquipMontage
+			ItemEquipped->ItemType, //prev
+			ItemEquipped->DeEquipMontage, //prev
+			PrevWeaponType
 		);
 	}
 	//case 3 none to item swappage
-	else if (!ItemEquipped && TargetItemData)
+	else if (ItemEquipped == nullptr && TargetItemData)
 	{
+		UE_LOG(LogTemp, Log, TEXT("None to item swap"));
 		seqEquipTime = TargetItemData->EquipMontage->GetPlayLength();
 		EquippedNoneToItemEvent(
 			TargetItemData->ItemType,
-			TargetItemData->EquipMontage
+			TargetItemData->EquipMontage,
+			NewWeaponType
 		);
 	}
 

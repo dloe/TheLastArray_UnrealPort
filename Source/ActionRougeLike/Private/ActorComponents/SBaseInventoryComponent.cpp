@@ -106,8 +106,6 @@ USBaseWeapon* USBaseInventoryComponent::GetCurrentWeaponInfo()
 FTransform USBaseInventoryComponent::GetLeftHandTransform(ASCharacter* Instigator)
 {
 	FTransform result = FTransform::Identity;
-	FVector BoneLoc;
-	FRotator BoneRot;
 
 	USBaseWeapon* CurrentWeapon = GetCurrentWeaponInfo();
 	if (CurrentWeapon && CurrentWeapon->ItemActor && Instigator)
@@ -124,21 +122,11 @@ FTransform USBaseInventoryComponent::GetLeftHandTransform(ASCharacter* Instigato
 		// component space
 		FTransform LeftHandCS = FLeftSocketTrans.GetRelativeTransform(Mesh->GetComponentTransform());
 
-		//bone space attempt, TODO: will remove after more testing
-		//the big part here, put our sockets transforms spacing in relation to hand_r
-		Mesh->TransformToBoneSpace(
-			"hand_l", //hand_r
-			FLeftSocketTrans.GetLocation(),
-			FLeftSocketTrans.Rotator(),
-			BoneLoc, 
-			BoneRot
-		);
-		DrawDebugSphere(GetWorld(), FLeftSocketTrans.GetLocation(), 4.0f, 6, FColor::Red, false, 0.0f);
+		//debug
+		//DrawDebugSphere(GetWorld(), FLeftSocketTrans.GetLocation(), 4.0f, 6, FColor::Red, false, 0.0f);
 
 		//cs
 		result = FTransform(LeftHandCS.GetRotation(), LeftHandCS.GetLocation(), FVector(1,1,1));
-		//bone space - TODO: keep for just just in case
-		//result = FTransform(BoneRot, BoneLoc, FVector(1, 1, 1));
 	}
 	return result;
 }
@@ -163,10 +151,6 @@ bool USBaseInventoryComponent::AddItemToInventory(UItemBase* ItemToAdd)
 		{
 			AssignedItemToInventory = true;
 			Inventory[index]->AssignItem(ItemToAdd);
-			//@TODO: what about the other properties of inventory slot? 
-			//assign item handles it but may be unoptimal...
-
-
 		}
 	}
 

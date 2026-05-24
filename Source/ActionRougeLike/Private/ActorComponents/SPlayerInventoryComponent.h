@@ -10,7 +10,6 @@
 #include "ActorComponents/SBaseInventoryComponent.h"
 #include "Animation/AnimSequence.h"
 #include "Actions/SActionComponent.h"
-//#include "Player/SCharacter.h"
 #include "SPlayerInventoryComponent.generated.h"
 
 class ASCharacter;
@@ -39,7 +38,7 @@ public:
 	AActor* ItemActor;
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInventoryLoad, EItemType, SwapType);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnInventoryLoad, EItemType, SwapType, EWeaponType, WeaponType);
 
 /**
  * 
@@ -56,11 +55,6 @@ public:
 	// ---------------------------------
 	// ------- Public Functions --------
 	// ---------------------------------
-	//@TODO: should this be a more general class that weapon inherits from?
-	//UFUNCTION(BlueprintCallable, Category = "Inventory Behavior")
-	//bool AddItemToInventory(UItemBase* ItemToAdd);
-
-	//@TODO: should this be a more general class that weapon inherits from?
 	UFUNCTION(BlueprintCallable, Category = "Inventory Behavior")
 	bool AddItemToEquipableHotbar(UItemBase* ItemToAdd);
 
@@ -112,9 +106,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintCallable, Category = "Inventory Setup")
 	void WeaponMagInEvent();
-
-	UFUNCTION(BlueprintPure, Category = "Inventory State", meta = (DeprecatedFunction, DeprecationMessage = "Use NewFunction instead."))
-	bool HasWeaponEquippedCheck();
 	
 	UFUNCTION(BlueprintCallable, Category = "Swap Item Action")
 	void SetEquippedItem(UItemBase* NewItem);
@@ -187,9 +178,6 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "Utility")
 	UStaticMeshComponent* GetStaticMeshCompByName(AActor* ActorToCheck, FName CompName);
 
-	//UFUNCTION(BlueprintCallable, Category = "Inventory Behavior")
-	//void UpdateWeaponEquippedBool();
-
 	UFUNCTION(BlueprintCallable, Category = "Inventory Swap")
 	bool AttachWeaponToStorage(TArray<FBackInventory> BackStorage, UItemBase* PrevItemData);
 
@@ -211,8 +199,6 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Player")
 	ASCharacter* PlayerA;
 
-	
-
 	//Helps with transitions
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Swap")
 	EItemType PrevEquippedItemType = EItemType::ENone;
@@ -223,6 +209,4 @@ protected:
 	UPROPERTY(BlueprintReadWrite, Category = "Item Swap")
 	int PrevItemIndex;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Inventory")
-	bool bHasWeaponEquipped;
 };

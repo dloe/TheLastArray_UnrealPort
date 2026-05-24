@@ -4,6 +4,7 @@
 // Unauthorized use, distribution, or modification is not permitted.
 
 #include "Weapons/SBaseWeapon.h"
+#include "Items/UItemBase.h"
 #include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
 #include "GameFramework/Character.h"
 
@@ -96,5 +97,23 @@ void USBaseWeapon::PerformReloadBehavior()
 		CurrentMagazineSize = TotalAmmoReserves;
 		TotalAmmoReserves = 0;
 	}
+}
+
+/// <summary>
+/// This solves the dependecy issue!!
+/// </summary>
+/// <returns></returns>
+EWeaponType USBaseWeapon::GetWeaponType_Implementation() const
+{
+	return WeaponType;
+}
+
+/// <summary>
+/// Is a weapon, therefore is equippable
+/// </summary>
+/// <returns></returns>
+bool USBaseWeapon::IsEquippable_Implementation_Implementation() const
+{
+	return true;
 }
 

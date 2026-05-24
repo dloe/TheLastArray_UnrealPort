@@ -11,10 +11,19 @@
 //#include "Engine/DataAsset.h"
 #include "UItemBase.generated.h"
 
+//weapon types enums stored in baseweapon header class
 UENUM(BlueprintType)
 enum class EItemType : uint8 {
 	ENone UMETA(DisplayName = "None"),
-	EEquipable UMETA(DisplayName = "Equipable"),
+	EWeapon UMETA(DisplayName = "Weapon"),
+	EConsumable UMETA(DisplayName = "Consumable"),
+	EQuest UMETA(DisplayName = "Quest"),
+	EMisc UMETA(DisplayName = "Misc")
+};
+
+UENUM(BlueprintType)
+enum class EWeaponType : uint8 {
+	ENone UMETA(DisplayName = "None"),
 	EWeaponRifle UMETA(DisplayName = "WeaponRifle"),
 	EWeaponShotgun UMETA(DisplayName = "WeaponShotgun"),
 	EWeaponHandheld UMETA(DisplayName = "WeaponHandheld"),
@@ -23,7 +32,7 @@ enum class EItemType : uint8 {
 	EWeaponFisticuffs UMETA(DisplayName = "WeaponFisticuffs")
 };
 
-//Which holser place should they go?
+//Which holster place should they go?
 //2 for sidarms
 //2 for bigger guns (rifle sized)
 UENUM(BlueprintType)
@@ -51,6 +60,14 @@ class ACTIONROUGELIKE_API UItemBase : public UObject
 	UFUNCTION(BlueprintCallable, Category = "Item Properties")
 	UStaticMeshComponent* GetItemStaticMesh() { return ItemActor->FindComponentByClass<UStaticMeshComponent>(); };
 
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Item Properties")
+	bool IsEquippable() const;
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, BlueprintPure, Category = "Item Properties")
+	EWeaponType GetWeaponType() const;
+
+	virtual EWeaponType GetWeaponType_Implementation() const { return EWeaponType::ENone; };
+
 	// ---------------------------------
 	// -------- Public Variables -------
 	// ---------------------------------
@@ -64,7 +81,7 @@ class ACTIONROUGELIKE_API UItemBase : public UObject
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
 	TSoftObjectPtr<UTexture2D> Icon;
 
-		//storing blueprint of physical weapon model and mesh
+	//storing blueprint of physical weapon model and mesh
 	//cant i just get the static mesh comp from this guy?
 	UPROPERTY(EditAnywhere, Category = "Item Model")
 	TSubclassOf<AActor> ItemActorSubclass;
@@ -77,9 +94,6 @@ class ACTIONROUGELIKE_API UItemBase : public UObject
 	//A catch all for every time we have a weapon or equiptable item. where does it spawn on the skeletal mesh
 	UPROPERTY(EditAnywhere, Category = "Effects")
 	FName HandSocketName;
-
-	//UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Idle")
-	//UAnimMontage* IldeAnimWhenEquipped;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Properties")
 	EItemType ItemType;

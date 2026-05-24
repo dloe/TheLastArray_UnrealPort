@@ -21,25 +21,17 @@ void UInventorySlot::Initialize(UItemBase* itemDataP, bool isweaponP, bool isequ
 }
 
 /// <summary>
-/// This may need to be rethought or reorganized....
+/// Setup for asigning items
 /// 
 /// </summary>
 /// <param name="itemToAssign"></param>
 void UInventorySlot::AssignItem(UItemBase* itemToAssign)
 {
-	IsWeapon = false;
-	IsEquipable = false;
-	USBaseWeapon* PotentialWeapon = Cast< USBaseWeapon>(itemToAssign);
-	if (PotentialWeapon)
-	{
-		IsWeapon = true;
-		IsEquipable = true;
-	}
 	ItemData = itemToAssign;
-
+	IsEquipable = itemToAssign && itemToAssign->IsEquippable();
+	IsWeapon = itemToAssign && itemToAssign->ItemType == EItemType::EWeapon;
+	
 	//@TODO check if consumable also here
-	//
-
 }
 
 USBaseWeapon* UInventorySlot::GetWeaponData()

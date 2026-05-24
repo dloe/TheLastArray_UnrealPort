@@ -1,5 +1,11 @@
-// Copyright (c) 2026 Dylan. Personal Game Project. \nThis code is provided as-is for development and experimentation.\nUnauthorized use, distribution, or modification is not permitted.
+// Copyright (c) 2026 Dylan. Personal Game Project. 
+// This code is provided as-is for development and experimentation.
+// Unauthorized use, distribution, or modification is not permitted.
 
 
 #include "Items/UItemBase.h"
 
+bool UItemBase::IsEquippable_Implementation() const
+{
+	return false;
+}
