@@ -32,18 +32,22 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void EquippedItemToItemEvent(EItemType PrevEquippedItemType2, EItemType NewEquippedItemType, 
-		UAnimSequence* PrevItemUnequipSeq, UAnimSequence* NewItemEquipMontagSeq,
+		UAnimMontage* PrevItemUnequipMont, UAnimMontage* NewItemEquipMontagMont,
 		EWeaponType PrevWeaponType, EWeaponType NewWeaponType);
 
+	//why this have to be different name and use 2?
 	UFUNCTION(BlueprintImplementableEvent)
-	void EquippedItemToNoneEvent(EItemType PrevEquippedItemType2, UAnimSequence* PrevItemUnequipSeq, EWeaponType PrevWeaponType);
+	void EquippedItemToNoneEvent(EItemType PrevEquippedItemType2, UAnimMontage* PrevItemUnequipMont, EWeaponType PrevWeaponType);
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void EquippedNoneToItemEvent(EItemType NewEquippedItemType, UAnimSequence* NewItemEquipMontagSeq, EWeaponType NewWeaponType);
+	void EquippedNoneToItemEvent(EItemType NewEquippedItemType, UAnimMontage* NewItemEquipMontagMont, EWeaponType NewWeaponType);
 
 	// ---------------------------------
 	// -------- Public Variables -------
 	// ---------------------------------
+	UPROPERTY(BlueprintReadWrite, Category = "Swap Properties")
+	float SwapCooldown = 1.0f;
+
 	UPROPERTY(BlueprintReadWrite, Category = "Player Info")
 	UStaticMeshComponent* SMComp;
 

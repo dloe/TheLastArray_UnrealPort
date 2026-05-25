@@ -96,7 +96,7 @@ public:
 	void DeEquipItemBehavior();
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory Swap")
-	void RemoveItemVisibilitiyByIndex(int IndexToRemove);
+	void RemoveItemVisibilitiyByIndex();
 
 	//events specifically called from the anim blueprint
 	//since i have alot of weapon data, it would be more organized to handle weapon event functions directly in the player invntory
@@ -115,7 +115,7 @@ public:
 
 	//TODO: refactoring - combine the two numbers? why are they separate?
 	UFUNCTION(BlueprintCallable, Category = "Swap Item Action")
-	void SetHotbarSlot(int newSlot) { EquippedSlotIndex = newSlot; };
+	void SetHotbarSlot(int newSlot) { PrevItemIndex = EquippedSlotIndex; EquippedSlotIndex = newSlot; };
 
 	// ---------------------------------
 	// -------- Public Variables -------

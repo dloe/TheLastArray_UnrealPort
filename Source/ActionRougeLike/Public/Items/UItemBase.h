@@ -11,7 +11,6 @@
 //#include "Engine/DataAsset.h"
 #include "UItemBase.generated.h"
 
-//weapon types enums stored in baseweapon header class
 UENUM(BlueprintType)
 enum class EItemType : uint8 {
 	ENone UMETA(DisplayName = "None"),
@@ -99,11 +98,11 @@ class ACTIONROUGELIKE_API UItemBase : public UObject
 	EItemType ItemType;
 
 	UPROPERTY(EditAnywhere, Category = "Equip Behavior")
-	UAnimSequence* EquipMontage;
+	UAnimMontage* EquipMont;
 
 	UPROPERTY(EditAnywhere, Category = "Equip Behavior")
-	UAnimSequence* DeEquipMontage;
-	
+	UAnimMontage* DeEquipMont;
+
 	//will need logic to set up which available holster we can keep it in
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item Properties")
 	EHoldsterType HolsertType;

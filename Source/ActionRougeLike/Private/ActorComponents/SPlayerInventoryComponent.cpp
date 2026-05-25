@@ -294,11 +294,12 @@ void USPlayerInventoryComponent::EquipItemBehavior()
 		// reattach to socketTransform
 		UItemBase* PrevItem = HotbarInventory[PrevItemIndex]->ItemData;
 
-		if (PrevItem->ItemType == EItemType::EWeapon)
-		{
-			USBaseWeapon* WeaponItem = Cast<USBaseWeapon>(PrevItem);
-			switch (WeaponItem->WeaponType)
+		if (PrevItem) {
+			if (PrevItem->ItemType == EItemType::EWeapon)
 			{
+				USBaseWeapon* WeaponItem = Cast<USBaseWeapon>(PrevItem);
+				switch (WeaponItem->WeaponType)
+				{
 				case EWeaponType::EWeaponRifle:
 				case EWeaponType::EWeaponShotgun:
 					BackRifleStorage[EquippedItem->backSlot].ItemActor = nullptr;
@@ -306,11 +307,12 @@ void USPlayerInventoryComponent::EquipItemBehavior()
 				case EWeaponType::EWeaponHandheld:
 					BackSidearmStorage[EquippedItem->backSlot].ItemActor = nullptr;
 					break;
+				}
 			}
-		}
-		else {
-			//TODO: Consumable slots
+			else {
+				//TODO: Consumable slots
 
+			}
 		}
 		
 		EquippedItem->backSlot = -1;
@@ -333,22 +335,26 @@ void USPlayerInventoryComponent::EquipItemBehavior()
 /// </summary>
 void USPlayerInventoryComponent::DeEquipItemBehavior()
 {
-	RemoveItemVisibilitiyByIndex(PrevItemIndex);
+	RemoveItemVisibilitiyByIndex();
 }
 
 /// <summary>
 /// When we remove equipped weapon we move it to back or turn off visibility
+/// TODO: remove parameter
 /// </summary>
 /// <param name="IndexToRemove"></param>
-void USPlayerInventoryComponent::RemoveItemVisibilitiyByIndex(int IndexToRemove)
+void USPlayerInventoryComponent::RemoveItemVisibilitiyByIndex()
 {
 	//todo: some type of redundancy check to ensure its already take care of
 	UItemBase* PrevItemData = HotbarInventory[PrevItemIndex]->ItemData;
-
+	
 	//find first slot available, if no slot available then doesn't matter
 	bool hasSlot = false;
 
 	UItemBase* PrevItem = HotbarInventory[PrevItemIndex]->ItemData;
+
+	if(!PrevItem) //if prev was null, return
+		return;
 
 	if (PrevItem->ItemType == EItemType::EWeapon)
 	{

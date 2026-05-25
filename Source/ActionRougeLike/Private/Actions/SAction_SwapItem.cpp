@@ -29,6 +29,7 @@ void USAction_SwapItem::StartAction_Implementation(AActor* Instigator)
 	ItemEquipped = InventoryComponent->GetEquippedItem(); //item we currently have equipped
 	//TODO: use consts more lol
 	const int WeaponSlotIndex = InventoryComponent->CurrentHotbarSlot(); //which index are we currently on
+
 	TargetIndex = InventoryComponent->HotbarToSwapTo; //index we are swapping to
 
 	//UE_LOG(LogTemp, Log, TEXT("Swapping Current Slot Index %d"), WeaponSlotIndex);
@@ -46,8 +47,8 @@ void USAction_SwapItem::StartAction_Implementation(AActor* Instigator)
 	//standard start action start
 	Super::StartAction_Implementation(Instigator);
 
-	float seqEquipTime = 0.0f;
-	float seqDeEquipTime = 0.0f;
+	float EquipTime = 0.0f;
+	float DeEquipTime = 0.0f;
 
 	EWeaponType PrevWeaponType = EWeaponType::ENone;
 	EWeaponType NewWeaponType = EWeaponType::ENone;
@@ -65,13 +66,13 @@ void USAction_SwapItem::StartAction_Implementation(AActor* Instigator)
 	if (ItemEquipped && TargetItemData)
 	{
 		UE_LOG(LogTemp, Log, TEXT("item to item swap"));
-		seqDeEquipTime = ItemEquipped->DeEquipMontage->GetPlayLength();
-		seqEquipTime = TargetItemData->EquipMontage->GetPlayLength();
+		DeEquipTime = ItemEquipped->DeEquipMont->GetPlayLength();
+		EquipTime = TargetItemData->DeEquipMont->GetPlayLength();
 		EquippedItemToItemEvent(
 			ItemEquipped->ItemType, //prev
 			TargetItemData->ItemType,
-			ItemEquipped->DeEquipMontage, //prev
-			TargetItemData->EquipMontage,
+			ItemEquipped->DeEquipMont, //prev
+			TargetItemData->EquipMont,
 			PrevWeaponType, NewWeaponType
 		);
 
@@ -80,10 +81,10 @@ void USAction_SwapItem::StartAction_Implementation(AActor* Instigator)
 	else if (ItemEquipped && TargetItemData == nullptr)
 	{
 		UE_LOG(LogTemp, Log, TEXT("item to None swap"));
-		seqDeEquipTime = ItemEquipped->DeEquipMontage->GetPlayLength();
+		DeEquipTime = ItemEquipped->DeEquipMont->GetPlayLength();
 		EquippedItemToNoneEvent(
 			ItemEquipped->ItemType, //prev
-			ItemEquipped->DeEquipMontage, //prev
+			ItemEquipped->DeEquipMont, //prev
 			PrevWeaponType
 		);
 	}
@@ -91,10 +92,10 @@ void USAction_SwapItem::StartAction_Implementation(AActor* Instigator)
 	else if (ItemEquipped == nullptr && TargetItemData)
 	{
 		UE_LOG(LogTemp, Log, TEXT("None to item swap"));
-		seqEquipTime = TargetItemData->EquipMontage->GetPlayLength();
+		EquipTime = TargetItemData->DeEquipMont->GetPlayLength();
 		EquippedNoneToItemEvent(
 			TargetItemData->ItemType,
-			TargetItemData->EquipMontage,
+			TargetItemData->EquipMont,
 			NewWeaponType
 		);
 	}
@@ -112,7 +113,7 @@ void USAction_SwapItem::StartAction_Implementation(AActor* Instigator)
 	FTimerDelegate DelegateSwapDelay;
 	DelegateSwapDelay.BindUFunction(this, "SwapDelay_Elasped", Character);
 
-	const float SwapDelayTotal = seqEquipTime + seqDeEquipTime + 1.00f; //add a sec delay after animations end
+	const float SwapDelayTotal = EquipTime + DeEquipTime + SwapCooldown; //add a sec delay after animations end
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle_SwapDelay, DelegateSwapDelay, SwapDelayTotal, false);
 }
 
