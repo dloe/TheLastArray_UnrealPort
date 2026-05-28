@@ -78,8 +78,6 @@ private:
 	UFUNCTION()
 	void SwapDelay_Elasped(ACharacter* InstigatorCharacter);
 
-	
-
 	// ---------------------------------
 	// -- Internal state / variables --
 	// ---------------------------------

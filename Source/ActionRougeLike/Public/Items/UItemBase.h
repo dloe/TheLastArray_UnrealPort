@@ -112,7 +112,6 @@ class ACTIONROUGELIKE_API UItemBase : public UObject
 
 protected:
 
-
 	// ---------------------------------
 	// -------- Helper Functions -------
 	// ---------------------------------

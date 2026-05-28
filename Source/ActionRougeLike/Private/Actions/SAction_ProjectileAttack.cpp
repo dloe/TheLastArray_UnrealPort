@@ -14,7 +14,6 @@ USAction_ProjectileAttack::USAction_ProjectileAttack()
 	AttacAnimDelay = 0.2f;
 }
 
-
 void USAction_ProjectileAttack::StartAction_Implementation(AActor* Instigator)
 {
 	Super::StartAction_Implementation(Instigator);

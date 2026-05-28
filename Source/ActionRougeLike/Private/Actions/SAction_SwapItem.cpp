@@ -21,7 +21,6 @@ void USAction_SwapItem::StartAction_Implementation(AActor* Instigator)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("StartAction_Implementation is not running off character %s"), *Instigator->GetName());
 	}
-	//SMComp = Character->FindComponentByClass<UStaticMeshComponent>(); //TODO: Dont need anymore - verify in bp
 
 	InventoryComponent = Character->GetPlayerInventoryComp();
 	InventoryComponent->bCanRunEquipBehavior = true; //dont want dub calls to anim notifies for equip
@@ -65,7 +64,7 @@ void USAction_SwapItem::StartAction_Implementation(AActor* Instigator)
 	//case 1 Item to item swappage
 	if (ItemEquipped && TargetItemData)
 	{
-		UE_LOG(LogTemp, Log, TEXT("item to item swap"));
+		//UE_LOG(LogTemp, Log, TEXT("item to item swap"));
 		DeEquipTime = ItemEquipped->DeEquipMont->GetPlayLength();
 		EquipTime = TargetItemData->DeEquipMont->GetPlayLength();
 		EquippedItemToItemEvent(
@@ -80,7 +79,7 @@ void USAction_SwapItem::StartAction_Implementation(AActor* Instigator)
 	//case 2 item to none swappage
 	else if (ItemEquipped && TargetItemData == nullptr)
 	{
-		UE_LOG(LogTemp, Log, TEXT("item to None swap"));
+		//UE_LOG(LogTemp, Log, TEXT("item to None swap"));
 		DeEquipTime = ItemEquipped->DeEquipMont->GetPlayLength();
 		EquippedItemToNoneEvent(
 			ItemEquipped->ItemType, //prev
@@ -91,7 +90,7 @@ void USAction_SwapItem::StartAction_Implementation(AActor* Instigator)
 	//case 3 none to item swappage
 	else if (ItemEquipped == nullptr && TargetItemData)
 	{
-		UE_LOG(LogTemp, Log, TEXT("None to item swap"));
+		//UE_LOG(LogTemp, Log, TEXT("None to item swap"));
 		EquipTime = TargetItemData->DeEquipMont->GetPlayLength();
 		EquippedNoneToItemEvent(
 			TargetItemData->ItemType,

@@ -11,6 +11,8 @@
 #include "ActorComponents/SBaseInventoryComponent.h"
 #include "SAction_WeaponAttack.generated.h"
 
+
+class USBaseWeapon; 
 /**
  * 
  */
@@ -30,71 +32,40 @@ class USAction_WeaponAttack : public USAction
 	UFUNCTION()
 	void SetInventoryComp(USBaseInventoryComponent* InventoryCompRef) { InventoryComponent = InventoryCompRef; };
 
+	UFUNCTION()
+	void OnWeaponAttackFinished(AActor* Instigator);
+
 	// ---------------------------------
 	// -------- Public Variables -------
 	// ---------------------------------
 	
-	
 
-	
 	private:
 
 	// ---------------------------------
 	// -------- Helper Functions -------
 	// ---------------------------------
-
-	//delay from animation to end action
-	UFUNCTION()
-	void AttackAnimDelay_Elasped(ASCharacter* InstigatorCharacter);
-
+	// 
 	//delay overall attack
 	UFUNCTION()
-	void AttackDelay_Elasped(ACharacter* InstigatorCharacter);
+	void AttackDelay_Elasped(AActor* Instigator);
 
 	UFUNCTION()
-	void EjectCasing(ACharacter* InstigatorCharacter);
+	USBaseInventoryComponent* ResolveInventory(AActor* InstigatingActor) const;
 
 	UFUNCTION()
-	void FireProjectile(ACharacter* InstigatorCharacter);
-
-	//might not need this anymore because of new custom notify
-	UFUNCTION()
-	void OnPostFireMontageFinished(ACharacter* InstigatorCharacter, UAnimMontage* PostFireMon, bool bInterrupted);
+	void StartAttackAfterDelay(AActor* Instigator);
 
 	// ---------------------------------
 	// -- Internal state / variables --
 	// ---------------------------------
 
-	//vars tied directly to actions, only set when action starts and those props maintained until the aciton ends
+	//vars tied directly to actions, only set when action starts and those props maintained until the action ends
 	UPROPERTY(EditAnywhere, Category = "Equipped Weapon Properties - Overriden by equipped item")
-	USBaseWeapon* EquipedWeaponFromInventory;
-
-	UPROPERTY(EditAnywhere,  Category = "Equipped Weapon Properties - Overriden by equipped item")
-	UAnimMontage* EquipedWeaponAttackAnimAction;
-
-	UPROPERTY(EditAnywhere,  Category = "Equipped Weapon Properties - Overriden by equipped item")
-	UAnimMontage* EquippedWeaponPostAttackAnimation;
-
-	UPROPERTY(EditAnywhere,  Category = "Equipped Weapon Properties - Overriden by equipped item")
-	UParticleSystem* EquipedWeaponCastingEffectsAction;
-
-	UPROPERTY(EditAnywhere, Category = "Equipped Weapon Properties - Overriden by equipped item")
-	FName EquipedSpawnSocketNameAction;
-
-	UPROPERTY(EditAnywhere, Category = "Equipped Weapon Properties - Overriden by equipped item")
-	float EquipedAttacAnimDelayAction;
-
-	UPROPERTY(EditAnywhere, Category = "Equipped Weapon Properties - Overriden by equipped item")
-	float EquipedDelayAttack;
-
-	UPROPERTY(EditAnywhere, Category = "Equipped Weapon Properties - Overriden by equipped item")
-	TSubclassOf<AActor> EquipedWeaponProjectileSubclassAction;
+	USBaseWeapon* CurrentEquippedWeapon;
 
 	UPROPERTY(EditAnywhere, Category = "Equipped Weapon Properties - Overriden by equipped item")
 	UStaticMeshComponent* EquipedWeaponStaticMesh;
-
-	UPROPERTY(EditAnywhere, Category = "Equipped Weapon Properties - Overriden by equipped item")
-	TSubclassOf<AAEjectedBulletCasing> EquipedWeaponCasing;
 
 	//runs attack procedure for currently equipped weapon in actor's inventory
 	//this should be assigned when we a reference to this class is established to the controller class?

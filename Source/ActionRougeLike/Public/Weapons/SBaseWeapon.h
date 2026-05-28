@@ -11,6 +11,7 @@
 #include "Items/UItemBase.h"
 #include "Projectiles/SProjectileBase.h"
 #include "../Private/Items/AEjectedBulletCasing.h"
+#include "../Private/Actions/SAction_WeaponAttack.h"
 #include "SBaseWeapon.generated.h"
 
 class UAnimMontage;
@@ -47,6 +48,10 @@ public:
 	bool IsEquippable_Implementation() const;
 
 	virtual EWeaponType GetWeaponType_Implementation() const;
+
+	//actions tell weapon to perform weapon specific behavior
+	UFUNCTION(BlueprintCallable, Category = "Attack Behavior")
+	void PerformAttack(AActor* Instigator, USAction_WeaponAttack* OwningAttackAction);
 
 	// ---------------------------------
 	// -------- Public Variables -------
@@ -138,7 +143,17 @@ protected:
 	// ---------------------------------
 	// -------- Helper Functions -------
 	// ---------------------------------
+	UFUNCTION(BlueprintCallable, Category = "Attack Behavior")
+	void SpawnProjectile(AActor* Instigator);
 
+	UFUNCTION(BlueprintCallable, Category = "Attack Behavior")
+	void PlayAttackAnimation(AActor* Instigator);
+
+	UFUNCTION(BlueprintCallable, Category = "Attack Behavior")
+	void SpawnCasing(AActor* Instigator);
+
+	UFUNCTION(BlueprintCallable, Category = "Attack Behavior")
+	void PlayMuzzleFx(AActor* Instigator);
 
 	// ---------------------------------
 	// -- Internal state / variables --

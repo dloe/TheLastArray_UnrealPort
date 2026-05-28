@@ -17,91 +17,56 @@
 /// <summary>
 /// Attack Action Behavior from equipped weapon stored in inventory
 /// 
-/// 
+/// A very big key note here is that actions in this system should own the gameplay while the weapons themselves perform 
+/// the weapon specific implementation. So player tells action tells weapon to perform attack. 
 /// </summary>
 /// <param name="Instigator"></param>
 void USAction_WeaponAttack::StartAction_Implementation(AActor* Instigator)
 {
 	Super::StartAction_Implementation(Instigator);
 
-	//if instigator is type player
-	ASCharacter* Character = Cast<ASCharacter>(Instigator);
-	ASAICharacter* AI = Cast<ASAICharacter>(Instigator);
-	if (Character)
+	InventoryComponent = ResolveInventory(Instigator);
+
+	if (!InventoryComponent)
 	{
-		InventoryComponent = Character->GetPlayerInventoryComp();
-	}
-	else if(AI) { //AI Inventory
-		InventoryComponent = AI->GetInventoryComp();
-	}
-	else {
-		//throw error?
-		UE_LOG(LogTemp, Error, TEXT("Failed Assignment of InventoryComp. Instigator issue... [Class: %s]"), *GetNameSafe(Instigator));
+		//cant perform action if no inventory
+		StopAction(Instigator);
+		return;
 	}
 
 	//if weapon, get weapon stats and run weapon action, else run consumable action
-	UInventorySlot* ItemEquipped = InventoryComponent->GetEquippedSlot();
-	if(ItemEquipped->IsWeapon) {
+	UInventorySlot* EquippedSlot = InventoryComponent->GetEquippedSlot();
 
-		EquipedWeaponFromInventory = Cast<USBaseWeapon>(ItemEquipped->ItemData);
-
-		ensure(EquipedWeaponFromInventory);
-		//do i even need these copies anymore?
-		EquipedWeaponAttackAnimAction = EquipedWeaponFromInventory->AttackAnim;
-		//EquippedWeaponPostAttackAnimation = EquipedWeaponFromInventory->PostAttackIronSights;
-		EquipedWeaponCastingEffectsAction = EquipedWeaponFromInventory->CastingEffects;
-		EquipedSpawnSocketNameAction = EquipedWeaponFromInventory->WeaponMuzzleSocketName;
-		EquipedAttacAnimDelayAction = EquipedWeaponFromInventory->AttacAnimDelay;
-		EquipedDelayAttack = EquipedWeaponFromInventory->StartAttacDelay;
-		EquipedWeaponProjectileSubclassAction = EquipedWeaponFromInventory->WeaponProjectile;
-		EquipedWeaponCasing = EquipedWeaponFromInventory->EjectedCasingActor;
-		EquipedWeaponStaticMesh = EquipedWeaponFromInventory->GetItemStaticMesh();
-
-
-		//get our attacking character
-		//todo: put in character condition (or combine with ai one?)
-		if (Character && Character->HasAuthority())
-		{
-			//when timer finishes, start spawn projectile and attack anim
-			if (EquipedDelayAttack != 0.0f) {
-				FTimerHandle TimerHandle_AttackDelay;
-				FTimerDelegate DelegateAttackDelay;
-				DelegateAttackDelay.BindUFunction(this, "AttackDelay_Elasped", Character);
-				GetWorld()->GetTimerManager().SetTimer(TimerHandle_AttackDelay, DelegateAttackDelay, EquipedAttacAnimDelayAction, false);
-			}
-			else {
-				//run immediately if no delay is there
-				AttackDelay_Elasped(Character);
-			}
-
-		}
-		else if (AI)
-		{
-			//panick
-		}
+	//can we attack?
+	if (!EquippedSlot || !EquippedSlot->IsWeapon)
+	{
+		//cant do anything else here also
+		UE_LOG(LogTemp, Error, TEXT("Failed attacking of slot. Instigator issue... [Class: %s]"), *GetNameSafe(InventoryComponent));
+		StopAction(Instigator);
+		return;
 	}
-	else {
-		//if consumable
-		//this behavior TBD
-		//expect this to move around as i find a better way to incorporate consumables (drugs, power ups, train support charges, etc)
+
+	//get current weapon
+	CurrentEquippedWeapon = Cast<USBaseWeapon>(EquippedSlot->ItemData);
+	if (!CurrentEquippedWeapon)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to get weapon. Instigator issue... [Class: %s]"), *GetNameSafe(EquippedSlot->ItemData));
+		StopAction(Instigator);
+		return;
 	}
+
+	StartAttackAfterDelay(Instigator);
 }
 
-/// <summary>
-/// After animation players we spawn projectiles or do the attack physically 
-/// </summary>
-/// <param name="InstigatorCharacter"></param>
-void USAction_WeaponAttack::AttackAnimDelay_Elasped(ASCharacter* InstigatorCharacter)
+void USAction_WeaponAttack::OnWeaponAttackFinished(AActor* Instigator)
 {
-	//very similar behavior as the magic projectile, except we get alot of the properties from teh weapon instead of beiung
-	//stored in this action class
-
-	StopAction(InstigatorCharacter);
-
-
-	//InstigatorCharacter->PlayAnimMontage(EquippedWeaponPostAttackAnimation);
-	//begin post ads animation, turns off via animBP
-	InstigatorCharacter->bIsAiming = true;
+	ASCharacter* Character = Cast<ASCharacter>(Instigator);
+	if (Character)
+	{
+		Character->bIsAiming = true;
+	}
+	
+	StopAction(Instigator);
 }
 
 /// <summary>
@@ -109,141 +74,58 @@ void USAction_WeaponAttack::AttackAnimDelay_Elasped(ASCharacter* InstigatorChara
 /// For now basic weapons will have no delay so this isnt in use, AttackDelay_Elasped is called instantly
 /// </summary>
 /// <param name="InstigatorCharacter"></param>
-void USAction_WeaponAttack::AttackDelay_Elasped(ACharacter* InstigatorCharacter)
+void USAction_WeaponAttack::AttackDelay_Elasped(AActor* Instigator)
 {
-	InstigatorCharacter->PlayAnimMontage(EquipedWeaponAttackAnimAction); //start animation, then wait until animation is finished to spawn projectile physically
-
-	////fire event for animbp
-	//USkeletalMeshComponent* Mesh = InstigatorCharacter->GetMesh();
-	//if (Mesh)
-	//{
-	//	USAnimInstance* PlayerAnimInstance = Cast<USAnimInstance>(Mesh->GetAnimInstance());
-	//	if (PlayerAnimInstance)
-	//	{
-	//		PlayerAnimInstance->TriggerFire();
-	//	}
-
-	//}
-
-
-	//set post animation end animation (hold gun but not shoot it kinda)
-	FireProjectile(InstigatorCharacter); //fire projectile immediately, when notify ends, we stop the action officially
-	EquipedWeaponFromInventory->CurrentMagazineSize--; //could refactor this a bit to better organize who sees the equipped weapon and whatnot
-
-	//unless there is a 'warm up' animation that has to run before we can fire the weapon or make the attack, this will most likely be near 0
-	FTimerHandle TimerHandle_AttackAnimDelay;
-	FTimerDelegate DelegateAnimationDelay;
-	DelegateAnimationDelay.BindUFunction(this, "AttackAnimDelay_Elasped", InstigatorCharacter);
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle_AttackAnimDelay, DelegateAnimationDelay, EquipedAttacAnimDelayAction, false);
-}
-
-void USAction_WeaponAttack::EjectCasing(ACharacter* InstigatorCharacter)
-{
-	const FVector CastingLocation = EquipedWeaponStaticMesh->GetSocketLocation("BulletEject");
-	const FRotator CastingRotation = EquipedWeaponStaticMesh->GetSocketRotation("BulletEject");
-	const FTransform SpawnTM = FTransform(CastingLocation);
-
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	SpawnParams.Instigator = InstigatorCharacter;
-
-	AAEjectedBulletCasing* casing = GetWorld()->SpawnActor<AAEjectedBulletCasing>(EquipedWeaponCasing, SpawnTM, SpawnParams);
-
-	//eject it in a motion with impulse
-	UStaticMeshComponent* casingSM = casing->CasingStaticMesh;
-	FVector EjectDir = CastingRotation.Vector();
-	casingSM->AddImpulse(EjectDir * casing->EjectionStrength, NAME_None, true);
-}
-
-void USAction_WeaponAttack::FireProjectile(ACharacter* InstigatorCharacter)
-{
-	if (ensureAlways(EquipedWeaponProjectileSubclassAction))
+	if (!CurrentEquippedWeapon)
 	{
-		//use weapons projectiles name instead of 'muzzle'
-		const FVector HandLocation = EquipedWeaponStaticMesh->GetSocketLocation(EquipedSpawnSocketNameAction);
-
-		//EPSCPoolMethod PoolingMethod; //defaults to none
-		//attach location can be KeepWorldPosition or KeepRelativeOffset
-		// scale shouldn't be needed if we use keepworldposition
-
-		//have particle effect in players hand when shooting projectile
-		//should be where our hand socket is, where the projectile spawns in
-		// cast root component as a scene component?
-		//UParticleSystem* EmitterTemplate, USceneComponent* AttachToComponent, FName AttachPointName, FVector Location, FRotator Rotation, FVector Scale, EAttachLocation::Type LocationType, bool bAutoDestroy, EPSCPoolMethod PoolingMethod, bool bAutoActivateSystem
-		// instructor used CastSpellVFX, GetMesh,HandSocketName, FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTarget
-		//UGameplayStatics::SpawnEmitterAttached(CastSpellVFX, GetMesh(), HandSocketName, FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTarget);
-		//UGameplayStatics::SpawnEmitterAttached(CastSpellVFX, GetMesh(), HandSocketName, FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTarget, true, EPSCPoolMethod::None, true);
-		//UGameplayStatics::SpawnEmitterAttached(CastSpellVFX, GetMesh(), HandSocketName, FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTarget);
-		//spawn particle effect from hand socket on mesh
-
-		UGameplayStatics::SpawnEmitterAttached(EquipedWeaponCastingEffectsAction, EquipedWeaponStaticMesh, EquipedSpawnSocketNameAction, FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTarget);
-
-
-		FActorSpawnParameters SpawnParams;
-		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		SpawnParams.Instigator = InstigatorCharacter;
-
-
-		FCollisionShape Shape;
-		Shape.SetSphere(20.0f);
-
-		FCollisionQueryParams Params;
-		Params.AddIgnoredActor(InstigatorCharacter);
-
-		FCollisionObjectQueryParams ObjectQueryParams;
-		ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
-		ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
-		ObjectQueryParams.AddObjectTypesToQuery(ECC_Pawn);
-
-
-		//for trace
-		float basicTraceRange = 5000;
-
-		//the crosshair is at the forward vector of camera so might as well just use that
-		FVector TraceStart = InstigatorCharacter->GetPawnViewLocation();//CameraComp->GetComponentLocation();
-
-		//endpoint far into the look at distance (not to far, still somewhat towards crosshair on a miss)
-		FVector TraceEnd = TraceStart + (InstigatorCharacter->GetControlRotation().Vector() * basicTraceRange);
-
-		FHitResult hitCam;
-		//if we dont hit anything just use the end of the trace line
-		FVector projectileEndLocale = TraceEnd;
-		//if(GetWorld()->LineTraceSingleByObjectType(hitCam, TraceStart, TraceEnd, ObjectQueryParams))
-		//line up hand with where we are aiming for accuracy on spawning of our magic fireball
-		if (GetWorld()->SweepSingleByObjectType(hitCam, TraceStart, TraceEnd, FQuat::Identity, ObjectQueryParams, Shape, Params))
-		{
-			//if we got a hit, then we now have a start (handlocation), and end point (hitCam.ImpactPoint)
-			projectileEndLocale = hitCam.ImpactPoint;
-		}
-
-		//OLD - rotation is looking at that point we now have
-		//FRotator ProjectileSpawnRotation = UKismetMathLibrary::FindLookAtRotation(HandLocation, projectileEndLocale);
-
-		//more accurate version
-		FRotator ProjRotation = FRotationMatrix::MakeFromX(projectileEndLocale - HandLocation).Rotator();
-
-
-		//replaced GetControlRotation with our new target rotation
-		const FTransform SpawnTM = FTransform(ProjRotation, HandLocation);
-		AActor* T = GetWorld()->SpawnActor<AActor>(EquipedWeaponProjectileSubclassAction, SpawnTM, SpawnParams);
-
-		EjectCasing(InstigatorCharacter);
-		//used to have post fire animatoin but it conflicts with immedateite spawnming of bullets
-
+		UE_LOG(LogTemp, Error, TEXT("Failed to get weapon on attack again. Instigator issue... [Class: %s]"), *GetNameSafe(Instigator));
+		return;
 	}
+
+	CurrentEquippedWeapon->PerformAttack(Instigator, this);
+
 }
 
 /// <summary>
-/// set when we run the fire animation, after firing we want to hold a pose like we are kinda still aiming but not shooting for a short bit the return to whatever animation
-/// 
-/// MIGHT NOT NEED THIS
+/// Inventory lookup (for player vs AI)
 /// </summary>
-/// <param name="PostFireMon"></param>
-/// <param name="bInterrupted"></param>
-void USAction_WeaponAttack::OnPostFireMontageFinished(ACharacter* InstigatorCharacter, UAnimMontage* PostFireMon, bool bInterrupted)
+/// <param name="InstigatingActor"></param>
+/// <returns></returns>
+USBaseInventoryComponent* USAction_WeaponAttack::ResolveInventory(AActor* Instigator) const
 {
-	//note: this runs after the delay which is basically instant since we don't have attack delay, what we should have is animation delay?
-	//InstigatorCharacter->PlayAnimMontage(EquippedWeaponPostAttackAnimation);
+	ASCharacter* Character = Cast<ASCharacter>(Instigator);
+	if (Character)
+	{
+			return Character->GetPlayerInventoryComp();
+	}
 
+	ASAICharacter* AI = Cast<ASAICharacter>(Instigator);
+	if (AI)
+	{
+		return AI->GetInventoryComp();
+	}
 
+	//if we get this far, panic
+	UE_LOG(LogTemp, Error, TEXT("Failed Assignment of InventoryComp. Instigator issue... [Class: %s]"), *GetNameSafe(Instigator));
+	return nullptr;
+}
+
+/// <summary>
+/// Moved delay to be separate
+/// </summary>
+/// <param name="Instigator"></param>
+void USAction_WeaponAttack::StartAttackAfterDelay(AActor* Instigator)
+{
+	const float AttackDelay = CurrentEquippedWeapon->StartAttacDelay;
+
+	if (AttackDelay <= 0.0f)
+	{
+		AttackDelay_Elasped(Instigator);
+	}
+	else {
+		FTimerHandle TimerHandle_AttackDelay;
+		FTimerDelegate DelegateAttackDelay;
+		DelegateAttackDelay.BindUFunction(this, "AttackDelay_Elasped", Instigator);
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle_AttackDelay, DelegateAttackDelay, CurrentEquippedWeapon->AttacAnimDelay, false);
+	}
 }
