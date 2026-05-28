@@ -8,6 +8,7 @@
 #include "Player/SCharacter.h"
 #include "Kismet/GameplayStatics.h"
 #include "Animation/AnimInstance.h"
+#include "Weapons/USFirearmWeapon.h"
 
 USPlayerInventoryComponent::USPlayerInventoryComponent()
 {
@@ -159,20 +160,13 @@ bool USPlayerInventoryComponent::CanReload()
 
 bool USPlayerInventoryComponent::CanFireWeapon()
 {
-	bool CanFireWeapon = false;
-
-	//USBaseWeapon* EquipedWeaponFromInventory = Cast<USBaseWeapon>(EquippedItem);
 	//reload if mag is less than max capacity
-	if(EquipedWeaponFromInventory != nullptr) {
-		if (EquipedWeaponFromInventory->CurrentMagazineSize > 0 && 
-		EquipedWeaponFromInventory->CurrentMagazineSize <= EquipedWeaponFromInventory->StandardMagazineSized)
-		{
-			//hasWeaponEquipped = true;
-			CanFireWeapon = true;
-		}
+	if(EquipedWeaponFromInventory != nullptr) 
+	{
+		return EquipedWeaponFromInventory->CanAttackWithWeapon();
 	}
 
-	return CanFireWeapon;
+	return false;
 }
 
 /// <summary>
@@ -396,15 +390,19 @@ void USPlayerInventoryComponent::RemoveItemVisibilitiyByIndex()
 /// <summary>
 /// When mag is able to be let go, we spawn a mag at the proper rotation and transform
 /// More detail would be to make the mag we take from the gun disappear
+/// 
+/// TODO: Move this behavior into the firearm weapon class
 /// </summary>
 void USPlayerInventoryComponent::WeaponMagDropEvent()
 {
+	USFirearmWeapon* Firearm = Cast< USFirearmWeapon>(EquipedWeaponFromInventory);
+
 	//@TODO: maybe add mags spawned to a first in first out queue that based on a setting, they slowely get deleted
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	SpawnParams.Instigator = Cast<ASCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	FTransform socketTransform = PlayerA->GetMesh()->GetSocketTransform(EquippedItem->HandSocketName);
-	AActor* WeaponMag = GetWorld()->SpawnActor<AActor>(EquipedWeaponFromInventory->MagazineActor, socketTransform, SpawnParams);
+	AActor* WeaponMag = GetWorld()->SpawnActor<AActor>(Firearm->MagazineActor, socketTransform, SpawnParams);
 }
 
 /// <summary>

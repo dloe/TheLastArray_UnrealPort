@@ -23,8 +23,6 @@ class ACTIONROUGELIKE_API USBaseWeapon : public UItemBase
 	GENERATED_BODY()
 	
 public:	
-	// Sets default values for this actor's properties
-	USBaseWeapon();
 
 	// ---------------------------------
 	// ------- Public Functions --------
@@ -42,7 +40,10 @@ public:
 	virtual bool CanBeReloaded();
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon Behavior")
-	void PerformReloadBehavior();
+	virtual void PerformReloadStats();
+
+	UFUNCTION(BlueprintCallable, Category = "Weapon Behavior")
+	virtual bool CanAttackWithWeapon();
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Item Properties")
 	bool IsEquippable_Implementation() const;
@@ -51,7 +52,7 @@ public:
 
 	//actions tell weapon to perform weapon specific behavior
 	UFUNCTION(BlueprintCallable, Category = "Attack Behavior")
-	void PerformAttack(AActor* Instigator, USAction_WeaponAttack* OwningAttackAction);
+	virtual void PerformAttack(AActor* Instigator, USAction_WeaponAttack* OwningAttackAction);
 
 	// ---------------------------------
 	// -------- Public Variables -------
@@ -82,11 +83,11 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Weapon Stats")
 	int TotalAmmoReserves;
 
-	UPROPERTY(EditAnywhere, Category = "Weapon Stats")
-	int CurrentMagazineSize;
+	//UPROPERTY(EditAnywhere, Category = "Weapon Stats")
+	//int CurrentMagazineSize;
 
-	UPROPERTY(VisibleAnywhere, Category = "Weapon Stats")
-	int StandardMagazineSized;
+	//UPROPERTY(VisibleAnywhere, Category = "Weapon Stats")
+	//int StandardMagazineSized;
 
 	//@TODO: maybe make enum in future?
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
@@ -98,21 +99,21 @@ public:
 	//skeletal mesh / static mesh comp?
 
 	//audio
-	UPROPERTY(EditAnywhere, Category = "Weapon Audio")
-	USoundBase* ReloadSound;
+	//UPROPERTY(EditAnywhere, Category = "Weapon Audio")
+	//USoundBase* ReloadSound;
 
-	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
-	TSubclassOf<AActor> WeaponProjectile;
+	//UPROPERTY(EditAnywhere, Category = "Weapon Properties")
+	//TSubclassOf<AActor> WeaponProjectile;
 
 		//may move into child class for the projectile based weapons
-	UPROPERTY(EditAnywhere, Category = "Attack")
-	TSubclassOf<AActor> ProjectileClass;
+	//UPROPERTY(EditAnywhere, Category = "Attack")
+	//TSubclassOf<AActor> ProjectileClass;
 
-	UPROPERTY(EditAnywhere, Category = "Reload")
-	TSubclassOf<AActor> MagazineActor;
+	//UPROPERTY(EditAnywhere, Category = "Reload")
+	//TSubclassOf<AActor> MagazineActor;
 
-	UPROPERTY(EditAnywhere, Category = "Firing")
-	TSubclassOf<AAEjectedBulletCasing> EjectedCasingActor;
+	//UPROPERTY(EditAnywhere, Category = "Firing")
+	//TSubclassOf<AAEjectedBulletCasing> EjectedCasingActor;
 
 	//delaying the start of firing projectile
 	UPROPERTY(EditAnywhere, Category = "Attack")
@@ -134,8 +135,8 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Effects")
 	UParticleSystem* CastingEffects;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Weapon Properties")
-	FName WeaponMuzzleSocketName;
+	//UPROPERTY(EditDefaultsOnly, Category = "Weapon Properties")
+	//FName WeaponMuzzleSocketName;
 
 
 protected:
@@ -143,17 +144,17 @@ protected:
 	// ---------------------------------
 	// -------- Helper Functions -------
 	// ---------------------------------
-	UFUNCTION(BlueprintCallable, Category = "Attack Behavior")
-	void SpawnProjectile(AActor* Instigator);
+	/*UFUNCTION(BlueprintCallable, Category = "Attack Behavior")
+	void OLD_SpawnProjectile(AActor* Instigator);*/
 
 	UFUNCTION(BlueprintCallable, Category = "Attack Behavior")
 	void PlayAttackAnimation(AActor* Instigator);
 
-	UFUNCTION(BlueprintCallable, Category = "Attack Behavior")
-	void SpawnCasing(AActor* Instigator);
+	/*UFUNCTION(BlueprintCallable, Category = "Attack Behavior")
+	void OLD_SpawnCasing(AActor* Instigator);
 
 	UFUNCTION(BlueprintCallable, Category = "Attack Behavior")
-	void PlayMuzzleFx(AActor* Instigator);
+	void OLD_PlayMuzzleFx(AActor* Instigator);*/
 
 	// ---------------------------------
 	// -- Internal state / variables --

@@ -4,6 +4,7 @@
 #include "Actions/SAction_WeaponReload.h"
 #include "Player/SCharacter.h"
 #include "AI/SAICharacter.h"
+#include "Weapons/USFirearmWeapon.h"
 
 void USAction_WeaponReload::StartAction_Implementation(AActor* Instigator)
 {
@@ -48,8 +49,8 @@ void USAction_WeaponReload::StartAction_Implementation(AActor* Instigator)
 			//Not in locomotive, its upper botty and locomotive is purely movement
 			
 			//trigger the animBlueprint
-			// montage is sent to AnimBP?
-			// animInstance is the animblueprint i think
+			// montage is sent to ABP?
+			// animInstance is the ABP i think
 			// the AnimBP knows based on what tags in its state machine, so the idea is that we start this, its running in our animinstance
 			// and based on the state on if reloading that is read, the other animations react accordingly?
 			Character->PlayAnimMontage(WeaponReloadAnimAction);
@@ -74,6 +75,6 @@ void USAction_WeaponReload::StartAction_Implementation(AActor* Instigator)
 /// <param name="InstigatorCharacter"></param>
 void USAction_WeaponReload::ReloadDelay_Elasped(ACharacter* InstigatorCharacter)
 {
-	EquipedWeaponFromInventory->PerformReloadBehavior();
+	EquipedWeaponFromInventory->PerformReloadStats();
 	StopAction(InstigatorCharacter);
 }
