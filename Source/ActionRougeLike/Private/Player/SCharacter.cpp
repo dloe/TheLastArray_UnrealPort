@@ -61,7 +61,6 @@ void ASCharacter::PostInitializeComponents()
 	//Add dynamic is known for not being found through unreal magic (AKA INTELLISENSE), its ok that it doesnt see it here
 	AttributeComponent->OnHealthChanged.AddDynamic(this, &ASCharacter::OnHealthChanged);
 
-	//OnPlayerPostInit.Broadcast(this, PState);
 	PostInitBlueprint();
 }
 
@@ -72,31 +71,13 @@ void ASCharacter::BeginPlay()
 
 	PlayerInventoryComponent->LoadInventory(this);
 	
-	//APlayerController* PC = Cast<APlayerController>(GetController());
-	//PState = Cast<ASPlayerState>(PC->PlayerState);
-	//debug print out our credit amount
-	//int Credits = PState->GetCredits();
-	//UE_LOG(LogTemp, Log, TEXT("Player Credits on Start: %d"), PState->GetCredits());
-
-	//test thorns 
-	//if (ensure(ActionComp))
-	//{
-		//ActionComp->AddAction(this, ThornActionClass);
-		//set damage here?
-		//ThornActionClass->
-		//UE_LOG(LogTemp, Log, TEXT("check"));
-	//}
 }
 
 // Called every frame
 void ASCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	//if (!firstFrame) {
-		SetLeftHandIKTrans();
-	//	firstFrame = true;
-	//}
-	
+	SetLeftHandIKTrans();
 
 }
 
@@ -293,7 +274,6 @@ void ASCharacter::SetLeftHandIKTrans()
 	WeaponLeftHandIKTrans = PlayerInventoryComponent->GetLeftHandTransform(this);
 
 }
-
 
 //blackhole assignment 2
 void ASCharacter::BlackholeAttack()

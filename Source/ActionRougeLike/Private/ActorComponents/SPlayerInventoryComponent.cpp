@@ -42,7 +42,6 @@ bool USPlayerInventoryComponent::AddItemToEquipableHotbar(UItemBase* ItemToAdd)
 		{
 			foundSpace = true;
 			HotbarInventory[index]->AssignItem(ItemToAdd);
-			//UpdateWeaponEquippedBool();
 		}
 	}
 
@@ -67,7 +66,6 @@ bool USPlayerInventoryComponent::RemoveItemFromInventory(UItemBase* ItemToRemove
 		{
 			foundItem = true;
 			Inventory.RemoveAt(index);
-			//UpdateWeaponEquippedBool();
 		}
 	}
 
@@ -88,7 +86,6 @@ bool USPlayerInventoryComponent::RemoveItemToEquipableHotbar(UItemBase* Equipped
 			if (EquippedSlotIndex == index)
 			{
 				EquippedItem = nullptr;
-				//hasWeaponEquipped = false;
 				EquipedWeaponFromInventory = nullptr;
 			}
 		}
@@ -98,17 +95,14 @@ bool USPlayerInventoryComponent::RemoveItemToEquipableHotbar(UItemBase* Equipped
 }
 
 /// <summary>
-/// TODO: This needs to be reworked to account for the weapon swapping event
+/// 
 /// </summary>
 /// <param name="indexToFind">Item index we are swapping to. The new item</param>
 /// <param name="Instigator"></param>
 /// <returns></returns>
 void USPlayerInventoryComponent::EquipItemAtIndex(int indexToFind)
 {
-
-	//TODO some redundancy check hence the bool, but needs more testing
 	HotbarToSwapTo = indexToFind;
-
 }
 
 bool USPlayerInventoryComponent::EquipItemByName(FName ItemName)
@@ -124,7 +118,6 @@ bool USPlayerInventoryComponent::EquipItemByName(FName ItemName)
 			EquippedItem = HotbarInventory[index]->ItemData;
 			EquippedSlotIndex = index;
 			EquipedWeaponFromInventory = Cast<USBaseWeapon>(EquippedItem);
-			//UpdateWeaponEquippedBool();
 		}
 	}
 
@@ -150,7 +143,7 @@ bool USPlayerInventoryComponent::CanReload()
 		if (EquipedWeaponFromInventory->CanBeReloaded())
 		{
 			ReloadableStatus = true;
-			UE_LOG(LogTemp, Log, TEXT("Weapon can be reloaded!"));
+			//UE_LOG(LogTemp, Log, TEXT("Weapon can be reloaded!"));
 		}
 	}
 
@@ -334,7 +327,6 @@ void USPlayerInventoryComponent::DeEquipItemBehavior()
 
 /// <summary>
 /// When we remove equipped weapon we move it to back or turn off visibility
-/// TODO: remove parameter
 /// </summary>
 /// <param name="IndexToRemove"></param>
 void USPlayerInventoryComponent::RemoveItemVisibilitiyByIndex()
@@ -444,7 +436,6 @@ bool USPlayerInventoryComponent::MoveItemFromHotbar(int IndexAInv, int IndexBHot
 			ensure(IndexBHot < HotbarInventory.Num() && IndexBHot >= 0);
 			ensure(IndexAInv < Inventory.Num() && IndexAInv >= 0);
 			UInventorySlot* tempCopy = HotbarInventory[IndexBHot];
-			//ensure(!tempCopy->isEmptySlot()); //might not need this check
 
 			HotbarInventory[IndexBHot] = Inventory[IndexAInv];
 			Inventory[IndexAInv] = tempCopy;
@@ -479,7 +470,6 @@ bool USPlayerInventoryComponent::MoveItemIntoHotbar(int IndexAHot, int IndexBInv
 			ensure(IndexAHot < HotbarInventory.Num() && IndexAHot >= 0);
 			ensure(IndexBInv < Inventory.Num() && IndexBInv >= 0);
 			UInventorySlot* tempCopy = HotbarInventory[IndexAHot];
-			//ensure(!tempCopy->isEmptySlot()); //might not need this check
 
 			HotbarInventory[IndexAHot] = Inventory[IndexBInv];
 			Inventory[IndexBInv] = tempCopy;

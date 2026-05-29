@@ -18,6 +18,26 @@ void USAction_ProjectileAttack::StartAction_Implementation(AActor* Instigator)
 {
 	Super::StartAction_Implementation(Instigator);
 
+	USBaseInventoryComponent* InventoryComponent = ResolveInventory(Instigator);
+
+	if (!InventoryComponent)
+	{
+		//cant perform action if no inventory
+		StopAction(Instigator);
+		return;
+	}
+
+	//if weapon, get weapon stats and run weapon action, else run consumable action
+	UInventorySlot* EquippedSlot = InventoryComponent->GetEquippedSlot();
+
+	//can we reload?
+	if (!EquippedSlot || !EquippedSlot->IsWeapon)
+	{
+		UE_LOG(LogTemp, Error, TEXT("WeaponReloadAction: Failed attacking of slot. Instigator issue... [Class: %s]"), *GetNameSafe(InventoryComponent));
+		StopAction(Instigator);
+		return;
+	}
+
 	//get our attacking character
 	ACharacter* Character = Cast<ACharacter>(Instigator);
 	if (Character)

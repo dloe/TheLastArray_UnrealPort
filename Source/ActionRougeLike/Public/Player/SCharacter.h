@@ -77,10 +77,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Damage")
 	TSubclassOf<USActionEffect> ThornActionClass;
 
-	//UPROPERTY(EditDefaultsOnly)
-	//bool firstFrame = false;
-
-
 	// ---------------------------------
 	// -------- Helper Functions -------
 	// ---------------------------------

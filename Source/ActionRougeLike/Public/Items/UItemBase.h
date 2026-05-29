@@ -42,9 +42,8 @@ enum class EHoldsterType : uint8 {
 };
 
 /**
- * Should this be a UObject or AActor?
+ * Base Parent item class
  * 
- * if its actor it can be the parent for ASBaseWeapon?
  */
 UCLASS(Blueprintable, BlueprintType, DefaultToInstanced)
 class ACTIONROUGELIKE_API UItemBase : public UObject
