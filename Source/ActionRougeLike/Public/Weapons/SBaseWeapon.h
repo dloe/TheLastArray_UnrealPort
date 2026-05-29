@@ -12,6 +12,7 @@
 #include "Projectiles/SProjectileBase.h"
 #include "../Private/Items/AEjectedBulletCasing.h"
 #include "../Private/Actions/SAction_WeaponAttack.h"
+#include "../Private/Actions/SAction_WeaponReload.h"
 #include "SBaseWeapon.generated.h"
 
 class UAnimMontage;
@@ -53,6 +54,9 @@ public:
 	//actions tell weapon to perform weapon specific behavior
 	UFUNCTION(BlueprintCallable, Category = "Attack Behavior")
 	virtual void PerformAttack(AActor* Instigator, USAction_WeaponAttack* OwningAttackAction);
+
+	UFUNCTION(BlueprintCallable, Category = "Reload Behavior")
+	virtual void PerformReload(AActor* Instigator, USAction_WeaponReload* OwningReloadAction);
 
 	// ---------------------------------
 	// -------- Public Variables -------
@@ -148,7 +152,7 @@ protected:
 	void OLD_SpawnProjectile(AActor* Instigator);*/
 
 	UFUNCTION(BlueprintCallable, Category = "Attack Behavior")
-	void PlayAttackAnimation(AActor* Instigator);
+	void PlayAnimation(AActor* Instigator, UAnimMontage* AnimToPlay);
 
 	/*UFUNCTION(BlueprintCallable, Category = "Attack Behavior")
 	void OLD_SpawnCasing(AActor* Instigator);

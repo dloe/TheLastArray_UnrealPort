@@ -25,7 +25,7 @@ void USAction_WeaponAttack::StartAction_Implementation(AActor* Instigator)
 {
 	Super::StartAction_Implementation(Instigator);
 
-	InventoryComponent = ResolveInventory(Instigator);
+	USBaseInventoryComponent* InventoryComponent = ResolveInventory(Instigator);
 
 	if (!InventoryComponent)
 	{
@@ -91,22 +91,22 @@ void USAction_WeaponAttack::AttackDelay_Elasped(AActor* Instigator)
 /// </summary>
 /// <param name="InstigatingActor"></param>
 /// <returns></returns>
-USBaseInventoryComponent* USAction_WeaponAttack::ResolveInventory(AActor* Instigator) const
+USBaseInventoryComponent* USAction_WeaponAttack::ResolveInventory(AActor* InstigatingActor) const
 {
-	ASCharacter* Character = Cast<ASCharacter>(Instigator);
+	ASCharacter* Character = Cast<ASCharacter>(InstigatingActor);
 	if (Character)
 	{
 			return Character->GetPlayerInventoryComp();
 	}
 
-	ASAICharacter* AI = Cast<ASAICharacter>(Instigator);
+	ASAICharacter* AI = Cast<ASAICharacter>(InstigatingActor);
 	if (AI)
 	{
 		return AI->GetInventoryComp();
 	}
 
 	//if we get this far, panic
-	UE_LOG(LogTemp, Error, TEXT("Failed Assignment of InventoryComp. Instigator issue... [Class: %s]"), *GetNameSafe(Instigator));
+	UE_LOG(LogTemp, Error, TEXT("WeaponAttackAction: Failed Assignment of InventoryComp. Instigator issue... [Class: %s]"), *GetNameSafe(InstigatingActor));
 	return nullptr;
 }
 

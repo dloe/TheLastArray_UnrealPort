@@ -28,6 +28,8 @@ public:
 
 	virtual void PerformAttack(AActor* Instigator, USAction_WeaponAttack* OwningAttackAction);
 
+	virtual void PerformReload(AActor* Instigator, USAction_WeaponReload* OwningReloadAction);
+
 	virtual bool CanAttackWithWeapon();
 
 	// ---------------------------------

@@ -30,9 +30,6 @@ class USAction_WeaponAttack : public USAction
 	virtual void StartAction_Implementation(AActor* Instigator) override;
 
 	UFUNCTION()
-	void SetInventoryComp(USBaseInventoryComponent* InventoryCompRef) { InventoryComponent = InventoryCompRef; };
-
-	UFUNCTION()
 	void OnWeaponAttackFinished(AActor* Instigator);
 
 	// ---------------------------------
@@ -45,7 +42,7 @@ class USAction_WeaponAttack : public USAction
 	// ---------------------------------
 	// -------- Helper Functions -------
 	// ---------------------------------
-	// 
+	
 	//delay overall attack
 	UFUNCTION()
 	void AttackDelay_Elasped(AActor* Instigator);
@@ -67,8 +64,4 @@ class USAction_WeaponAttack : public USAction
 	UPROPERTY(EditAnywhere, Category = "Equipped Weapon Properties - Overriden by equipped item")
 	UStaticMeshComponent* EquipedWeaponStaticMesh;
 
-	//runs attack procedure for currently equipped weapon in actor's inventory
-	//this should be assigned when we a reference to this class is established to the controller class?
-	UPROPERTY(EditAnywhere, Category = "Inventory")
-	USBaseInventoryComponent* InventoryComponent;
 };

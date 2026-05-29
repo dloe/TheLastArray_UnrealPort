@@ -7,6 +7,7 @@
 #include "ActorComponents/SBaseInventoryComponent.h"
 #include "SAction_WeaponReload.generated.h"
 
+class USBaseWeapon;
 /**
  * 
  */
@@ -23,13 +24,7 @@ class USAction_WeaponReload : public USAction
 	//UFUNCTION(BlueprintNativeEvent, Category = "Action")
 	virtual void StartAction_Implementation(AActor* Instigator) override;
 
-	UFUNCTION()
-	void SetInventoryComp(USBaseInventoryComponent* InventoryCompRef) { InventoryComponent = InventoryCompRef; };
-
-	UPROPERTY(EditAnywhere, Category = "Equipped Weapon Properties")
-	USBaseWeapon* EquipedWeaponFromInventory;
-
-		private:
+	private:
 
 	// ---------------------------------
 	// -------- Helper Functions -------
@@ -38,15 +33,14 @@ class USAction_WeaponReload : public USAction
 	UFUNCTION()
 	void ReloadDelay_Elasped(ACharacter* InstigatorCharacter);
 
+	UFUNCTION()
+	USBaseInventoryComponent* ResolveInventory(AActor* InstigatingActor) const;
+
 	// ---------------------------------
 	// -- Internal state / variables --
 	// ---------------------------------
-	UPROPERTY(EditAnywhere,  Category = "Equipped Weapon Properties")
-	UAnimMontage* WeaponReloadAnimAction;
 
 	UPROPERTY(EditAnywhere, Category = "Equipped Weapon Properties")
-	float ReloadAnimDelayAction;
+	USBaseWeapon* CurrentEquippedWeapon;
 
-	UPROPERTY(EditAnywhere, Category = "Inventory")
-	USBaseInventoryComponent* InventoryComponent;
 };

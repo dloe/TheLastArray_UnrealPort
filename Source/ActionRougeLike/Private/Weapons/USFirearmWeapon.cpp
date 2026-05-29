@@ -26,17 +26,46 @@ void USFirearmWeapon::PerformReloadStats()
 
 void USFirearmWeapon::PerformAttack(AActor* Instigator, USAction_WeaponAttack* OwningAttackAction)
 {
-	PlayAttackAnimation(Instigator);
+	PlayAnimation(Instigator, AttackAnim);
 	SpawnProjectile(Instigator);
 	SpawnCasing(Instigator);
 	PlayMuzzleFx(Instigator);
 
 	CurrentMagazineSize--;
 
+	if(Instigator->HasAuthority()) {
 	FTimerHandle TimerHandle_AttackAnimDelay;
 	FTimerDelegate DelegateAnimationDelay;
 	DelegateAnimationDelay.BindUFunction(OwningAttackAction, "OnWeaponAttackFinished", Instigator);
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle_AttackAnimDelay, DelegateAnimationDelay, AttacAnimDelay, false);
+	}
+	else {
+		UE_LOG(LogTemp, Warning, TEXT("PerformAttack: Instigator doesnt have authority. Instigator issue... [Class: %s]"), *GetNameSafe(Instigator));
+	}
+}
+
+/// <summary>
+/// Perform reload behavior
+/// run anim, delay and then run
+/// </summary>
+/// <param name="Instigator"></param>
+/// <param name="OwningReloadAction"></param>
+void USFirearmWeapon::PerformReload(AActor* Instigator, USAction_WeaponReload* OwningReloadAction)
+{
+	PlayAnimation(Instigator, ReloadAnim);
+
+	if (Instigator->HasAuthority()) {
+		FTimerHandle TimerHandle_AttackDelay;
+		FTimerDelegate Delegate;
+		//unless there is a 'warm up' animation that has to run before we can fire the weapon or make the attack, this will most likely be near 0
+		Delegate.BindUFunction(OwningReloadAction, "ReloadDelay_Elasped", Instigator);
+
+		//when timer finishes, spawn projectile
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle_AttackDelay, Delegate, ReloadAnimDelay, false);
+	}
+	else {
+		UE_LOG(LogTemp, Warning, TEXT("PerformReload: Instigator doesnt have authority. Instigator issue... [Class: %s]"), *GetNameSafe(Instigator));
+	}
 }
 
 bool USFirearmWeapon::CanAttackWithWeapon()

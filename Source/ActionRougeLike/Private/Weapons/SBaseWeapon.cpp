@@ -85,27 +85,50 @@ bool USBaseWeapon::CanAttackWithWeapon()
 /// <param name="Instigator"></param>
 void USBaseWeapon::PerformAttack(AActor* Instigator, USAction_WeaponAttack* OwningAttackAction)
 {
-	PlayAttackAnimation(Instigator);
+	PlayAnimation(Instigator, AttackAnim);
+}
+
+
+
+void USBaseWeapon::PerformReload(AActor* Instigator, USAction_WeaponReload* OwningReloadAction)
+{
+	ACharacter* InstigatorCharacter = Cast< ACharacter>(Instigator);
+	if (!InstigatorCharacter) //not character?
+		return;
+
+	UAnimInstance* AnimInstance = InstigatorCharacter->GetMesh()->GetAnimInstance();
+	if (!AnimInstance || !ReloadAnim)
+	{
+		UE_LOG(LogTemp, Error, TEXT("PerformReloade: Cant get animinstance. Instigator issue... [Class: %s]"), *GetNameSafe(Instigator));
+		return;
+	}
+
+	InstigatorCharacter->PlayAnimMontage(ReloadAnim);
 }
 
 /// <summary>
 /// Ideally the ai should be able to play the attack montage as well. Make sure this works
 /// </summary>
 /// <param name="Instigator"></param>
-void USBaseWeapon::PlayAttackAnimation(AActor* Instigator)
+void USBaseWeapon::PlayAnimation(AActor* Instigator, UAnimMontage* AnimToPlay)
 {
 	ACharacter* InstigatorCharacter = Cast< ACharacter>(Instigator);
 	if(!InstigatorCharacter) //not character?
 		return;
 
 	UAnimInstance* AnimInstance = InstigatorCharacter->GetMesh()->GetAnimInstance();
-	if (!AnimInstance || !AttackAnim)
+	if (!AnimInstance)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Cant get animinstance. Instigator issue... [Class: %s]"), *GetNameSafe(Instigator));
 		return;
 	}
+	if (!AnimToPlay)
+	{
+		UE_LOG(LogTemp, Error, TEXT("No AnimToPlay for action. Possible Instigator issue... [Class: %s]"), *GetNameSafe(Instigator));
+		return;
+	}
 
-	InstigatorCharacter->PlayAnimMontage(AttackAnim);
+	InstigatorCharacter->PlayAnimMontage(AnimToPlay);
 }
 
 /// <summary>
