@@ -24,24 +24,10 @@ class ACTIONROUGELIKE_API UInventorySlot : public UObject
 	 UInventorySlot();
 
 public:
-	
-	//item class stores here
-	//TODO make item class
-	//gets set to null initially
-	//all slots need to be present, but they don't all have to have stuff in there
-	//nullptr slots show up as empty?
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UItemBase* ItemData;
 
-	//TBD what else
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	bool IsWeapon;
-
-	//maybe this one over IsWeapon bool?
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	bool IsEquipable;
-
-	
+	// ---------------------------------
+	// ------- Public Functions --------
+	// ---------------------------------
 
 	UFUNCTION(BlueprintCallable)
 	bool isEmptySlot() const { return ItemData == nullptr; };
@@ -54,5 +40,23 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void Initialize(UItemBase* itemDataP, bool isweaponP, bool isequipableP);
+
+	// ---------------------------------
+	// -------- Public Variables -------
+	// ---------------------------------
+	
+	//item class stores here
+	//gets set to null initially
+	//all slots need to be present, but they don't all have to have stuff in there
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UItemBase* ItemData;
+
+	//TBD what else
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool IsWeapon;
+
+	//maybe this one over IsWeapon bool?
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool IsEquipable;
 
 };
