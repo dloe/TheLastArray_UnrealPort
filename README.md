@@ -1,7 +1,7 @@
 
 
 # LastArray_Unreal
-The Last Array, originally built in `Unity 2019.4.18f1`. Porting to `Unreal 5`.
+The Last Array, originally built in `Unity 2019.4.18f1`. Porting to `Unreal 5.7.3`.
 
 
 To see what's currently being worked on, check out our [Trello Stastus and Progress](https://trello.com/b/AAtZjPPX/last-array-port-to-unreal)
