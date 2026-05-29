@@ -19,11 +19,17 @@ struct FActionRepData
 {
 	GENERATED_BODY()
 
+	FActionRepData()
+	{
+		bIsRunning = false;
+		Instigator = nullptr;
+	}
+
 public:
 	UPROPERTY()
 	bool bIsRunning;
 
-	//NotReplicated could use but dont
+	//NotReplicated could use but don't
 	UPROPERTY()
 	AActor* Instigator;
 };
@@ -80,6 +86,8 @@ public:
 	UFUNCTION(BlueprintNativeEvent, Category = "Action")
 	bool CanStart(AActor* Instigator);
 
+
+	//means the behavior and code is in blueprint nodes btw
 	UFUNCTION(BlueprintNativeEvent, Category = "Action")
 	void StartAction(AActor* Instigator);
 

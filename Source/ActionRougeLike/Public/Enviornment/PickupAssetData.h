@@ -62,7 +62,7 @@ struct FTierForLevel {
 
 public:
 	FTierForLevel() {
-
+		CurrentTier = ESpawnTiers::EUncommon;
 	}
 
 	UPROPERTY(EditAnywhere, Category = "Item Info")
@@ -84,7 +84,7 @@ struct FLevelTiersItemInfo {
 
 	public:
 		FLevelTiersItemInfo() {
-
+			LevelTier = ELevelTier::ELevel_1;
 		}
 
 	UPROPERTY(EditAnywhere, Category = "Enemy Tier")

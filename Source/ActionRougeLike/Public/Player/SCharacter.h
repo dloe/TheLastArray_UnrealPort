@@ -14,6 +14,7 @@
 #include "Particles/ParticleSystemComponent.h"
 #include "SPlayerState.h"
 #include "Actions/SActionEffect.h"
+#include "ActorComponents/SPlayerInventoryComponent.h"
 #include "SCharacter.generated.h"
 
 
@@ -27,12 +28,12 @@ UCLASS()
 class ACTIONROUGELIKE_API ASCharacter : public ACharacter
 {
 	GENERATED_BODY()
-
-public:
-	// Sets default values for this character's properties
-	ASCharacter();
-
+	
 protected:
+
+	// ---------------------------------
+	// -------- Protected Variables -------
+	// ---------------------------------
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UParticleSystemComponent* EffectSpellCastComp;
@@ -51,6 +52,11 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Category = "Components")
 	USActionComponent* ActionComp;
+
+	//this is where our weapon inventory should reside
+	//or general inventory? or access to that inventory
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Inventory")
+	USPlayerInventoryComponent* PlayerInventoryComponent;
 
 	//TO DO
 	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Category = "Player")
@@ -71,6 +77,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Damage")
 	TSubclassOf<USActionEffect> ThornActionClass;
 
+	// ---------------------------------
+	// -------- Helper Functions -------
+	// ---------------------------------
+
 	//actions
 	void SprintStart();
 	void SprintStop();
@@ -89,9 +99,22 @@ protected:
 
 	void PrimaryInteract();
 
+	void PrimaryReload();
+
+	void SelectHotbar1() { SetEquippedHotbar(0); };
+	void SelectHotbar2() { SetEquippedHotbar(1); };
+	void SelectHotbar3() { SetEquippedHotbar(2); };
+	void SelectHotbar4() { SetEquippedHotbar(3); };
+	void SetEquippedHotbar(int input);
+
+	UFUNCTION()
+	void SetLeftHandIKTrans();
+
 	UFUNCTION()
 	void OnHealthChanged(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewHealth, float Delta);
 
+	UFUNCTION()
+	void HandleDeath();
 
 	//slightly better way to bind your events in timeline
 	virtual void PostInitializeComponents() override;
@@ -99,6 +122,16 @@ protected:
 	virtual FVector GetPawnViewLocation() const override;
 
 public:	
+
+	// Sets default values for this character's properties
+	ASCharacter();
+
+
+
+	// ---------------------------------
+	// ------- Public Functions --------
+	// ---------------------------------
+
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
@@ -107,5 +140,33 @@ public:
 
 	UFUNCTION(Exec)
 	void HealSelf(float Amount = 100);
+
+	UFUNCTION()
+	USPlayerInventoryComponent* GetPlayerInventoryComp() {return PlayerInventoryComponent; };
+
+	UFUNCTION()
+	USActionComponent* GetActionComp() { return ActionComp; };
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void PostInitBlueprint();
+
+	// ---------------------------------
+	// -------- Public Variables -------
+	// ---------------------------------
+	/// <summary>
+	/// When the player shoots the gun, we want a post fire blend animation to run where the player ironsights idle
+	/// </summary>
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack Animation")
+	bool bIsAiming;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
+	bool bIsPlayingEmote;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon Left Hand Adjustments")
+	FTransform WeaponLeftHandIKTrans;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
+	bool bPrintCurrentAnimGraphLayer = false;
+	
 
 };

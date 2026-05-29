@@ -30,6 +30,9 @@ public:
 		//TSubclassOf<AActor> CoinPickupClass;
 		int32 CreditsOnKill;
 	
+	UFUNCTION()
+	USBaseInventoryComponent* GetInventoryComp() {return InventoryComponent; };
+
 
 protected:
 	
@@ -47,6 +50,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USAttributeComponent* AttributeComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Inventory")
+	USBaseInventoryComponent* InventoryComponent;
 
 	UPROPERTY(VisibleAnywhere, Category = "Effects")
 	FName TimeToHitParameterName;

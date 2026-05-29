@@ -27,7 +27,7 @@ struct FLevelTiersObjectiveInfo {
 
 	public:
 		FLevelTiersObjectiveInfo() {
-
+			LevelTier = ELevelTier::ELevel_Null;
 		}
 
 	UPROPERTY(EditAnywhere, Category = "Objecive Info")

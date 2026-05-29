@@ -32,6 +32,12 @@ USTRUCT(BlueprintType)
 struct FIntPointPair {
 	GENERATED_BODY()
 
+	FIntPointPair()
+	{
+		StartCords = FIntPoint(0,0);
+		EndCords = FIntPoint(0,0);
+	}
+
 	public:
 	UPROPERTY(EditAnywhere)
 	FIntPoint StartCords;
@@ -39,24 +45,24 @@ struct FIntPointPair {
 	UPROPERTY(EditAnywhere)
 	FIntPoint EndCords;
 
-	//constructor
-	FIntPointPair()
-	{
-
-	}
-
 	FIntPointPair(FIntPoint startCord, FIntPoint endCord) //can also looked at as (Y cord : X Cord)
 	{
 		StartCords = startCord;
 		EndCords = endCord;
 	}
-
 };
 
 USTRUCT(BlueprintType)
 struct FTileVariantDefinitionRow
 {
 	GENERATED_BODY()
+
+	FTileVariantDefinitionRow()
+	{
+		Min = 0;
+		Max = -1; 
+		Note = "";
+	}
 
 public:
 	//variant type
@@ -80,17 +86,17 @@ public:
 		Max = max;
 	}
 
-	FTileVariantDefinitionRow()
-	{
-		Max = 1;
-	}
-
 };
 
 USTRUCT(BlueprintType)
 struct FTileVariantSetup_PlugTileSaveInfo
 {
 	GENERATED_BODY()
+
+	FTileVariantSetup_PlugTileSaveInfo()
+	{
+		TransformDirectionSetup = -1;
+	}
 
 	public:
 		UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -132,7 +138,7 @@ public:
 	FVariantOffsetTransforms_Rotates()
 	{
 		//Transforms_flavor = {1,2,3,4};
-
+		TransformDirectionRotation = -1;
 	}
 
 	FVariantOffsetTransforms_Rotates(TArray<FIntPoint> transforms, int direction)

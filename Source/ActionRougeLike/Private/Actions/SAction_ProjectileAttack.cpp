@@ -18,11 +18,33 @@ void USAction_ProjectileAttack::StartAction_Implementation(AActor* Instigator)
 {
 	Super::StartAction_Implementation(Instigator);
 
+	USBaseInventoryComponent* InventoryComponent = ResolveInventory(Instigator);
+
+	if (!InventoryComponent)
+	{
+		//cant perform action if no inventory
+		StopAction(Instigator);
+		return;
+	}
+
+	//if weapon, get weapon stats and run weapon action, else run consumable action
+	UInventorySlot* EquippedSlot = InventoryComponent->GetEquippedSlot();
+
+	//can we reload?
+	if (!EquippedSlot || !EquippedSlot->IsWeapon)
+	{
+		UE_LOG(LogTemp, Error, TEXT("WeaponReloadAction: Failed attacking of slot. Instigator issue... [Class: %s]"), *GetNameSafe(InventoryComponent));
+		StopAction(Instigator);
+		return;
+	}
+
+	//get our attacking character
 	ACharacter* Character = Cast<ACharacter>(Instigator);
 	if (Character)
 	{
-		Character->PlayAnimMontage(AttackAnim);
+		Character->PlayAnimMontage(AttackAnim); //start animation, then wait until animation is finished to spawn projectile physically
 
+		//spawn particle effect from hand socket on mesh
 		UGameplayStatics::SpawnEmitterAttached(CastingEffects, Character->GetMesh(), HandSocketName, FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTarget);
 
 		if (Character->HasAuthority()) {
@@ -30,6 +52,7 @@ void USAction_ProjectileAttack::StartAction_Implementation(AActor* Instigator)
 			FTimerDelegate Delegate;
 			Delegate.BindUFunction(this, "AttackDelay_Elasped", Character);
 
+			//when timer finishes, spawn projectile
 			GetWorld()->GetTimerManager().SetTimer(TimerHandle_AttackDelay, Delegate, AttacAnimDelay, false);
 		}
 	}
@@ -85,6 +108,7 @@ void USAction_ProjectileAttack::AttackDelay_Elasped(ACharacter* InstigatorCharac
 		//if we dont hit anything just use the end of the trace line
 		FVector projectileEndLocale = TraceEnd;
 		//if(GetWorld()->LineTraceSingleByObjectType(hitCam, TraceStart, TraceEnd, ObjectQueryParams))
+		//line up hand with where we are aiming for accuracy on spawning of our magic fireball
 		if (GetWorld()->SweepSingleByObjectType(hitCam, TraceStart, TraceEnd, FQuat::Identity, ObjectQueryParams, Shape, Params))
 		{
 			//if we got a hit, then we now have a start (handlocation), and end point (hitCam.ImpactPoint)

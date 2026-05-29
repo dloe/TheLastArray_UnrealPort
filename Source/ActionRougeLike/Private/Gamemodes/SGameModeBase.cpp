@@ -41,7 +41,7 @@ void ASGameModeBase::InitGame(const FString& MapName, const FString& Options, FS
 {
 	Super::InitGame(MapName, Options, ErrorMessage);
 
-	FString SelectedSaveSlot = UGameplayStatics::ParseOption(Options, "SaveGame");
+	FString SelectedSaveSlot = UGameplayStatics::ParseOption(Options, "SaveGame"); //TODO: will need to improve on this or expand to full inevntory in future
 
 	if (SelectedSaveSlot.Len() > 0)
 	{
@@ -58,7 +58,8 @@ void ASGameModeBase::StartPlay()
 	Super::StartPlay();
 
 	SpawnPowerups();
-	GetWorldTimerManager().SetTimer(TimerHandle_SpawnBots, this, &ASGameModeBase::SpawnBotTimerElapsed, SpawnTimerInterval, true);
+	if(DebugActive) //for now will be simple toggle for debug
+		GetWorldTimerManager().SetTimer(TimerHandle_SpawnBots, this, &ASGameModeBase::SpawnBotTimerElapsed, SpawnTimerInterval, true);
 
 
 }
@@ -221,7 +222,7 @@ void ASGameModeBase::OnQueryBotSpawnCompleted(UEnvQueryInstanceBlueprintWrapper*
 
 			//SelectedRow->SpawnCost
 
-			UAssetManager* Manager = UAssetManager::GetIfValid();
+			UAssetManager* Manager = UAssetManager::GetIfInitialized();
 			if (Manager)
 			{
 				LogOnScreen(this, "Loading Monster...", FColor::Green);
@@ -247,7 +248,7 @@ void ASGameModeBase::OnMonsterLoaded(FPrimaryAssetId LoadedId, FVector SpawnLoca
 {
 	LogOnScreen(this, "Finished Loading Monster...", FColor::Green);
 
-	UAssetManager* Manager = UAssetManager::GetIfValid();
+	UAssetManager* Manager = UAssetManager::GetIfInitialized();
 	if (Manager)
 	{
 		USMonsterData* MonsterData = Cast<USMonsterData>(Manager->GetPrimaryAssetObject(LoadedId));
@@ -311,7 +312,7 @@ void ASGameModeBase::KillMinionEvent(AActor* InstigatorActor, int MinionCost)
 void ASGameModeBase::OnActorKilled(AActor* VictimActor, AActor* Killer)
 {
 	ASCharacter* Player = Cast<ASCharacter>(VictimActor);
-	if (Player)
+	if (Player && false) //TODO: disable this for now, until i finish the normal respawn behavior
 	{
 		FTimerHandle TimerHandle_RespawnDelay;
 		FTimerDelegate Delegate;

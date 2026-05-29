@@ -440,10 +440,10 @@ void UTilePathSetupComp::CreateSpawnRoom()
 			const FTransform Spawm = FTransform(PlayerStartingTile_SpawnTile->RightDoorSpawnPoint.GetRotation(), LeftDoorSpawnLocation);
 			PlayerStartingTile_SpawnTile->RightDoor = GetWorld()->SpawnActor<ASTileDoor>(ATileManagerRef->TileDoorClass, Spawm, SpawnParams);
 			DoorArrayRef.Add(PlayerStartingTile_SpawnTile->RightDoor);
-			PlayerStartingTile_SpawnTile->RightDoor->SetActorLabel(TileLeftDoorName);
 			PlayerStartingTile_SpawnTile->RightDoor->SetOwner(StartingGridTileRef);
 
 #if WITH_EDITOR
+			PlayerStartingTile_SpawnTile->RightDoor->SetActorLabel(TileLeftDoorName);
 			PlayerStartingTile_SpawnTile->RightDoor->SetFolderPath(ATileManagerRef->DoorSubFolderName);
 #endif
 			StartingGridTileRef->LeftDoor = PlayerStartingTile_SpawnTile->RightDoor;
@@ -470,10 +470,10 @@ void UTilePathSetupComp::CreateSpawnRoom()
 			const FTransform Spawm = FTransform(PlayerStartingTile_SpawnTile->DownDoorSpawnPoint.GetRotation(), DownDoorSpawnLocation);
 			PlayerStartingTile_SpawnTile->DownDoor = GetWorld()->SpawnActor<ASTileDoor>(ATileManagerRef->TileDoorClass, Spawm, SpawnParams);
 			DoorArrayRef.Add(PlayerStartingTile_SpawnTile->DownDoor);
-			PlayerStartingTile_SpawnTile->DownDoor->SetActorLabel(TileUpDoorName);
 			PlayerStartingTile_SpawnTile->DownDoor->SetOwner(StartingGridTileRef);
 
 #if WITH_EDITOR
+			PlayerStartingTile_SpawnTile->DownDoor->SetActorLabel(TileUpDoorName);
 			PlayerStartingTile_SpawnTile->DownDoor->SetFolderPath(ATileManagerRef->DoorSubFolderName);
 #endif
 			StartingGridTileRef->UpDoor = PlayerStartingTile_SpawnTile->DownDoor;
@@ -503,10 +503,10 @@ void UTilePathSetupComp::CreateSpawnRoom()
 			const FTransform Spawm = FTransform(PlayerStartingTile_SpawnTile->LeftDoorSpawnPoint.GetRotation(), RightDoorSpawnLocation);
 			PlayerStartingTile_SpawnTile->LeftDoor = GetWorld()->SpawnActor<ASTileDoor>(ATileManagerRef->TileDoorClass, Spawm, SpawnParams);
 			DoorArrayRef.Add(PlayerStartingTile_SpawnTile->LeftDoor);
-			PlayerStartingTile_SpawnTile->LeftDoor->SetActorLabel(TileRightDoorName);
 			PlayerStartingTile_SpawnTile->LeftDoor->SetOwner(StartingGridTileRef);
 
 #if WITH_EDITOR
+			PlayerStartingTile_SpawnTile->LeftDoor->SetActorLabel(TileRightDoorName);
 			PlayerStartingTile_SpawnTile->LeftDoor->SetFolderPath(ATileManagerRef->DoorSubFolderName);
 #endif
 			StartingGridTileRef->RightDoor = PlayerStartingTile_SpawnTile->LeftDoor;
@@ -535,10 +535,11 @@ void UTilePathSetupComp::CreateSpawnRoom()
 			const FTransform Spawm = FTransform(PlayerStartingTile_SpawnTile->UpDoorSpawnPoint.GetRotation(), UpDoorSpawnLocation);
 			PlayerStartingTile_SpawnTile->UpDoor = GetWorld()->SpawnActor<ASTileDoor>(ATileManagerRef->TileDoorClass, Spawm, SpawnParams);
 			DoorArrayRef.Add(PlayerStartingTile_SpawnTile->UpDoor);
-			PlayerStartingTile_SpawnTile->UpDoor->SetActorLabel(TileUpDoorName);
+			
 			PlayerStartingTile_SpawnTile->UpDoor->SetOwner(StartingGridTileRef);
 
 #if WITH_EDITOR
+			PlayerStartingTile_SpawnTile->UpDoor->SetActorLabel(TileUpDoorName);
 			PlayerStartingTile_SpawnTile->UpDoor->SetFolderPath(ATileManagerRef->DoorSubFolderName);
 #endif
 			StartingGridTileRef->DownDoor = PlayerStartingTile_SpawnTile->UpDoor;
@@ -569,10 +570,11 @@ void UTilePathSetupComp::CreateSpawnRoom()
 			const FTransform Spawm = FTransform(PlayerStartingTile_SpawnTile->RightDoorSpawnPoint.GetRotation(), LeftDoorSpawnLocation);
 			PlayerStartingTile_SpawnTile->RightDoor = GetWorld()->SpawnActor<ASTileDoor>(ATileManagerRef->TileDoorClass, Spawm, SpawnParams);
 			DoorArrayRef.Add(PlayerStartingTile_SpawnTile->RightDoor);
-			PlayerStartingTile_SpawnTile->RightDoor->SetActorLabel(TileLeftDoorName);
+			
 			PlayerStartingTile_SpawnTile->RightDoor->SetOwner(StartingGridTileRef);
 
 #if WITH_EDITOR
+			PlayerStartingTile_SpawnTile->RightDoor->SetActorLabel(TileLeftDoorName);
 			PlayerStartingTile_SpawnTile->RightDoor->SetFolderPath(ATileManagerRef->DoorSubFolderName);
 #endif
 			StartingGridTileRef->LeftDoor = PlayerStartingTile_SpawnTile->RightDoor;
@@ -583,10 +585,11 @@ void UTilePathSetupComp::CreateSpawnRoom()
 		break;
 	}
 
+	
+#if WITH_EDITOR
 	//label
 	PlayerStartingTile_SpawnTile->SetActorLabel("StartingTile_Base");
 	ChoosenPlayerSpawnPresentTile->SetActorLabel("StartingTile_Populate");
-#if WITH_EDITOR
 	PlayerStartingTile_SpawnTile->SetFolderPath(ATileManagerRef->TileGenRootFolder);
 	ChoosenPlayerSpawnPresentTile->SetFolderPath(ATileManagerRef->TileGenRootFolder);
 #endif

@@ -17,12 +17,13 @@ void USAction::Initialize(USActionComponent* NewActionComp)
 
 void USAction::StartAction_Implementation(AActor* Instigator)
 {
-	UE_LOG(LogTemp, Log, TEXT("%s: Running: %s"), *GetNameSafe(Instigator), *GetNameSafe(this));
+	//UE_LOG(LogTemp, Log, TEXT("%s: Running: %s"), *GetNameSafe(Instigator), *GetNameSafe(this));
 	//LogOnScreen(this, FString::Printf(TEXT("Started: %s"), *ActionName.ToString()), FColor::Green);
 
 	USActionComponent* Comp = GetOwningComponent();
 
 	//add them all
+	//add corresponding tag (is removed from stop action)
 	Comp->ActiveGameplayTags.AppendTags(GrantsTags);
 
 	RepData.bIsRunning = true;
@@ -39,7 +40,7 @@ void USAction::StartAction_Implementation(AActor* Instigator)
 
 void USAction::StopAction_Implementation(AActor* Instigator)
 {
-	UE_LOG(LogTemp, Log, TEXT("%s: Stopping: %s"), *GetNameSafe(Instigator), *GetNameSafe(this));
+	//UE_LOG(LogTemp, Log, TEXT("%s: Stopping: %s"), *GetNameSafe(Instigator), *GetNameSafe(this));
 	//LogOnScreen(this, FString::Printf(TEXT("Stopped: %s"), *ActionName.ToString()), FColor::White);
 
 	//check if boolean even on as santity

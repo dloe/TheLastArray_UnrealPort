@@ -37,6 +37,11 @@ ASCharacter::ASCharacter()
 
 	AttributeComponent = CreateDefaultSubobject<USAttributeComponent>("AttributeComp");
 
+	//todo: may need to have in character cpp script but ideally i only want the attributes to mess with the inventory
+	PlayerInventoryComponent = CreateDefaultSubobject<USPlayerInventoryComponent>("PlayerInventoryComp");
+	//PlayerInventoryComponent->SetPlayerActor(this);
+	PlayerInventoryComponent->ActionComp = ActionComp; //TODO: more proper way to do this later btw
+
 	ActionComp = CreateDefaultSubobject<USActionComponent>("ActionComp");
 
 	//rotate to whatever we are moving towards
@@ -56,34 +61,23 @@ void ASCharacter::PostInitializeComponents()
 	//Add dynamic is known for not being found through unreal magic (AKA INTELLISENSE), its ok that it doesnt see it here
 	AttributeComponent->OnHealthChanged.AddDynamic(this, &ASCharacter::OnHealthChanged);
 
-	
+	PostInitBlueprint();
 }
 
 // Called when the game starts or when spawned
 void ASCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	//APlayerController* PC = Cast<APlayerController>(GetController());
-	//PState = Cast<ASPlayerState>(PC->PlayerState);
-	//debug print out our credit amount
-	//int Credits = PState->GetCredits();
-	//UE_LOG(LogTemp, Log, TEXT("Player Credits on Start: %d"), PState->GetCredits());
 
-	//test thorns 
-	//if (ensure(ActionComp))
-	//{
-		//ActionComp->AddAction(this, ThornActionClass);
-		//set damage here?
-		//ThornActionClass->
-		//UE_LOG(LogTemp, Log, TEXT("check"));
-	//}
+	PlayerInventoryComponent->LoadInventory(this);
+	
 }
 
 // Called every frame
 void ASCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	SetLeftHandIKTrans();
 
 }
 
@@ -114,13 +108,27 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	//spawn projectile
 	PlayerInputComponent->BindAction("PrimaryAttack", IE_Pressed, this, &ASCharacter::PrimaryAttack);
 
-	//interactjion
+	//interaction
 	const FName interact = "PrimaryInteract";
 	PlayerInputComponent->BindAction(interact, IE_Pressed, this, &ASCharacter::PrimaryInteract);
 
 	//actions
 	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &ASCharacter::SprintStart);
 	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &ASCharacter::SprintStop);
+
+	//inventory swapping
+	const FName equip1 = "Hotbar1";
+	PlayerInputComponent->BindAction(equip1, IE_Pressed, this, &ASCharacter::SelectHotbar1);
+	const FName equip2 = "Hotbar2";
+	PlayerInputComponent->BindAction(equip2, IE_Pressed, this, &ASCharacter::SelectHotbar2);
+	const FName equip3 = "Hotbar3";
+	PlayerInputComponent->BindAction(equip3, IE_Pressed, this, &ASCharacter::SelectHotbar3);
+	const FName equip4 = "Hotbar4";
+	PlayerInputComponent->BindAction(equip4, IE_Pressed, this, &ASCharacter::SelectHotbar4); //remember 0 indexed
+
+	//reload weapon
+	const FName reloadWeapon = "Reload";
+	PlayerInputComponent->BindAction(reloadWeapon, IE_Pressed, this, &ASCharacter::PrimaryReload);
 }
 
 //movement
@@ -157,11 +165,10 @@ void ASCharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponent*
 			USkeletalMeshComponent* SkeletalMesh = GetMesh();
 			SkeletalMesh->SetScalarParameterValueOnMaterials(TimeToHitParameterName, GetWorld()->TimeSeconds);
 			//SkeletalMesh->SetParameterValueOnMaterials("HitFlashColor", HitFlashColor);
-			FVector4 ColortoVector = HitFlashColor;
-			SkeletalMesh->SetVectorParameterValueOnMaterials("HitFlashColor", ColortoVector);
-			
-			SkeletalMesh->SetScalarParameterValueOnMaterials("HitFlashSpeed", HitFlashSpeed);
 
+			FVector4d ColortoVector = FVector4d(HitFlashColor);
+			SkeletalMesh->SetVectorParameterValueOnMaterials("HitFlashColor", ColortoVector);
+			SkeletalMesh->SetScalarParameterValueOnMaterials("HitFlashSpeed", HitFlashSpeed);
 
 			//Thorns buff here
 			//thorns run here - will need to move to StartAction
@@ -174,21 +181,56 @@ void ASCharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponent*
 			//}
 	}
 
+	//oops we dead
 	if (NewHealth <= 0.0f && Delta < 0.0f)
 	{
-		UE_LOG(LogTemp, Log, TEXT("Player Death!"));
-		APlayerController* PC = Cast<APlayerController>(GetController());
-		DisableInput(PC);
-
-		SetLifeSpan(8.0f);
+		HandleDeath();
 
 	}
 }
 
+/// <summary>
+/// Should this be handled by the player class or the level class?
+/// 
+/// Maybe for now character realted runs here, then we call the level class to handle OnPlayersDeath?
+/// </summary>
+void ASCharacter::HandleDeath()
+{
+	UE_LOG(LogTemp, Log, TEXT("Player Death!"));
+	APlayerController* PC = Cast<APlayerController>(GetController());
+
+	//should we ragdoll? or maybe a combo between ragdoll and some animation?
+
+	PlayerInventoryComponent->OnDeathInventoryDrop();
+
+	DisableInput(PC);
+
+	//after death animatoin runs
+	//GetMesh()->SetAllBodiesSimulatePhysics(true);
+	//GetMesh()->SetCollisionProfileName("Ragdoll");
+
+	SetLifeSpan(8.0f);
+}
+
 void ASCharacter::PrimaryAttack()
 {
-	ActionComp->StartActionByName(this, "PrimaryAttack");
+	//TODO: if not melee weapon
+	//if weapon has equipped ammo and is able to fire
 
+	if (PlayerInventoryComponent->CanFireWeapon())
+	{
+		ActionComp->StartActionByName(this, "WeaponAttack");
+	}
+	else {
+		//else reload if we can reload
+		if (PlayerInventoryComponent->CanReload())
+		{
+			ActionComp->StartActionByName(this, "WeaponReload");
+		}
+		else {                                                             //else we got no ammo boi
+			UE_LOG(LogTemp, Log, TEXT("Out of ammo!"));                    //give feedback to player that weapon cant be used
+		}
+	}
 }
 
 void ASCharacter::PrimaryInteract()
@@ -197,7 +239,40 @@ void ASCharacter::PrimaryInteract()
 	{
 		InteractiveComp->PrimaryInteract();
 	}
-	
+}
+
+/// <summary>
+/// In order to run the reload action we need to check if the equipped item is a weapon that is in a state it needs to be reloaded
+/// </summary>
+void ASCharacter::PrimaryReload()
+{
+	if (PlayerInventoryComponent->CanReload())
+	{
+		//should this be an action called from here?
+		ActionComp->StartActionByName(this, "WeaponReload");
+	}
+}
+
+void ASCharacter::SetEquippedHotbar(int input)
+{
+	UE_LOG(LogTemp, Log, TEXT("Equipping at hotbar %d"), input);
+	PlayerInventoryComponent->EquipItemAtIndex(input);
+
+	ActionComp->StartActionByName(this, "SwapItems");
+
+}
+
+/// <summary>
+/// before we had the left hand transform set up via BPI, but since we are swapping to multiple animBP and therefor the
+/// BPI cant be run (since it cannot be guaranteed thread safe), move BP logic into raw CPP logic.
+/// 
+/// TODO: Maybe have to move this into a better place later
+/// </summary>
+/// <returns></returns>
+void ASCharacter::SetLeftHandIKTrans()
+{
+	WeaponLeftHandIKTrans = PlayerInventoryComponent->GetLeftHandTransform(this);
+
 }
 
 //blackhole assignment 2

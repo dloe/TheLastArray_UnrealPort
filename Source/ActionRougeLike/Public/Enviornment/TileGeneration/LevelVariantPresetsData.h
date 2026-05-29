@@ -23,6 +23,13 @@ struct FLevelInfoStats
 {
 	GENERATED_BODY()
 
+	FLevelInfoStats()
+	{
+		LevelTier = ELevelTier::ELevel_Null;
+		PickupSpawnLevelThreshold = 0.f;
+		EnemySpawnLevelThreshold = 0.f;
+	}
+
 public:
 
 	//this isnt needed or used, but i should have this to label the data

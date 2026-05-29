@@ -9,6 +9,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Actions/SActionEffect.h"
+#include "ActorComponents/SPlayerInventoryComponent.h"
 #include "SAttributeComponent.generated.h"
 
 class USAttributeComponent;
@@ -63,6 +64,7 @@ protected:
 	float Rage;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Replicated, Category = "Attributes")
 	float RageMax = 100;
+
 
 public:
 
