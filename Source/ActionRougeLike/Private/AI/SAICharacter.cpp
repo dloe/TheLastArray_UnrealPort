@@ -77,6 +77,13 @@ void ASAICharacter::OnPawnSeen(APawn* Pawn)
     }
 }
 
+/// <summary>
+/// 
+/// </summary>
+/// <param name="InstigatorActor"></param>
+/// <param name="OwningComp"></param>
+/// <param name="NewHealth"></param>
+/// <param name="Delta"></param>
 void ASAICharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewHealth, float Delta)
 {
     if (Delta < 0.0f)

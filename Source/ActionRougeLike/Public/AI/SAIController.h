@@ -10,7 +10,7 @@
 #include "AIController.h"
 #include "SAIController.generated.h"
 
-//forwared declare this
+//forward declare this
 class UBehvaiorTree;
 
 /**
