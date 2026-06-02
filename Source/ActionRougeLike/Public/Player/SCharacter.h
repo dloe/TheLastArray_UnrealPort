@@ -15,6 +15,7 @@
 #include "SPlayerState.h"
 #include "Actions/SActionEffect.h"
 #include "ActorComponents/SPlayerInventoryComponent.h"
+#include "GenericTeamAgentInterface.h"
 #include "SCharacter.generated.h"
 
 
@@ -25,7 +26,7 @@ class UAnimMontage;
 class USActionComponent;
 
 UCLASS()
-class ACTIONROUGELIKE_API ASCharacter : public ACharacter
+class ACTIONROUGELIKE_API ASCharacter : public ACharacter, public IGenericTeamAgentInterface
 {
 	GENERATED_BODY()
 	
@@ -126,11 +127,10 @@ public:
 	// Sets default values for this character's properties
 	ASCharacter();
 
-
-
 	// ---------------------------------
 	// ------- Public Functions --------
 	// ---------------------------------
+	virtual FGenericTeamId GetGenericTeamId() const override;
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

@@ -10,15 +10,20 @@
 #include "Attributes/SAttributeComponent.h"
 #include "GameFramework/Character.h"
 #include <Actions/SActionComponent.h>
+#include "GenericTeamAgentInterface.h"
 #include "SAICharacter.generated.h"
 
-class UPawnSensingComponent;
 class UUserWidget;
 class USWorldUserWidget;
 class USActionComponent;
 
+/// <summary>
+/// Seperation between AICharacter and AIController
+/// Controller: handles perception, decision logic, team, BB and BT
+/// Character: mesh, movement, animation, health, hit reactions?
+/// </summary>
 UCLASS()
-class ACTIONROUGELIKE_API ASAICharacter : public ACharacter
+class ACTIONROUGELIKE_API ASAICharacter : public ACharacter, public IGenericTeamAgentInterface
 {
 	GENERATED_BODY()
 
@@ -27,26 +32,30 @@ public:
 	ASAICharacter();
 
 	UPROPERTY(EditAnywhere, Category = "Loot")
-		//TSubclassOf<AActor> CoinPickupClass;
-		int32 CreditsOnKill;
+	//TSubclassOf<AActor> CoinPickupClass;
+	int32 CreditsOnKill;
 	
 	UFUNCTION()
 	USBaseInventoryComponent* GetInventoryComp() {return InventoryComponent; };
 
+	virtual FGenericTeamId GetGenericTeamId() const override;
 
+	UPROPERTY(EditAnywhere, Category = "Affiaiation")
+	int AffiliationGroup = 2;
+	
 protected:
 	
+	// ---------------------------------
+	// -------- Protected Variables -------
+	// ---------------------------------
 	USWorldUserWidget* ActiveHealthBar;
-	USWorldUserWidget* EnemySpottedWidget;
+	//USWorldUserWidget* EnemySpottedWidget;
 
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
 	TSubclassOf<UUserWidget> HealthBarWidgetClass;
 
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
 	TSubclassOf<UUserWidget> EnemySpottedWidgetClass;
-
-	UPROPERTY(VisibleAnywhere, Category = "Components")
-	UPawnSensingComponent* PawnSensingComp;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USAttributeComponent* AttributeComponent;
@@ -63,18 +72,14 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Components")
 	float DeathReward;
 
-	void SetTargetActor(AActor* NewTarget);
+	// ---------------------------------
+	// -------- Helper Functions -------
+	// ---------------------------------
 
 	virtual void PostInitializeComponents() override;
 
 	UFUNCTION(BlueprintCallable, Category = "AI")
-		AActor* GetTargetActor() const;
-
-	UFUNCTION()
-	void OnPawnSeen(APawn* Pawn);
-
-	UFUNCTION(NetMulticast, Unreliable)
-	void MulticastPawnSeen();
+	void SetTargetActor(AActor* NewTarget);
 
 	UFUNCTION()
 	void OnHealthChanged(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewHealth, float Delta);

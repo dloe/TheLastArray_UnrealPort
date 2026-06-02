@@ -19,13 +19,32 @@ UCLASS()
 class ACTIONROUGELIKE_API ASPlayerController : public APlayerController
 {
 	GENERATED_BODY()
+
+public:
+
+	// ---------------------------------
+	// ------- Public Functions --------
+	// ---------------------------------
 	
+	
+	// ---------------------------------
+	// -------- Public Variables -------
+	// ---------------------------------
+
 protected:
+
+	// ---------------------------------
+	// -------- Protected Variables -------
+	// ---------------------------------
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
 	TSubclassOf<UUserWidget> PauseMenuClass;
 
 	UPROPERTY()
 	UUserWidget* PauseMenuInstance;
+
+	// ---------------------------------
+	// -------- Helper Functions -------
+	// ---------------------------------
 
 	UFUNCTION(BlueprintCallable)
 	void TogglePauseMenu();

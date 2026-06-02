@@ -5,29 +5,26 @@
 // Unauthorized use, distribution, or modification is not permitted.
 
 #include "AI/SAICharacter.h"
-#include "Perception/PawnSensingComponent.h"
 #include "Attributes/SAttributeComponent.h"
 #include "AI/SAIController.h"
 #include "BrainComponent.h"
 #include "Widgets/SWorldUserWidget.h"
-#include "BehaviorTree/BlackboardComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "BehaviorTree/BlackboardComponent.h"
 #include "Player/SPlayerState.h"
 #include <Gamemodes/SGameModeBase.h>
 #include <Actions/SActionComponent.h>
 #include <ActionRougeLike/ActionRougeLike.h>
 #include "Gamemodes/SMainGameMode.h"
+#include "AIController.h"
 
 // Sets default values
 ASAICharacter::ASAICharacter()
 {
-    //TODO: UPawnSensingComponent getting deprecated! Replace during AI overhaul!
-    PawnSensingComp = CreateDefaultSubobject<UPawnSensingComponent>("PawnSensingComp");
     AttributeComponent = CreateDefaultSubobject<USAttributeComponent>("AttributeComp");
     ActionComp = CreateDefaultSubobject<USActionComponent>("ActionComp");
     InventoryComponent = CreateDefaultSubobject<USBaseInventoryComponent>("PlayerInventoryComp");
-
     AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
     //fix an issue with collision on our capsule colliders
@@ -41,44 +38,39 @@ ASAICharacter::ASAICharacter()
     DeathReward = 10;
 }
 
+/// <summary>
+/// Could have the ID be set, what if 2 AIs hate each other?
+/// </summary>
+/// <returns></returns>
+FGenericTeamId ASAICharacter::GetGenericTeamId() const
+{
+    return FGenericTeamId(AffiliationGroup);
+}
+
 void ASAICharacter::PostInitializeComponents()
 {
     Super::PostInitializeComponents();
-    //TODO: UPawnSensingComponent getting deprecated! Replace during AI overhaul!
-    PawnSensingComp->OnSeePawn.AddDynamic(this, &ASAICharacter::OnPawnSeen);
 
     //Add dynamic bind is known for not being found through unreal magic (AKA INTELLISENSE), its ok that it doesnt see it here
     AttributeComponent->OnHealthChanged.AddDynamic(this, &ASAICharacter::OnHealthChanged);
     //AttributeComponent->OnRageChanged.AddDynamic(this, &ASAICharacter::OnRageChanged);
 }
 
-void ASAICharacter::OnPawnSeen(APawn* Pawn)
+/// <summary>
+/// TODO: gotta seperate this
+/// </summary>
+/// <param name="NewTarget"></param>
+void ASAICharacter::SetTargetActor(AActor* NewTarget)
 {
-    // Ignore if target already set
-    if (GetTargetActor() != Pawn)
-    {
-        SetTargetActor(Pawn);
-        //add a draw debug string at the location of the actor so that we have something that shows where the player was spotted
-        //DrawDebugString(GetWorld(), GetActorLocation(), "PlayerSpotted", nullptr, FColor::White, 4.0f, true);
-
-       // EnemySpottedWidget = CreateWidget<USWorldUserWidget>(GetWorld(), EnemySpottedWidgetClass);
-        //if (EnemySpottedWidget) {
-        //    EnemySpottedWidget->AttachedActor = this;
-        //    EnemySpottedWidget->AddToViewport(10);
-         //   DrawDebugString(GetWorld(), GetActorLocation(), "PlayerSpotted WIDGET", nullptr, FColor::White, 4.0f, true);
-         //   UE_LOG(LogTemp, Log, TEXT("PlayerSpotted WIDGET"));
-        //}
-        //else {
-        //    DrawDebugString(GetWorld(), GetActorLocation(), "PlayerSpotted NO WIDGET", nullptr, FColor::Red, 4.0f, true);
-         //   UE_LOG(LogTemp, Log, TEXT("PlayerSpotted NOOO WIDGET"));
-        //}
-
-        MulticastPawnSeen();
+    AAIController* AIC = Cast<AAIController>(GetController());
+    if (AIC) {
+        //don't even need to null check this since we know for a fact this is valid. Cannot be null
+        AIC->GetBlackboardComponent()->SetValueAsObject("TargetActor", NewTarget);
     }
 }
 
 /// <summary>
-/// 
+/// Should it live here or in AIController
 /// </summary>
 /// <param name="InstigatorActor"></param>
 /// <param name="OwningComp"></param>
@@ -163,44 +155,9 @@ void ASAICharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponen
                 LevelGameMode->KillNormalEnemyEvent(InstigatorActor, CreditsOnKill, this);
 
             }
-            
-
         }
     }
 }
 
-void ASAICharacter::SetTargetActor(AActor* NewTarget)
-{
-    AAIController* AIC = Cast<AAIController>(GetController());
-    if (AIC)
-    {
-        //don't even need to null check this since we know for a fact this is valid. Cannot be null
-        AIC->GetBlackboardComponent()->SetValueAsObject("TargetActor", NewTarget);
-    }
-}
 
-AActor* ASAICharacter::GetTargetActor() const
-{
-    AAIController* AIC = Cast<AAIController>(GetController());
-    if (AIC)
-    {
-        return Cast<AActor>(AIC->GetBlackboardComponent()->GetValueAsObject("TargetActor"));
-        //return AIC->GetBlackboardComponent()->GetValueAsObject("TargetActor");
-    }
-
-    return nullptr;
-}
-
-void ASAICharacter::MulticastPawnSeen_Implementation()
-{
-    EnemySpottedWidget = CreateWidget<USWorldUserWidget>(GetWorld(), EnemySpottedWidgetClass);
-    if (EnemySpottedWidget)
-    {
-        LogOnScreen(this, FString::Printf(TEXT("EnemySpotted Widget")), FColor::Blue);
-        EnemySpottedWidget->AttachedActor = this;
-        // Index of 10 (or anything higher than default of 0) places this on top of any other widget.
-        // May end up behind the minion health bar otherwise.
-        EnemySpottedWidget->AddToViewport(10);
-    }
-}
 

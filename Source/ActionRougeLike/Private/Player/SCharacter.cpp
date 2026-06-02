@@ -54,6 +54,15 @@ ASCharacter::ASCharacter()
 	TimeToHitParameterName = "TimeToHit";
 }
 
+/// <summary>
+/// Gotta classify us as the good guys!
+/// </summary>
+/// <returns></returns>
+FGenericTeamId ASCharacter::GetGenericTeamId() const
+{
+	return FGenericTeamId(1); //players team
+}
+
 void ASCharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
