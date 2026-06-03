@@ -57,19 +57,6 @@ void ASAICharacter::PostInitializeComponents()
 }
 
 /// <summary>
-/// TODO: gotta separate this
-/// </summary>
-/// <param name="NewTarget"></param>
-//void ASAICharacter::SetTargetActor(AActor* NewTarget)
-//{
-//    AAIController* AIC = Cast<AAIController>(GetController());
-//    if (AIC) {
-//        //don't even need to null check this since we know for a fact this is valid. Cannot be null
-//        AIC->GetBlackboardComponent()->SetValueAsObject("TargetActor", NewTarget);
-//    }
-//}
-
-/// <summary>
 /// Should it live here or in AIController
 /// </summary>
 /// <param name="InstigatorActor"></param>
@@ -84,8 +71,16 @@ void ASAICharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponen
         //theres a chance that an AI might shoot a friendly AI and they might agro on each other, will keep for now but might remove later
         if (InstigatorActor)
         {
-            Cast<ASAIController>(GetController())->SetTargetActor(InstigatorActor);
+            //Cast<ASAIController>(GetController())->SetTargetActor(InstigatorActor);
             Cast<ASAIController>(GetController())->ReportDamage(InstigatorActor, Delta, GetActorLocation());
+            /*UAISense_Damage::ReportDamageEvent(
+                this,
+                PawnThatHurtUS,
+                InstigatorActor,
+                Delta,
+                PawnThatHurtUS->GetActorLocation(),
+                GetActorLocation()
+            );*/
         }
 
         if (ActiveHealthBar == nullptr) {

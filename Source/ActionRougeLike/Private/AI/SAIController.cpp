@@ -126,18 +126,43 @@ AActor* ASAIController::GetTargetActor() const
 
 void ASAIController::ReportDamage(AActor* InstigatorActor, float Delta, FVector HitLocation)
 {
-    APawn* ControllerPawn = GetPawn();
-    if(!ControllerPawn)
+    APawn* PawnThatHurtUS = Cast<APawn>(InstigatorActor);
+    if(!PawnThatHurtUS)
         return;
 
     UAISense_Damage::ReportDamageEvent(
         this,
-        ControllerPawn,
+        PawnThatHurtUS,
         InstigatorActor,
         Delta,
-        ControllerPawn->GetActorLocation(),
+        PawnThatHurtUS->GetActorLocation(),
         HitLocation
     );
+
+    if (!IsValidHostileTarget(InstigatorActor))
+        return;
+
+    //cancel this timer if we see them
+    GetWorld()->GetTimerManager().ClearTimer(ForgetTimerHandle);
+
+    // Ignore if target already set
+    if (GetTargetActor() != PawnThatHurtUS)
+    {
+        SetTargetActor(PawnThatHurtUS);
+
+        GetBlackboardComponent()->SetValueAsVector("LastKnownLocation", PawnThatHurtUS->GetActorLocation());
+
+        //Debug code
+        //DrawDebugString(GetWorld(), GetActorLocation(), "PlayerSpotted", nullptr, FColor::White, 4.0f, true);
+        //add a draw debug string at the location of the actor so that we have something that shows where the player was spotted
+
+        //make this call from AICharacter
+        ASAICharacter* AIChar = Cast<ASAICharacter>(GetPawn());
+        if (AIChar)
+        {
+            AIChar->MulticastPawnSeenFeedback();
+        }
+    }
 }
 
 void ASAIController::SetTargetActor(AActor* NewTarget)
@@ -161,10 +186,10 @@ void ASAIController::OnPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 		HandleSightSense(Actor, Stimulus);
 	}
 
-    if (Stimulus.Type == UAISense_Damage::GetSenseID<UAISense_Damage>())
+    /*if (Stimulus.Type == UAISense_Damage::GetSenseID<UAISense_Damage>())
     {
         HandleDamageSense(Actor, Stimulus);
-    }
+    }*/
 
     if (Stimulus.Type == UAISense_Hearing::GetSenseID<UAISense_Hearing>())
     {
@@ -177,9 +202,9 @@ void ASAIController::OnPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 /// </summary>
 /// <param name="Actor"></param>
 /// <param name="Stimulus"></param>
-void ASAIController::HandleSightSense(AActor* Actor, FAIStimulus Stimulus)
+void ASAIController::HandleSightSense(AActor* InstigatorActor, FAIStimulus Stimulus)
 {
-    APawn* SeenPawn = Cast<APawn>(Actor);
+    APawn* SeenPawn = Cast<APawn>(InstigatorActor);
     if(!SeenPawn)
         return;
     
@@ -187,7 +212,7 @@ void ASAIController::HandleSightSense(AActor* Actor, FAIStimulus Stimulus)
     //returns false if most recent was lost of detection
     if (Stimulus.WasSuccessfullySensed()) {
         
-        if (!IsValidHostileTarget(Actor))
+        if (!IsValidHostileTarget(InstigatorActor))
             return;
 
         //cancel this timer if we see them
@@ -211,9 +236,10 @@ void ASAIController::HandleSightSense(AActor* Actor, FAIStimulus Stimulus)
         }
     }
     else {
-    
+        AActor* Target = GetTargetActor();
         //a present target action is now lost, check if we were not repositioning
-        if (GetTargetActor() == SeenPawn && !GetBlackboardComponent()->GetValueAsBool("IsRepositioningEngagement"))
+        if (Target != nullptr && Target == SeenPawn &&
+        !GetBlackboardComponent()->GetValueAsBool("IsRepositioningEngagement"))
         {
             //we weren't repositioning, start timer
             StartForgetTimer(Stimulus);
@@ -229,7 +255,7 @@ void ASAIController::HandleSightSense(AActor* Actor, FAIStimulus Stimulus)
 /// <param name="Stimulus"></param>
 void ASAIController::HandleDamageSense(AActor* Actor, FAIStimulus Stimulus)
 {
-
+    
 }
 
 /// <summary>
