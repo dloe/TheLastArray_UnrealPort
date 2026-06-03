@@ -11,6 +11,8 @@
 #include "GameFramework/Character.h"
 #include <Actions/SActionComponent.h>
 #include "GenericTeamAgentInterface.h"
+#include "Blueprint/UserWidget.h"
+#include "Widgets/SWorldUserWidget.h"
 #include "SAICharacter.generated.h"
 
 class UUserWidget;
@@ -31,12 +33,23 @@ public:
 	// Sets default values for this character's properties
 	ASAICharacter();
 
+	// ---------------------------------
+	// -------- Public Variables -------
+	// ---------------------------------
+
 	UPROPERTY(EditAnywhere, Category = "Loot")
 	//TSubclassOf<AActor> CoinPickupClass;
 	int32 CreditsOnKill;
-	
+
+	// ---------------------------------
+	// ------- Public Functions --------
+	// ---------------------------------
+
 	UFUNCTION()
 	USBaseInventoryComponent* GetInventoryComp() {return InventoryComponent; };
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastPawnSeenFeedback();
 
 	virtual FGenericTeamId GetGenericTeamId() const override;
 
@@ -48,8 +61,9 @@ protected:
 	// ---------------------------------
 	// -------- Protected Variables -------
 	// ---------------------------------
+
+	USWorldUserWidget* EnemySpottedWidget;
 	USWorldUserWidget* ActiveHealthBar;
-	//USWorldUserWidget* EnemySpottedWidget;
 
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
 	TSubclassOf<UUserWidget> HealthBarWidgetClass;
@@ -78,8 +92,8 @@ protected:
 
 	virtual void PostInitializeComponents() override;
 
-	UFUNCTION(BlueprintCallable, Category = "AI")
-	void SetTargetActor(AActor* NewTarget);
+	/*UFUNCTION(BlueprintCallable, Category = "AI")
+	void SetTargetActor(AActor* NewTarget);*/
 
 	UFUNCTION()
 	void OnHealthChanged(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewHealth, float Delta);

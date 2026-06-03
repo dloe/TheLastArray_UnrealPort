@@ -10,11 +10,14 @@
 #include "Delegates/Delegate.h"
 #include "Widgets/SWorldUserWidget.h"
 #include "../ActionRougeLike.h"
+#include "Perception/AISense_Damage.h"
+#include "AI/SAICharacter.h"
+#include "Perception/AISense_Hearing.h"
+#include "TimerManager.h"
 
 ASAIController::ASAIController()
 {
 	AIPerceptionComp = CreateDefaultSubobject<UAIPerceptionComponent>("AIPerceptionComp");
-
 }
 
 void ASAIController::BeginPlay()
@@ -42,6 +45,41 @@ void ASAIController::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 	AIPerceptionComp->OnTargetPerceptionUpdated.AddDynamic(this, &ASAIController::OnPerceptionUpdated);
+}
+
+void ASAIController::OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult& Result)
+{
+    Super::OnMoveCompleted(RequestID, Result);
+
+    //if this came from the repositioning flag
+    //if (GetBlackboardComponent()->GetValueAsBool("IsRepositioningEngagement"))
+    //{
+    //    //now we can set the timer
+    //    //GetBlackboardComponent()->SetValueAsBool("IsRepositioningEngagement", true);
+
+
+    //}
+
+    AActor* Target = GetTargetActor();
+
+
+    //place to throw results
+    FActorPerceptionBlueprintInfo Info;
+    GetAIPerceptionComponent()->GetActorsPerception(Target, Info);
+
+    //TODO; this is so inefficient
+    for (FAIStimulus& Stimuli : Info.LastSensedStimuli)
+    {
+        if (Stimuli.Type == UAISense_Sight::GetSenseID<UAISense_Sight>() && Stimuli.WasSuccessfullySensed())
+        {
+            if (!CanSeePlayer() && Target)
+            {
+                StartForgetTimer(Stimuli);
+            }
+        }
+    }
+
+    
 }
 
 FGenericTeamId ASAIController::GetGenericTeamId() const
@@ -86,9 +124,26 @@ AActor* ASAIController::GetTargetActor() const
 }
 
 
+void ASAIController::ReportDamage(AActor* InstigatorActor, float Delta, FVector HitLocation)
+{
+    APawn* ControllerPawn = GetPawn();
+    if(!ControllerPawn)
+        return;
+
+    UAISense_Damage::ReportDamageEvent(
+        this,
+        ControllerPawn,
+        InstigatorActor,
+        Delta,
+        ControllerPawn->GetActorLocation(),
+        HitLocation
+    );
+}
+
 void ASAIController::SetTargetActor(AActor* NewTarget)
 {
     GetBlackboardComponent()->SetValueAsObject("TargetActor", NewTarget);
+
 }
 
 /// <summary>
@@ -106,6 +161,15 @@ void ASAIController::OnPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 		HandleSightSense(Actor, Stimulus);
 	}
 
+    if (Stimulus.Type == UAISense_Damage::GetSenseID<UAISense_Damage>())
+    {
+        HandleDamageSense(Actor, Stimulus);
+    }
+
+    if (Stimulus.Type == UAISense_Hearing::GetSenseID<UAISense_Hearing>())
+    {
+        HandleHearingSense(Actor, Stimulus);
+    }
 }
 
 /// <summary>
@@ -119,10 +183,15 @@ void ASAIController::HandleSightSense(AActor* Actor, FAIStimulus Stimulus)
     if(!SeenPawn)
         return;
     
+    //returns true if most recent perception update was a positive detection
+    //returns false if most recent was lost of detection
     if (Stimulus.WasSuccessfullySensed()) {
         
         if (!IsValidHostileTarget(Actor))
             return;
+
+        //cancel this timer if we see them
+        GetWorld()->GetTimerManager().ClearTimer(ForgetTimerHandle);
 
         // Ignore if target already set
         if (GetTargetActor() != SeenPawn)
@@ -133,15 +202,48 @@ void ASAIController::HandleSightSense(AActor* Actor, FAIStimulus Stimulus)
             //DrawDebugString(GetWorld(), GetActorLocation(), "PlayerSpotted", nullptr, FColor::White, 4.0f, true);
             //add a draw debug string at the location of the actor so that we have something that shows where the player was spotted
 
-            MulticastPawnSeen();
+            //make this call from AICharacter
+            ASAICharacter* AIChar = Cast<ASAICharacter>(GetPawn());
+            if (AIChar)
+            {
+                AIChar->MulticastPawnSeenFeedback();
+            }
         }
     }
     else {
-        //we lost the player :( big sad
-        SetTargetActor(nullptr);
+    
+        //a present target action is now lost, check if we were not repositioning
+        if (GetTargetActor() == SeenPawn && !GetBlackboardComponent()->GetValueAsBool("IsRepositioningEngagement"))
+        {
+            //we weren't repositioning, start timer
+            StartForgetTimer(Stimulus);
+        }
 
-        GetBlackboardComponent()->SetValueAsVector("LastKnownLocation", Stimulus.StimulusLocation);
     }
+}
+
+/// <summary>
+/// Is this already handled in on health changed?
+/// </summary>
+/// <param name="Actor"></param>
+/// <param name="Stimulus"></param>
+void ASAIController::HandleDamageSense(AActor* Actor, FAIStimulus Stimulus)
+{
+
+}
+
+/// <summary>
+/// if we hear something, investigate it
+/// </summary>
+/// <param name="Actor"></param>
+/// <param name="Stimulus"></param>
+void ASAIController::HandleHearingSense(AActor* Actor, FAIStimulus Stimulus)
+{
+    APawn* HeardPawn = Cast<APawn>(Actor);
+    if (!HeardPawn)
+        return;
+
+     GetBlackboardComponent()->SetValueAsVector("LastKnownLocation", Stimulus.StimulusLocation);
 }
 
 /// <summary>
@@ -174,18 +276,62 @@ bool ASAIController::IsValidHostileTarget(AActor* Actor)
 }
 
 /// <summary>
-/// Enemy spotted widget UI
-/// add a draw debug string at the location of the actor so that we have something that shows where the player was spotted
+/// check if player is in los
 /// </summary>
-void ASAIController::MulticastPawnSeen_Implementation()
+/// <returns></returns>
+bool ASAIController::CanSeePlayer()
 {
-    EnemySpottedWidget = CreateWidget<USWorldUserWidget>(GetWorld(), EnemySpottedWidgetClass);
-    if (EnemySpottedWidget)
+    AActor* Target = GetTargetActor();
+    if (!Target)
     {
-        LogOnScreen(this, FString::Printf(TEXT("EnemySpotted Widget")), FColor::Blue);
-        EnemySpottedWidget->AttachedActor = this;
-        // Index of 10 (or anything higher than default of 0) places this on top of any other widget.
-        // May end up behind the minion health bar otherwise.
-        EnemySpottedWidget->AddToViewport(10);
+        return false;
     }
+
+    //place to throw results
+    FActorPerceptionBlueprintInfo Info;
+    GetAIPerceptionComponent()->GetActorsPerception(Target, Info);
+
+    //did we see em?
+    for (FAIStimulus& Stimuli : Info.LastSensedStimuli)
+    {
+        if (Stimuli.Type == UAISense_Sight::GetSenseID<UAISense_Sight>() && Stimuli.WasSuccessfullySensed())
+        {
+            return true;
+        }
+    }
+    return false;
+}   
+
+/// <summary>
+/// When we loose sight of player and not moving to new engagement loc, start this timer
+/// </summary>
+/// <returns></returns>
+void ASAIController::StartForgetTimer(FAIStimulus Stimulus)
+{
+    //make delegate to pass in param for ForgetTargetActor
+    FTimerDelegate ForgetDelegate;
+    ForgetDelegate.BindUFunction(this, "ForgetTargetActor", Stimulus);
+
+    GetWorld()->GetTimerManager().SetTimer(
+        ForgetTimerHandle,
+        ForgetDelegate,
+        ForgetSightTargetTime,
+        false
+    );
 }
+
+/// <summary>
+/// if timer goes off, that means we actualy lost sight of player
+/// </summary>
+/// <param name="Stimulus"></param>
+void ASAIController::ForgetTargetActor(FAIStimulus Stimulus)
+{
+    //we lost the player :( big sad
+    SetTargetActor(nullptr);
+
+    //can investigate players last location
+    GetBlackboardComponent()->SetValueAsBool("InvestigatedForPlayer", false);
+    GetBlackboardComponent()->SetValueAsVector("LastKnownLocation", Stimulus.StimulusLocation);
+
+}
+

@@ -57,17 +57,17 @@ void ASAICharacter::PostInitializeComponents()
 }
 
 /// <summary>
-/// TODO: gotta seperate this
+/// TODO: gotta separate this
 /// </summary>
 /// <param name="NewTarget"></param>
-void ASAICharacter::SetTargetActor(AActor* NewTarget)
-{
-    AAIController* AIC = Cast<AAIController>(GetController());
-    if (AIC) {
-        //don't even need to null check this since we know for a fact this is valid. Cannot be null
-        AIC->GetBlackboardComponent()->SetValueAsObject("TargetActor", NewTarget);
-    }
-}
+//void ASAICharacter::SetTargetActor(AActor* NewTarget)
+//{
+//    AAIController* AIC = Cast<AAIController>(GetController());
+//    if (AIC) {
+//        //don't even need to null check this since we know for a fact this is valid. Cannot be null
+//        AIC->GetBlackboardComponent()->SetValueAsObject("TargetActor", NewTarget);
+//    }
+//}
 
 /// <summary>
 /// Should it live here or in AIController
@@ -84,7 +84,8 @@ void ASAICharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponen
         //theres a chance that an AI might shoot a friendly AI and they might agro on each other, will keep for now but might remove later
         if (InstigatorActor)
         {
-            SetTargetActor(InstigatorActor);
+            Cast<ASAIController>(GetController())->SetTargetActor(InstigatorActor);
+            Cast<ASAIController>(GetController())->ReportDamage(InstigatorActor, Delta, GetActorLocation());
         }
 
         if (ActiveHealthBar == nullptr) {
@@ -160,4 +161,23 @@ void ASAICharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponen
 }
 
 
+/// <summary>
+/// Enemy spotted widget UI
+/// add a draw debug string at the location of the actor so that we have something that shows where the player was spotted
+/// </summary>
+void ASAICharacter::MulticastPawnSeenFeedback_Implementation()
+{
+    //down spawn if we already have one
+    //if(!EnemySpottedWidget) {
+     EnemySpottedWidget = CreateWidget<USWorldUserWidget>(GetWorld(), EnemySpottedWidgetClass);
+     if (EnemySpottedWidget)
+     {
+            LogOnScreen(this, FString::Printf(TEXT("EnemySpotted Widget")), FColor::Blue);
 
+            EnemySpottedWidget->AttachedActor = this;
+            // Index of 10 (or anything higher than default of 0) places this on top of any other widget.
+            // May end up behind the minion health bar otherwise.
+            EnemySpottedWidget->AddToViewport(10);
+     }
+    //}
+}

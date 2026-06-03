@@ -86,6 +86,17 @@ bool USBaseWeapon::CanAttackWithWeapon()
 void USBaseWeapon::PerformAttack(AActor* Instigator, USAction_WeaponAttack* OwningAttackAction)
 {
 	PlayAnimation(Instigator, AttackAnim);
+
+	APawn* InstigatorPawn = Cast<APawn>(Instigator);
+	if(InstigatorPawn) {
+		InstigatorPawn->MakeNoise(
+			1.0f,
+			InstigatorPawn,
+			InstigatorPawn->GetActorLocation(),
+			0.0f,
+			TEXT("Hand Projectile Fire")
+		);
+	}
 }
 
 

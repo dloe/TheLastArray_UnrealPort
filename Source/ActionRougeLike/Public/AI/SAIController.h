@@ -16,6 +16,7 @@
 
 //forward declare this
 class UBehvaiorTree;
+class ASAICharacter;
 
 /**
  * 
@@ -28,29 +29,56 @@ class ACTIONROUGELIKE_API ASAIController : public AAIController
 	public:
 	ASAIController();
 
-	UPROPERTY(VisibleAnywhere, Category = "Components")
-	UAIPerceptionComponent* AIPerceptionComp;
+	// ---------------------------------
+	// ------- Public Functions --------
+	// ---------------------------------
 
-	UPROPERTY(EditDefaultsOnly, Category = "UI")
-	TSubclassOf<UUserWidget> EnemySpottedWidgetClass;
+	UFUNCTION(BlueprintCallable, Category = "AI")
+	void SetTargetActor(AActor* NewTarget);
+
+	UFUNCTION()
+	void ReportDamage(AActor* InstigatorActor, float Delta, FVector HitLocation);
 
 	//TODO: Might not need
 	virtual FGenericTeamId GetGenericTeamId() const override;
 	//need to manually tell the AI how to feel about people. Tell them their feelings, play therapist
 	virtual ETeamAttitude::Type GetTeamAttitudeTowards(const AActor& OtherActor) const override;
-	
+
+	// ---------------------------------
+	// -------- Public Variables -------
+	// ---------------------------------
+
+	UPROPERTY(VisibleAnywhere, Category = "Components")
+	UAIPerceptionComponent* AIPerceptionComp;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Stimuli Related")
+	float ForgetSightTargetTime;
 
 protected:
 
-	USWorldUserWidget* EnemySpottedWidget;
+	// ---------------------------------
+	// -------- Protected Variables -------
+	// ---------------------------------
+
+	UPROPERTY(EditDefaultsOnly, Category = "AI")
+	UBehaviorTree* BehaviorTree;
+
+	
+
+	FTimerHandle ForgetTimerHandle;
+
+	// ---------------------------------
+	// -------- Helper Functions -------
+	// ---------------------------------
+
+	virtual void OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult& Result) override;
+
+	virtual void BeginPlay() override;
 
 	virtual void PostInitializeComponents() override;
 
 	UFUNCTION(BlueprintCallable, Category = "AI")
 	AActor* GetTargetActor() const;
-
-	UFUNCTION(BlueprintCallable, Category = "AI")
-	void SetTargetActor(AActor* NewTarget);
 
 	UFUNCTION()
 	void OnPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus);
@@ -59,13 +87,20 @@ protected:
 	void HandleSightSense(AActor* Actor, FAIStimulus Stimulus);
 
 	UFUNCTION()
+	void HandleDamageSense(AActor* Actor, FAIStimulus Stimulus);
+
+	UFUNCTION()
+	void HandleHearingSense(AActor* Actor, FAIStimulus Stimulus);
+
+	UFUNCTION()
 	bool IsValidHostileTarget(AActor* Actor);
 
-	UFUNCTION(NetMulticast, Unreliable)
-	void MulticastPawnSeen();
+	UFUNCTION()
+	bool CanSeePlayer();
 
-	UPROPERTY(EditDefaultsOnly, Category = "AI")
-	UBehaviorTree* BehaviorTree;
+	UFUNCTION()
+	void StartForgetTimer(FAIStimulus Stimulus);
 
-	virtual void BeginPlay() override;
+	UFUNCTION()
+	void ForgetTargetActor(FAIStimulus Stimulus);
 };

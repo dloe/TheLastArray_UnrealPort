@@ -34,6 +34,9 @@ void USAction_SwapItem::StartAction_Implementation(AActor* Instigator)
 	//UE_LOG(LogTemp, Log, TEXT("Swapping Current Slot Index %d"), WeaponSlotIndex);
 
 	//first check if we need to start the action at all
+	if(!InventoryComponent->HotbarInventory[TargetIndex])
+		return;
+
 	UItemBase* TargetItemData = InventoryComponent->HotbarInventory[TargetIndex]->ItemData;
 
 	//skip logic if no actual change is occurring, if prev item and new item are empty or the same index being swapped to

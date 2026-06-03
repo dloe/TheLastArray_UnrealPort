@@ -53,6 +53,16 @@ void ASProjectileBase::Explode_Implementation()
 	//adding ensure to see if we counter this situation at all
 	if (ensure(!this->IsActorBeingDestroyed()))//!IsValidChecked(this)) //future me: did we need that ensure here?
 	{
+		APawn* InstigatorPawn = Cast<APawn>(this);
+		if (InstigatorPawn) {
+			InstigatorPawn->MakeNoise(
+				1.0f,
+				InstigatorPawn,
+				InstigatorPawn->GetActorLocation(),
+				0.0f,
+				TEXT("Projectile Explosion")
+			);
+		}
 		UGameplayStatics::SpawnEmitterAtLocation(this, ImpactVFX, GetActorLocation(), GetActorRotation());
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), ImpactSound, GetActorLocation(), GetActorRotation());
 		UGameplayStatics::PlayWorldCameraShake(this, MyShake, GetActorLocation(), ImpactShakeInnerRadius, ImpactShakeOuterRadius, Falloff);
