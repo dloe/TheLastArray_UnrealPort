@@ -96,9 +96,6 @@ protected:
 	UFUNCTION()
 	void HandleSightSense(AActor* Actor, FAIStimulus Stimulus);
 
-	/*UFUNCTION()
-	void HandleDamageSense(AActor* Actor, FAIStimulus Stimulus);*/
-
 	UFUNCTION()
 	void HandleHearingSense(AActor* Actor, FAIStimulus Stimulus);
 

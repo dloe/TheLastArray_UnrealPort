@@ -323,6 +323,27 @@ void ASCharacter::HealSelf(float Amount /*= 100  */)
 
 }
 
+void ASCharacter::HandleFootstep()
+{
+	//default to walking
+	float Loudness = WalkLoudness;
+	float MaxRange = WalkMaxRange;
+
+	//check if sprinting
+	if (ActionComp->CheckActionName("Sprint"))
+	{
+		Loudness = SprintLoudness;
+		MaxRange = SprintMaxRange;
+	}
+	
+	MakeNoise(
+		Loudness,
+		this,
+		GetActorLocation(),
+		MaxRange
+	);
+}
+
 //override from 
 FVector ASCharacter::GetPawnViewLocation() const
 {

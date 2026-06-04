@@ -150,6 +150,9 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void PostInitBlueprint();
 
+	UFUNCTION()
+	void HandleFootstep();
+
 	// ---------------------------------
 	// -------- Public Variables -------
 	// ---------------------------------
@@ -168,5 +171,14 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
 	bool bPrintCurrentAnimGraphLayer = false;
 	
+	//no idea for these, may need to tweak
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement Sound")
+	float WalkLoudness = 1.f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement Sound")
+	float WalkMaxRange = 600;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement Sound")
+	float SprintLoudness = 2.f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement Sound")
+	float SprintMaxRange = 1200;
 };

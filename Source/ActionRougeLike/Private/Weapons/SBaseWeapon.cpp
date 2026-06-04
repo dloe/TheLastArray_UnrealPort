@@ -90,11 +90,11 @@ void USBaseWeapon::PerformAttack(AActor* Instigator, USAction_WeaponAttack* Owni
 	APawn* InstigatorPawn = Cast<APawn>(Instigator);
 	if(InstigatorPawn) {
 		InstigatorPawn->MakeNoise(
-			1.0f,
+			Loudness,
 			InstigatorPawn,
 			InstigatorPawn->GetActorLocation(),
-			0.0f,
-			TEXT("Hand Projectile Fire")
+			MaxRange,
+			TEXT("Weapon Attack Sound")
 		);
 	}
 }

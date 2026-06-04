@@ -6,6 +6,7 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTTaskNode.h"
+#include "BehaviorTree/BehaviorTreeTypes.h"
 #include "BTTask_LookAround.generated.h"
 
 /**
@@ -28,6 +29,9 @@ public:
 	// -------- Public Variables -------
 	// ---------------------------------
 
+	UPROPERTY(EditAnywhere, Category = "Blackbaord Input")
+	FBlackboardKeySelector LookAroundSpeedKey;
+
 protected:
 
 	// ---------------------------------
@@ -42,12 +46,20 @@ protected:
 	// -- Internal state / variables --
 	// ---------------------------------
 
+	/*UPROPERTY()
+	FRotator StartRotation;
+	UPROPERTY()
+	TArray<float> TargetAngles;
+	UPROPERTY()
+	int32 CurrentIndex = 0;*/
+	UPROPERTY()
+	float RotationSpeed;
+
 	//local mem
 	struct FTaskMemory
 	{
 		FRotator StartRotation;
 		TArray<float> TargetAngles;
 		int32 CurrentIndex = 0;
-		float RotationSpeed = 60.0f;
 	};
 };

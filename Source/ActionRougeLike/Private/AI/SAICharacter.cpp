@@ -47,6 +47,16 @@ FGenericTeamId ASAICharacter::GetGenericTeamId() const
     return FGenericTeamId(AffiliationGroup);
 }
 
+void ASAICharacter::BeginPlay()
+{
+    Super::BeginPlay();
+    AAIController* AIC = Cast<AAIController>(GetController());
+    if (AIC) {
+        //don't even need to null check this since we know for a fact this is valid. Cannot be null
+        AIC->GetBlackboardComponent()->SetValueAsFloat("RotateInPlaceSpeed", RotationSpeed);
+    }
+}
+
 void ASAICharacter::PostInitializeComponents()
 {
     Super::PostInitializeComponents();
@@ -54,6 +64,8 @@ void ASAICharacter::PostInitializeComponents()
     //Add dynamic bind is known for not being found through unreal magic (AKA INTELLISENSE), its ok that it doesnt see it here
     AttributeComponent->OnHealthChanged.AddDynamic(this, &ASAICharacter::OnHealthChanged);
     //AttributeComponent->OnRageChanged.AddDynamic(this, &ASAICharacter::OnRageChanged);
+
+    
 }
 
 /// <summary>

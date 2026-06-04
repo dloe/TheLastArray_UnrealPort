@@ -56,11 +56,11 @@ void ASProjectileBase::Explode_Implementation()
 		APawn* InstigatorPawn = Cast<APawn>(this);
 		if (InstigatorPawn) {
 			InstigatorPawn->MakeNoise(
-				1.0f,
+				Loudness,
 				InstigatorPawn,
 				InstigatorPawn->GetActorLocation(),
-				0.0f,
-				TEXT("Projectile Explosion")
+				MaxRange,
+				TEXT("Projectile Explosion Impact")
 			);
 		}
 		UGameplayStatics::SpawnEmitterAtLocation(this, ImpactVFX, GetActorLocation(), GetActorRotation());

@@ -41,6 +41,9 @@ public:
 	//TSubclassOf<AActor> CoinPickupClass;
 	int32 CreditsOnKill;
 
+	UPROPERTY(EditAnywhere, Category = "AI")
+	float RotationSpeed = 10.0f;
+
 	// ---------------------------------
 	// ------- Public Functions --------
 	// ---------------------------------
@@ -93,6 +96,8 @@ protected:
 	// ---------------------------------
 	// -------- Helper Functions -------
 	// ---------------------------------
+
+	virtual void BeginPlay() override;
 
 	virtual void PostInitializeComponents() override;
 

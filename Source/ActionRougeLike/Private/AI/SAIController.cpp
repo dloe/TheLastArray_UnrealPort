@@ -252,16 +252,6 @@ void ASAIController::HandleSightSense(AActor* InstigatorActor, FAIStimulus Stimu
 }
 
 /// <summary>
-/// Is this already handled in on health changed?
-/// </summary>
-/// <param name="Actor"></param>
-/// <param name="Stimulus"></param>
-//void ASAIController::HandleDamageSense(AActor* Actor, FAIStimulus Stimulus)
-//{
-//    
-//}
-
-/// <summary>
 /// if we hear something, investigate it
 /// </summary>
 /// <param name="Actor"></param>
@@ -271,6 +261,12 @@ void ASAIController::HandleHearingSense(AActor* Actor, FAIStimulus Stimulus)
     APawn* HeardPawn = Cast<APawn>(Actor);
     if (!HeardPawn)
         return;
+
+    //if we already have the target, don't need to update?
+   /* if (GetTargetActor() == HeardPawn)
+	{
+		return;
+	}*/
 
      GetBlackboardComponent()->SetValueAsVector("LastKnownLocation", Stimulus.StimulusLocation);
 }

@@ -142,6 +142,11 @@ public:
 	//UPROPERTY(EditDefaultsOnly, Category = "Weapon Properties")
 	//FName WeaponMuzzleSocketName;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Sound Sense")
+	float Loudness = 2.f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Sound Sense")
+	float MaxRange = 1200;
+
 
 protected:
 

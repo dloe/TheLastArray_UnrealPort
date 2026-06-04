@@ -26,6 +26,10 @@ class ACTIONROUGELIKE_API ASProjectileBase : public AActor
 	
 protected:
 
+	// ---------------------------------
+	// -------- Protected Variables -------
+	// ---------------------------------
+
 	//sound cue
 	UPROPERTY(EditDefaultsOnly, Category = "Sounds")
 	USoundCue* ImpactSound;
@@ -55,10 +59,14 @@ protected:
 	float Falloff;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-		URadialForceComponent* myRadialForce;
+	URadialForceComponent* myRadialForce;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Effects")
-		TSubclassOf<UCameraShakeBase> MyShake;
+	TSubclassOf<UCameraShakeBase> MyShake;
+
+	// ---------------------------------
+	// -------- Helper Functions -------
+	// ---------------------------------
 
 	UFUNCTION()
 	virtual void OnActorHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
@@ -74,4 +82,17 @@ protected:
 public:	
 	// Sets default values for this actor's properties
 	ASProjectileBase();
+
+	// ---------------------------------
+	// -------- Public Variables -------
+	// ---------------------------------
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Sound Sense")
+	float Loudness = 2.f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Sound Sense")
+	float MaxRange = 1200;
+
+	// ---------------------------------
+	// ------- Public Functions --------
+	// ---------------------------------
 };

@@ -5,6 +5,8 @@
 
 #include "AI/BTTask_LookAround.h"
 #include "AIController.h"
+#include "BehaviorTree/BlackboardComponent.h"
+#include "Chaos/Vector.h"
 
 
 
@@ -12,6 +14,8 @@ UBTTask_LookAround::UBTTask_LookAround()
 {
 	bNotifyTick = true;
 	NodeName = "LookAround";
+
+	LookAroundSpeedKey.AddFloatFilter(this, GET_MEMBER_NAME_CHECKED(UBTTask_LookAround, LookAroundSpeedKey));
 }
 
 uint16 UBTTask_LookAround::GetInstanceMemorySize() const
@@ -33,9 +37,13 @@ EBTNodeResult::Type UBTTask_LookAround::ExecuteTask(UBehaviorTreeComponent& Owne
 
 	Mem->StartRotation = Pawn->GetActorRotation();
 
-	//figure out teh pattern we look in
-	Mem->TargetAngles = {-45.f, 45.f, 0.f};
+	float TargetAngle = FMath::FRandRange(50.f, 100.f);
+
+	//figure out the pattern we look in, could add more angles maybe
+	Mem->TargetAngles = {-TargetAngle, TargetAngle};
 	Mem->CurrentIndex = 0;
+
+	RotationSpeed = AI->GetBlackboardComponent()->GetValueAsFloat(LookAroundSpeedKey.SelectedKeyName);
 
 	return EBTNodeResult::InProgress;
 }
@@ -56,7 +64,7 @@ void UBTTask_LookAround::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* Node
 	FRotator Target = FRotator(Current.Pitch, TargetYaw, Current.Roll);
 
 	//smooth it more
-	FRotator NewRot = FMath::RInterpConstantTo(Current, Target, DeltaSeconds, Mem->RotationSpeed);
+	FRotator NewRot = FMath::RInterpConstantTo(Current, Target, DeltaSeconds, RotationSpeed);
 	Pawn->SetActorRotation(NewRot);
 
 	//are we close enough to move on?
