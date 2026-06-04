@@ -53,12 +53,12 @@ void ASProjectileBase::Explode_Implementation()
 	//adding ensure to see if we counter this situation at all
 	if (ensure(!this->IsActorBeingDestroyed()))//!IsValidChecked(this)) //future me: did we need that ensure here?
 	{
-		APawn* InstigatorPawn = Cast<APawn>(this);
+		APawn* InstigatorPawn = GetInstigator();
 		if (InstigatorPawn) {
 			InstigatorPawn->MakeNoise(
 				Loudness,
 				InstigatorPawn,
-				InstigatorPawn->GetActorLocation(),
+				GetActorLocation(),
 				MaxRange,
 				TEXT("Projectile Explosion Impact")
 			);

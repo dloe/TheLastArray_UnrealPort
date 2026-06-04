@@ -88,11 +88,12 @@ public:
 	// ---------------------------------
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Sound Sense")
-	float Loudness = 2.f;
+	float Loudness = 1.2f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Sound Sense")
 	float MaxRange = 1200;
 
 	// ---------------------------------
 	// ------- Public Functions --------
 	// ---------------------------------
+
 };

@@ -159,10 +159,19 @@ void USFirearmWeapon::SpawnProjectile(AActor* Instigator)
 		//more accurate version
 		FRotator ProjRotation = FRotationMatrix::MakeFromX(projectileEndLocale - HandLocation).Rotator();
 
-
 		//replaced GetControlRotation with our new target rotation
 		const FTransform SpawnTM = FTransform(ProjRotation, HandLocation);
 		AActor* T = GetWorld()->SpawnActor<AActor>(WeaponProjectile, SpawnTM, SpawnParams);
+
+		if (PawnInstigator) {
+			PawnInstigator->MakeNoise(
+				Loudness,
+				PawnInstigator,
+				PawnInstigator->GetActorLocation(),
+				MaxRange,
+				TEXT("Weapon Attack Sound")
+			);
+		}
 	}
 }
 

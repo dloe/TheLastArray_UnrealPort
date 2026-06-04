@@ -173,12 +173,12 @@ public:
 	
 	//no idea for these, may need to tweak
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement Sound")
-	float WalkLoudness = 1.f;
+	float WalkLoudness = 0.7f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement Sound")
 	float WalkMaxRange = 600;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement Sound")
-	float SprintLoudness = 2.f;
+	float SprintLoudness = 1.f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Movement Sound")
-	float SprintMaxRange = 1200;
+	float SprintMaxRange = 900;
 };

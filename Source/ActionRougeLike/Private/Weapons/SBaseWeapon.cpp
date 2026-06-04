@@ -87,16 +87,7 @@ void USBaseWeapon::PerformAttack(AActor* Instigator, USAction_WeaponAttack* Owni
 {
 	PlayAnimation(Instigator, AttackAnim);
 
-	APawn* InstigatorPawn = Cast<APawn>(Instigator);
-	if(InstigatorPawn) {
-		InstigatorPawn->MakeNoise(
-			Loudness,
-			InstigatorPawn,
-			InstigatorPawn->GetActorLocation(),
-			MaxRange,
-			TEXT("Weapon Attack Sound")
-		);
-	}
+	
 }
 
 
