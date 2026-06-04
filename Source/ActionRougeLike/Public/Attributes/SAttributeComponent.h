@@ -26,6 +26,10 @@ public:
 	// Sets default values for this component's properties
 	USAttributeComponent();
 
+	// ---------------------------------
+	// ------- Public Functions --------
+	// ---------------------------------
+
 	//static functions
 
 	//assess our attributecomp much easier
@@ -39,7 +43,22 @@ public:
 
 protected:
 
+	// ---------------------------------
+	// -------- Helper Functions -------
+	// ---------------------------------
 	
+	//UFUNCTION(ReplicatedUsing="")
+	//bool bIsAlive;
+
+	UFUNCTION(NetMulticast, Reliable) //@FIXME: mark as unreliable once we move the 'state' out of sCharacter
+	void MulticastHealthChanged(AActor* InstigatorActor, float NewHealth, float Delta);
+
+	UFUNCTION(NetMulticast, Unreliable) //@FIXME: mark as unreliable once we move the 'state' out of sCharacter
+	void MulticastRageChanged(AActor* InstigatorActor, float NewRage, float Delta);
+
+	// ---------------------------------
+	// -- Internal state / variables --
+	// ---------------------------------
 
 	//health attribute
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Replicated, Category = "Attributes")
@@ -50,25 +69,19 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Replicated, Category = "Attributes")
 	float HealthMax = 100;
 
-	//UFUNCTION(ReplicatedUsing="")
-	//bool bIsAlive;
-
-	UFUNCTION(NetMulticast, Reliable) //@FIXME: mark as unreliable once we move the 'state' out of sCharacter
-	void MulticastHealthChanged(AActor* InstigatorActor, float NewHealth, float Delta);
-
-	UFUNCTION(NetMulticast, Unreliable) //@FIXME: mark as unreliable once we move the 'state' out of sCharacter
-	void MulticastRageChanged(AActor* InstigatorActor, float NewRage, float Delta);
-
 	//Rage attribute
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated, Category = "Attributes")
 	float Rage;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Replicated, Category = "Attributes")
 	float RageMax = 100;
 
 
 public:
 
-
+	// ---------------------------------
+	// -------- Public Variables -------
+	// ---------------------------------
 	
 	UFUNCTION(BlueprintCallable)
 	bool Kill(AActor* InstigatorActor);

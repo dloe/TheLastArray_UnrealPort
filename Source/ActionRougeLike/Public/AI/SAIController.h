@@ -18,6 +18,14 @@
 class UBehvaiorTree;
 class ASAICharacter;
 
+UENUM(BlueprintType)
+enum class EFactionTeam : uint8 {
+	ENone UMETA(DisplayName = "None"),                      //1
+	EEnemyFaction UMETA(DisplayName = "Enemy Faction"),     //2
+	EPlayer UMETA(DisplayName = "Player"),                  //3
+	ENeutral  UMETA(DisplayName = "Neutral")                //4
+};
+
 /**
  * 
  */
@@ -54,6 +62,8 @@ class ACTIONROUGELIKE_API ASAIController : public AAIController
 	UPROPERTY(EditDefaultsOnly, Category = "Stimuli Related")
 	float ForgetSightTargetTime;
 
+	
+
 protected:
 
 	// ---------------------------------
@@ -86,8 +96,8 @@ protected:
 	UFUNCTION()
 	void HandleSightSense(AActor* Actor, FAIStimulus Stimulus);
 
-	UFUNCTION()
-	void HandleDamageSense(AActor* Actor, FAIStimulus Stimulus);
+	/*UFUNCTION()
+	void HandleDamageSense(AActor* Actor, FAIStimulus Stimulus);*/
 
 	UFUNCTION()
 	void HandleHearingSense(AActor* Actor, FAIStimulus Stimulus);

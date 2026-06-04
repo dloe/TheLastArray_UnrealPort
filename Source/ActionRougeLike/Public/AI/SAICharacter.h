@@ -53,8 +53,12 @@ public:
 
 	virtual FGenericTeamId GetGenericTeamId() const override;
 
-	UPROPERTY(EditAnywhere, Category = "Affiaiation")
+	//TODO: make this a global enum
+	UPROPERTY(EditAnywhere, Category = "Affiliation")
 	int AffiliationGroup = 2;
+
+	/*UPROPERTY(EditDefaultsOnly, Category = "Affiliation")
+	EFactionTeam AIFaction;*/
 	
 protected:
 	

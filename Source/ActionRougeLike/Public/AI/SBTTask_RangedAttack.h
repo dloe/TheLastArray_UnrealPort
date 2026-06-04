@@ -23,9 +23,11 @@ class ACTIONROUGELIKE_API USBTTask_RangedAttack : public UBTTaskNode
 
 protected:
 
+	//TODO: this should be better configured to connect to the AICharacter
 	UPROPERTY(EditAnywhere, Category = "AI")
 	float MaxBulletSpread;
 
+	//TODO: this should connect to the AI's weapon on its inventory
 	UPROPERTY(EditAnywhere, Category = "AI")
 	TSubclassOf<AActor> ProjectileClass;
 
