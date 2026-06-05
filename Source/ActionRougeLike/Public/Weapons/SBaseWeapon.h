@@ -87,6 +87,13 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Weapon Stats")
 	int TotalAmmoReserves;
 
+	//bullet spread
+	UPROPERTY(EditAnywhere, Category = "Weapon Stats")
+	float MaxBulletSpread;
+
+	UPROPERTY(EditAnywhere, Category = "Weapon Stats")
+	float ShootDelay;
+
 	//UPROPERTY(EditAnywhere, Category = "Weapon Stats")
 	//int CurrentMagazineSize;
 

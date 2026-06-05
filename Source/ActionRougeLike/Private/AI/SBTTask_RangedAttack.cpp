@@ -50,11 +50,14 @@ EBTNodeResult::Type USBTTask_RangedAttack::ExecuteTask(UBehaviorTreeComponent& O
 			return EBTNodeResult::Failed;
 		}
 
-		//we will then need to get a direciton if we have a target (aka our player)
+		//we will then need to get a direction if we have a target (aka our player)
 		FVector Direction = TargetActor->GetActorLocation() - MuzzleLocation;
 		//turn it into a rotation
 		//we should have a little bit or random offset (aka weapon spread), less accurate
 		FRotator MuzzleRotation = Direction.Rotation();
+
+		if(OwnerComp.GetBlackboardComponent()->GetKeyID("MaxBulletSpread") != FBlackboard::InvalidKey)
+			MaxBulletSpread = OwnerComp.GetBlackboardComponent()->GetValueAsFloat("MaxBulletSpread");
 
 		MuzzleRotation.Pitch += FMath::RandRange(0.0f, MaxBulletSpread);
 		MuzzleRotation.Yaw += FMath::RandRange(0.0f, MaxBulletSpread);

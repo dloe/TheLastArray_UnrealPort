@@ -98,7 +98,7 @@ USBaseWeapon* USBaseInventoryComponent::GetCurrentWeaponInfo()
 
 /// <summary>
 /// Using component space instead of bone space for weapon left hand ik socket
-/// otherwise causes AO related drifting when i look up and down. Left and right problably too but i used the 
+/// otherwise causes AO related drifting when i look up and down. Left and right probably too but i used the 
 /// rotate in place to hid it.
 /// </summary>
 /// <param name="Instigator"></param>

@@ -13,7 +13,9 @@
 #include "GenericTeamAgentInterface.h"
 #include "Blueprint/UserWidget.h"
 #include "Widgets/SWorldUserWidget.h"
+#include "Weapons/USFirearmWeapon.h"
 #include "EFactionTypes.h"
+#include "Weapons/SBaseWeapon.h"
 #include "SAICharacter.generated.h"
 
 class UUserWidget;
@@ -87,8 +89,17 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USActionComponent* ActionComp;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Inventory")
+	USBaseWeapon* CurrentWeapon;
+
 	UPROPERTY(EditDefaultsOnly, Category = "Components")
 	float DeathReward;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Attack Stats")
+	float MaxBulletSpread = 6;
+
+	UPROPERTY(EditAnywhere, Category = "Weapon Stats")
+	float ShootDelay = 2;
 
 	// ---------------------------------
 	// -------- Helper Functions -------

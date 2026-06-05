@@ -19,12 +19,13 @@
 #include "Gamemodes/SMainGameMode.h"
 #include "AIController.h"
 
+
 // Sets default values
 ASAICharacter::ASAICharacter()
 {
     AttributeComponent = CreateDefaultSubobject<USAttributeComponent>("AttributeComp");
     ActionComp = CreateDefaultSubobject<USActionComponent>("ActionComp");
-    InventoryComponent = CreateDefaultSubobject<USBaseInventoryComponent>("PlayerInventoryComp");
+    InventoryComponent = CreateDefaultSubobject<USBaseInventoryComponent>("BaseInventoryComp");
     AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
     //fix an issue with collision on our capsule colliders
@@ -55,6 +56,13 @@ void ASAICharacter::BeginPlay()
         //don't even need to null check this since we know for a fact this is valid. Cannot be null
         AIC->GetBlackboardComponent()->SetValueAsFloat("RotateInPlaceSpeed", RotationSpeed);
         AIC->AffiliateTeamAIC = AffiliateTeam;
+
+        //set current weapon stats
+        //CurrentWeapon = InventoryComponent->GetCurrentWeaponInfo();
+
+        //use for accuracy
+        AIC->GetBlackboardComponent()->SetValueAsFloat("MaxBulletSpread", MaxBulletSpread);
+        AIC->GetBlackboardComponent()->SetValueAsFloat("ShootDelay", ShootDelay);
     }
 }
 

@@ -25,10 +25,11 @@ public:
 	// Sets default values for this actor's properties
 	ASTargetDummy();
 
-protected:
-
-	UPROPERTY(VisibleAnywhere)
+	//need to expose this for testing
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
 	USAttributeComponent* AttributeComponent;
+
+protected:
 
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* MeshComp;
