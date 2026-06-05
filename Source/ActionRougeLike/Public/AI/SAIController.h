@@ -12,19 +12,13 @@
 #include "Perception/AISense_Sight.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Widgets/SWorldUserWidget.h"
+#include "SAICharacter.h"
+#include "EFactionTypes.h"
 #include "SAIController.generated.h"
 
 //forward declare this
 class UBehvaiorTree;
 class ASAICharacter;
-
-UENUM(BlueprintType)
-enum class EFactionTeam : uint8 {
-	ENone UMETA(DisplayName = "None"),                      //1
-	EEnemyFaction UMETA(DisplayName = "Enemy Faction"),     //2
-	EPlayer UMETA(DisplayName = "Player"),                  //3
-	ENeutral  UMETA(DisplayName = "Neutral")                //4
-};
 
 /**
  * 
@@ -62,7 +56,8 @@ class ACTIONROUGELIKE_API ASAIController : public AAIController
 	UPROPERTY(EditDefaultsOnly, Category = "Stimuli Related")
 	float ForgetSightTargetTime;
 
-	
+	UPROPERTY(EditAnywhere, Category = "Affiliation")
+	EFactionTeam AffiliateTeamAIC = EFactionTeam::EEnemyFaction;
 
 protected:
 
@@ -72,8 +67,6 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
 	UBehaviorTree* BehaviorTree;
-
-	
 
 	FTimerHandle ForgetTimerHandle;
 

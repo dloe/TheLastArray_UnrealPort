@@ -8,6 +8,7 @@
 #include "GameFramework/Pawn.h"
 #include "AIController.h"
 #include "GameFramework/Actor.h"
+#include "AI/EFactionTypes.h"
 
 UBTD_CanShootTarget::UBTD_CanShootTarget()
 {
@@ -92,7 +93,7 @@ bool UBTD_CanShootTarget::IsFriendly(AActor* A, AActor* B) const
 		//one of our actors isn't on a team, neutral and therefore will return false
 		return false;
 	}
-	if (TeamA->GetTeamAttitudeTowards(*B) == ETeamAttitude::Friendly)
+	if (TeamA->GetGenericTeamId() != TeamB->GetGenericTeamId())
 	{
 		return false;
 	}

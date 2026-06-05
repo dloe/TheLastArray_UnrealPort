@@ -52,3 +52,8 @@ void ASTargetDummy::Tick(float DeltaTime)
 
 }
 
+FGenericTeamId ASTargetDummy::GetGenericTeamId() const
+{
+	return FGenericTeamId(static_cast<uint8>(AffiliateTeam));
+}
+

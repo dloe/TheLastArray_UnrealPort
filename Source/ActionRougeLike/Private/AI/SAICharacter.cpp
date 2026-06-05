@@ -44,16 +44,17 @@ ASAICharacter::ASAICharacter()
 /// <returns></returns>
 FGenericTeamId ASAICharacter::GetGenericTeamId() const
 {
-    return FGenericTeamId(AffiliationGroup);
+    return FGenericTeamId(static_cast<uint8>(AffiliateTeam));
 }
 
 void ASAICharacter::BeginPlay()
 {
     Super::BeginPlay();
-    AAIController* AIC = Cast<AAIController>(GetController());
+    ASAIController* AIC = Cast<ASAIController>(GetController());
     if (AIC) {
         //don't even need to null check this since we know for a fact this is valid. Cannot be null
         AIC->GetBlackboardComponent()->SetValueAsFloat("RotateInPlaceSpeed", RotationSpeed);
+        AIC->AffiliateTeamAIC = AffiliateTeam;
     }
 }
 

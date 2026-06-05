@@ -13,6 +13,7 @@
 #include "GenericTeamAgentInterface.h"
 #include "Blueprint/UserWidget.h"
 #include "Widgets/SWorldUserWidget.h"
+#include "EFactionTypes.h"
 #include "SAICharacter.generated.h"
 
 class UUserWidget;
@@ -56,12 +57,8 @@ public:
 
 	virtual FGenericTeamId GetGenericTeamId() const override;
 
-	//TODO: make this a global enum
 	UPROPERTY(EditAnywhere, Category = "Affiliation")
-	int AffiliationGroup = 2;
-
-	/*UPROPERTY(EditDefaultsOnly, Category = "Affiliation")
-	EFactionTeam AIFaction;*/
+	EFactionTeam AffiliateTeam = EFactionTeam::EEnemyFaction;
 	
 protected:
 	

@@ -16,6 +16,8 @@
 #include "Actions/SActionEffect.h"
 #include "ActorComponents/SPlayerInventoryComponent.h"
 #include "GenericTeamAgentInterface.h"
+#include "AI/SAICharacter.h"
+#include "AI/EFactionTypes.h"
 #include "SCharacter.generated.h"
 
 
@@ -156,6 +158,10 @@ public:
 	// ---------------------------------
 	// -------- Public Variables -------
 	// ---------------------------------
+
+	UPROPERTY(EditAnywhere, Category = "Affiliation")
+	EFactionTeam AffiliateTeam = EFactionTeam::EPlayer;
+
 	/// <summary>
 	/// When the player shoots the gun, we want a post fire blend animation to run where the player ironsights idle
 	/// </summary>

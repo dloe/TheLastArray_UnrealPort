@@ -14,6 +14,7 @@
 #include "AI/SAICharacter.h"
 #include "Perception/AISense_Hearing.h"
 #include "TimerManager.h"
+#include "GameFramework/Pawn.h"
 
 ASAIController::ASAIController()
 {
@@ -81,7 +82,7 @@ void ASAIController::OnMoveCompleted(FAIRequestID RequestID, const FPathFollowin
 
 FGenericTeamId ASAIController::GetGenericTeamId() const
 {
-    return FGenericTeamId(2); //enemy team
+    return FGenericTeamId(static_cast<uint8>(AffiliateTeamAIC)); //enemy team 2
 }
 
 /// <summary>
@@ -97,15 +98,24 @@ ETeamAttitude::Type ASAIController::GetTeamAttitudeTowards(const AActor& OtherAc
     if (!OtherTeamAgent)
         return ETeamAttitude::Neutral;
 
-    FGenericTeamId OtherTeamID = OtherTeamAgent->GetGenericTeamId();
+    /*APawn* Pawn = GetPawn();
+    ASAICharacter* Char = Cast< ASAICharacter>(Pawn);
+    Char->GetGenericTeamId();*/
 
-    // Player team, we hate those guys
-    if (OtherTeamID == FGenericTeamId(1))
-        return ETeamAttitude::Hostile;
+    FGenericTeamId OtherTeamID = OtherTeamAgent->GetGenericTeamId();
+    FGenericTeamId OurID = GetGenericTeamId();
 
     // Same team, they pretty chill
-    if (OtherTeamID == GetGenericTeamId())
+    if (OtherTeamID == OurID)
         return ETeamAttitude::Friendly;
+
+    FGenericTeamId PlayerID = FGenericTeamId(static_cast<uint8>(EFactionTeam::EPlayer));
+    FGenericTeamId EnemyID = FGenericTeamId(static_cast<uint8>(EFactionTeam::EEnemyFaction));
+
+    // Player team, we hate those guys
+    if ( (OurID == PlayerID && OtherTeamID == EnemyID) ||
+        (OurID == EnemyID && OtherTeamID == PlayerID) )
+        return ETeamAttitude::Hostile;
 
     //otherwise... eh
     return ETeamAttitude::Neutral;

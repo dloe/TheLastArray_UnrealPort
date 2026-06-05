@@ -60,7 +60,7 @@ ASCharacter::ASCharacter()
 /// <returns></returns>
 FGenericTeamId ASCharacter::GetGenericTeamId() const
 {
-	return FGenericTeamId(1); //players team
+	return FGenericTeamId(static_cast<uint8>(AffiliateTeam)); //players team
 }
 
 void ASCharacter::PostInitializeComponents()
