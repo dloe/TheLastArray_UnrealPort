@@ -30,12 +30,12 @@ void USBTService_CheckAttackRange::TickNode(UBehaviorTreeComponent& OwnerComp, u
 				{
 					float DistanceTo = FVector::Distance(TargetActor->GetActorLocation(), AIPawn->GetActorLocation());
 
-					bool bWithinRange = DistanceTo < 2000.0f;
+					bool bWithinRange = DistanceTo < BlackBoardComp->GetValueAsFloat("AttackRange"); //2000
 
 					bool bHasLOS = false;
 					if (bWithinRange) {
 						//does a line trace by ECC_Visibility
-						bHasLOS = MyController->LineOfSightTo(TargetActor);
+						bHasLOS = MyController->LineOfSightTo(TargetActor); //maybe use elsewhere?
 					}
 
 					BlackBoardComp->SetValueAsBool(AttackRangeKey.SelectedKeyName,bHasLOS);

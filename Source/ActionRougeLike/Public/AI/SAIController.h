@@ -38,7 +38,7 @@ class ACTIONROUGELIKE_API ASAIController : public AAIController
 	UFUNCTION(BlueprintCallable, Category = "AI")
 	void SetTargetActor(AActor* NewTarget);
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable, Category = "Perception")
 	void ReportDamage(AActor* InstigatorActor, float Delta, FVector HitLocation);
 
 	//TODO: Might not need

@@ -62,6 +62,7 @@ void ASAICharacter::BeginPlay()
 
         //use for accuracy
         AIC->GetBlackboardComponent()->SetValueAsFloat("MaxBulletSpread", MaxBulletSpread);
+        AIC->GetBlackboardComponent()->SetValueAsFloat("AttackRange", AttackRange);
         AIC->GetBlackboardComponent()->SetValueAsFloat("ShootDelay", ShootDelay);
     }
 }

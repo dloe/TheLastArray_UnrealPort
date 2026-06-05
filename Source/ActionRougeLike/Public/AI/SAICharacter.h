@@ -101,6 +101,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Weapon Stats")
 	float ShootDelay = 2;
 
+	UPROPERTY(EditAnywhere, Category = "Weapon Stats")
+	float AttackRange = 2000.f;
+
 	// ---------------------------------
 	// -------- Helper Functions -------
 	// ---------------------------------

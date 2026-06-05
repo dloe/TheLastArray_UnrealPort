@@ -85,41 +85,7 @@ FGenericTeamId ASAIController::GetGenericTeamId() const
     return FGenericTeamId(static_cast<uint8>(AffiliateTeamAIC)); //enemy team 2
 }
 
-/// <summary>
-/// Be the therapist and tell them how to feel about others. Internal monologue
-/// 
-/// </summary>
-/// <param name="OtherActor"></param>
-/// <returns></returns>
-ETeamAttitude::Type ASAIController::GetTeamAttitudeTowards(const AActor& OtherActor) const
-{
-    //grab their interface if we can
-    const IGenericTeamAgentInterface* OtherTeamAgent = Cast<IGenericTeamAgentInterface>(&OtherActor);
-    if (!OtherTeamAgent)
-        return ETeamAttitude::Neutral;
 
-    /*APawn* Pawn = GetPawn();
-    ASAICharacter* Char = Cast< ASAICharacter>(Pawn);
-    Char->GetGenericTeamId();*/
-
-    FGenericTeamId OtherTeamID = OtherTeamAgent->GetGenericTeamId();
-    FGenericTeamId OurID = GetGenericTeamId();
-
-    // Same team, they pretty chill
-    if (OtherTeamID == OurID)
-        return ETeamAttitude::Friendly;
-
-    FGenericTeamId PlayerID = FGenericTeamId(static_cast<uint8>(EFactionTeam::EPlayer));
-    FGenericTeamId EnemyID = FGenericTeamId(static_cast<uint8>(EFactionTeam::EEnemyFaction));
-
-    // Player team, we hate those guys
-    if ( (OurID == PlayerID && OtherTeamID == EnemyID) ||
-        (OurID == EnemyID && OtherTeamID == PlayerID) )
-        return ETeamAttitude::Hostile;
-
-    //otherwise... eh
-    return ETeamAttitude::Neutral;
-}
 
 /// <summary>
 /// grab our current target
@@ -157,8 +123,9 @@ void ASAIController::ReportDamage(AActor* InstigatorActor, float Delta, FVector 
     //cancel this timer if we see them
     GetWorld()->GetTimerManager().ClearTimer(ForgetTimerHandle);
 
+    AActor* PotentialTarget = GetTargetActor();
     // Ignore if target already set
-    if (GetTargetActor() != PawnThatHurtUS)
+    if (PotentialTarget != PawnThatHurtUS)
     {
         //if within line of sight
         if(CanSeePlayer())
@@ -293,14 +260,14 @@ bool ASAIController::IsValidHostileTarget(AActor* Actor)
     if (!PotentialPawn)
         return false;
 
-    if(GetTargetActor() == PotentialPawn)
-        return false;
+    //if(GetTargetActor() == PotentialPawn)
+    //    return false;
 
     //team interface?
     //are they on our team?
     IGenericTeamAgentInterface* TeamAgent = Cast<IGenericTeamAgentInterface>(Actor);
     if (!TeamAgent)
-        return false;
+        return false; //assuming neutral
 
     ETeamAttitude::Type Attitude = GetTeamAttitudeTowards(*Actor);
     if (Attitude == ETeamAttitude::Hostile)
@@ -308,6 +275,42 @@ bool ASAIController::IsValidHostileTarget(AActor* Actor)
     else {
         return false;
     }
+}
+
+/// <summary>
+/// Be the therapist and tell them how to feel about others. Internal monologue
+/// 
+/// </summary>
+/// <param name="OtherActor"></param>
+/// <returns></returns>
+ETeamAttitude::Type ASAIController::GetTeamAttitudeTowards(const AActor& OtherActor) const
+{
+    //grab their interface if we can
+    const IGenericTeamAgentInterface* OtherTeamAgent = Cast<IGenericTeamAgentInterface>(&OtherActor);
+    if (!OtherTeamAgent)
+        return ETeamAttitude::Neutral;
+
+    /*APawn* Pawn = GetPawn();
+    ASAICharacter* Char = Cast< ASAICharacter>(Pawn);
+    Char->GetGenericTeamId();*/
+
+    FGenericTeamId OtherTeamID = OtherTeamAgent->GetGenericTeamId();
+    FGenericTeamId OurID = GetGenericTeamId();
+
+    // Same team, they pretty chill
+    if (OtherTeamID == OurID)
+        return ETeamAttitude::Friendly;
+
+    FGenericTeamId PlayerID = FGenericTeamId(static_cast<uint8>(EFactionTeam::EPlayer));
+    FGenericTeamId EnemyID = FGenericTeamId(static_cast<uint8>(EFactionTeam::EEnemyFaction));
+
+    // Player team, we hate those guys
+    if ((OurID == PlayerID && OtherTeamID == EnemyID) ||
+        (OurID == EnemyID && OtherTeamID == PlayerID))
+        return ETeamAttitude::Hostile;
+
+    //otherwise... eh
+    return ETeamAttitude::Neutral;
 }
 
 /// <summary>
