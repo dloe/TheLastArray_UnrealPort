@@ -172,9 +172,11 @@ void ULevelAssetSetupComponent::SetupLevelAssetComponent()
 			float cordX = (x + seedOffset_Items.X) / float(LocalLevel->GameMapTextureSize - 1);
 			float cordY = (y + seedOffset_Items.Y) / float(LocalLevel->GameMapTextureSize - 1);
 			float NoiseCheck = FMath::PerlinNoise2D(FVector2D(cordX, cordY) * LocalLevel->PerlinScaleFreq);
+			//build up max and min noise values for later checks
 			MinNoiseItems = FMath::Min(MinNoiseItems, NoiseCheck);
 			MaxNoiseItems = FMath::Max(MaxNoiseItems, NoiseCheck);
 
+			//do the same for enemies
 			float cordX2 = (x + seedOffset_Enemies.X) / float(LocalLevel->GameMapTextureSize - 1);
 			float cordY2 = (y + seedOffset_Enemies.Y) / float(LocalLevel->GameMapTextureSize - 1);
 			NoiseCheck = FMath::PerlinNoise2D(FVector2D(cordX2, cordY2) * LocalLevel->PerlinScaleFreq);
@@ -192,6 +194,9 @@ void ULevelAssetSetupComponent::SetupLevelAssetComponent()
 	}
 }
 
+/// <summary>
+/// Populate secret room
+/// </summary>
 void ULevelAssetSetupComponent::ActivateSecretRoom()
 {
 	//get placed secret tile ASTileVariantEnviornment
@@ -206,7 +211,7 @@ void ULevelAssetSetupComponent::ActivateSecretRoom()
 	{
 		check(PossiblePickup); //trying this check 
 		const FVector relativeLocation = PossiblePickup->GetRelativeLocation();
-		//check noise 
+		//check noise (using our seed as an offset)
 		FVector2D inputConvertionSeedOffset = FVector2D(relativeLocation.X + seedOffset_Items.X, relativeLocation.Y + seedOffset_Items.Y);
 		float noiseMeasurement = GetNoiseVec(inputConvertionSeedOffset, MinNoiseItems, MaxNoiseItems);
 
@@ -326,7 +331,7 @@ void ULevelAssetSetupComponent::ActivateItems()
 			check(PossiblePickup); //trying this check 
 			const FVector relativeLocation = PossiblePickup->GetRelativeLocation();
 			//UE_LOG(LogTemp, Log, TEXT("Cords: %s"), *relativeLocation.ToString());
-			//check noise 
+			//check noise (using our seed as an offset)
 			FVector2D inputConvertionSeedOffset = FVector2D(relativeLocation.X + seedOffset_Items.X, relativeLocation.Y + seedOffset_Items.Y);
 			float noiseMeasurement = GetNoiseVec(inputConvertionSeedOffset, MinNoiseItems, MaxNoiseItems);
 			//UE_LOG(LogTemp, Log, TEXT("Noise lookup: %f"), noiseMeasurement);
@@ -437,6 +442,12 @@ void ULevelAssetSetupComponent::PlaceItemPickup(UStaticMeshComponent* PickupMark
 
 }
 
+/// <summary>
+/// Choose random enemy based on weights, using asset load for faster spawning of enemies
+/// </summary>
+/// <param name="PickupMarker"></param>
+/// <param name="AttachedTile"></param>
+/// <param name="numberSpawned"></param>
 void ULevelAssetSetupComponent::PlaceEnemy(UStaticMeshComponent* PickupMarker, ASTileVariantEnviornment* AttachedTile, int numberSpawned)
 {
 	FVector spawnLocation = PickupMarker->GetComponentLocation();
@@ -500,7 +511,6 @@ ESpawnTiers ULevelAssetSetupComponent::GetTierOnPercent(float inputFloat)
 /// - Mini bosses can spawn on some objectives (done in objective function)
 /// 
 /// - Enemies are weighted
-/// - 
 /// </summary>
 void ULevelAssetSetupComponent::ActivateEnemies()
 {
@@ -581,14 +591,14 @@ void ULevelAssetSetupComponent::SetupStartingTile()
 		check(PossiblePickup); //trying this check 
 		const FVector relativeLocation = PossiblePickup->GetRelativeLocation();
 		//UE_LOG(LogTemp, Log, TEXT("Cords: %s"), *relativeLocation.ToString());
-		//check noise 
+		//check noise (using our seed as an offset)
 		FVector2D inputConvertionSeedOffset = FVector2D(relativeLocation.X + seedOffset_Items.X, relativeLocation.Y + seedOffset_Items.Y);
 		float noiseMeasurement = GetNoiseVec(inputConvertionSeedOffset, MinNoiseItems, MaxNoiseItems);
 		//UE_LOG(LogTemp, Log, TEXT("Noise lookup: %f"), noiseMeasurement);
 
 		//threshold check TODO: This will be assigned from 
 		float itemThreshold = LocalLevel->GetLocalPickupSpawnLevelThreshold();
-		//if meeds threshold, spawn item function for weight lookup and spawn procedure
+		//if meets threshold, spawn item function for weight lookup and spawn procedure
 
 		bool debug = false;
 		//TODO: inverse threshold so we go for darker saturation from noise return than the bright color
@@ -604,20 +614,22 @@ void ULevelAssetSetupComponent::SetupStartingTile()
 
 			//UE_LOG(LogTemp, Log, TEXT("Item %d placed"), PickupsPlaced - 1);
 		}
-		if (debug) {
-			//UE_LOG(LogTemp, Log, TEXT("item spawned %d: Comparing noise val: %f <= threshold: %f -- Status: %d"), (PickupsPlaced - 1), noiseMeasurement, itemThreshold, debug);
+		/*if (debug) {
+			UE_LOG(LogTemp, Log, TEXT("item spawned %d: Comparing noise val: %f <= threshold: %f -- Status: %d"), (PickupsPlaced - 1), noiseMeasurement, itemThreshold, debug);
 		}
 		else {
-			//UE_LOG(LogTemp, Log, TEXT("Comparing noise val: %f <= threshold: %f -- Status: %d"), noiseMeasurement, itemThreshold, debug);
-		}
+			UE_LOG(LogTemp, Log, TEXT("Comparing noise val: %f <= threshold: %f -- Status: %d"), noiseMeasurement, itemThreshold, debug);
+		}*/
 	}
+
 #if WITH_EDITOR
 	UE_LOG(LogTemp, Log, TEXT(" --- Tile complete %s, local total: %d --- "), *SpawnTileEnvRef->GetActorLabel(), currentAssetPlacedCount);
 #endif
+
 }
 
 /// <summary>
-/// Enemy pool lookup
+/// Enemy pool lookup, using weights to determie which enemy to spawn
 /// 
 /// TODO: give option for building out mini patrol
 /// </summary>
@@ -653,26 +665,25 @@ FEnemySpawnInfo* ULevelAssetSetupComponent::GetWeightedRandomEnemy()
 }
 
 /// <summary>
-/// Inputs a local transform and returns their noise eligibility?
+/// Inputs a local transform and returns their noise eligibility as float.
 /// 
+/// Notes:
 /// -Set thresholds, spawn items with very high noise values, creating more rare or high priority 
 /// hot spots. Low thresholds, spawn more with broader coverage 
-///Perlin noise
-///calculated offsets
+///Perlin noise - calculated offsets
 ///highest values are choosen from the outputs of plugging in x,y into Perlin noise
-///some type of cap for like of output >0.7 then this is a canadate to place
+///some type of cap (a threshold) for like of output >0.7 then this is a canadate to place
 /// 
 /// To make sure the noise fits in with our seed:
-///The base math noise lookup can't directly apply seeds, but we can simply add our seed to
-/// the local x/y input. And to ensure we aren't reusing same values for each tile, we can apply 
+/// The base math noise lookup can't directly apply seeds, but we can simply add our seed to
+/// the local x/y input (so before we enter GetNoiseVec). And to ensure we aren't reusing same values for each tile, we can apply 
 /// an addition like (tile number + 100) as well
-///calculated offsets
 /// 
-/// 
-///can control density of spread of placements by adjusting noise thresholds and scaling
+/// - can control density of spread of placements by adjusting noise thresholds and scaling
 /// Adjusting scale with Perlin: multiply fvector2d by a float value noise scale. Noise scale > 1.0 
 /// increases frequency, creating smaller more detailed patterns. Noise scale < 1.0 decreases 
 /// frequency, creating smaller, smoother patterns 
+/// 
 ///Low scale = wide smooth, areas of clustering. 
 ///High scale = fine grated placement, such as detailed enemy patrol points or env props
 /// </summary>
@@ -685,15 +696,17 @@ float ULevelAssetSetupComponent::GetNoiseVec(FVector2D inputCords, float MinNois
 
 	//multiply our cords (with applied offset) to our scale frequency
 	//'seedOffset' vect2 is calculated at the beginning and is the same offset used throughout component
-   // inputConvertionSeedOffset = (inputCords + seedOffset_Items);
+    // inputConvertionSeedOffset = (inputCords + seedOffset_Items);
 	//UE_LOG(LogTemp, Log, TEXT("Input cords with offset and scale: %s"), *inputConvertionSeedOffset.ToString());
 
-	//normalize
+	//grab values based on texture size
 	float cordX = (inputCords.X) / float(LocalLevel->GameMapTextureSize - 1);
 	float cordY = (inputCords.Y) / float(LocalLevel->GameMapTextureSize - 1);
 
+	//plug in cords and mult by scale freq
 	float NoiseLookup = FMath::PerlinNoise2D(FVector2D(cordX, cordY) * LocalLevel->PerlinScaleFreq);
 
+	//further normalize noise values with build up max and min noise values
 	float NormalizedNoise = (NoiseLookup - MinNoise) / (MaxNoise - MinNoise);
 
 	//UE_LOG(LogTemp, Log, TEXT("not normalized: %f"), NormalizedNoise);
@@ -847,6 +860,7 @@ UTexture2D* ULevelAssetSetupComponent::DebugCreatePerlinNoiseTexture(int32 size,
 	//might be intensive to run, this may need to be moved to run and used before we place items btw
 	//reminder: scale should make our min and max as close as possible to -1,1
 
+	//TODO: Try and use const more often when possible
 	const FVector2D Offset = (DebugTextureToggle) ? seedOffset_Items : seedOffset_Enemies;
 	const float MinNoise = (DebugTextureToggle) ? MinNoiseItems : MinNoiseEnemies;
 	const float MaxNoise = (DebugTextureToggle) ? MaxNoiseItems : MaxNoiseEnemies;

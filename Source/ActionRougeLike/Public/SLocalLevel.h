@@ -31,8 +31,6 @@ class ACTIONROUGELIKE_API ALocalLevel : public AActor
 {
 	/// <summary>
 	/// Local Level
-	/// Dylan Loe
-	/// 
 	/// 
 	/// Notes:
 	/// - Keeps track of local level info and setup

@@ -21,6 +21,8 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEnemiesSpawned);
 /// <summary>
 /// This is local structure that is built off the ItemData table and the UPickupAssetData TieredItem info we build 
 /// and configure
+/// 
+/// TODO: Remove reflexive macros from struct, causing issues with assignments of values
 /// </summary>
 //USTRUCT(BlueprintType)
 struct FLocalLevelItemSpawnTiers {

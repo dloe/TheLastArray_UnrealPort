@@ -64,8 +64,7 @@ UCLASS()
 class ACTIONROUGELIKE_API ASTileManager : public AActor
 {
 	/// <summary>
-	/// Tile Manager Script
-	/// Dylan Loe
+	/// Tile Manager
 	/// 
 	/// Notes:
 	/// - Main Manager for Map creation and Tiles, more monolithic in nature
@@ -451,7 +450,7 @@ protected:
 	void SpawnDoor(ASTile* tile, ETileSide SideToSpawnDoor, FString NameOfTileToConnect);
 
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
-	void RemoveUnusedOuters();
+	void RemoveUnusedOuterWalls();
 
 #pragma endregion
 

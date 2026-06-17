@@ -35,7 +35,7 @@ void UTileVariantComponent::TickComponent(float DeltaTime, ELevelTick TickType, 
 	// ...
 }
 
-void UTileVariantComponent::SetVariables()
+void UTileVariantComponent::SetTierDataVariables()
 {
 	TileVariantTiersLocal = {
 			FTileVariantDefinitionRow(Stage1_Highest, 0, 1),

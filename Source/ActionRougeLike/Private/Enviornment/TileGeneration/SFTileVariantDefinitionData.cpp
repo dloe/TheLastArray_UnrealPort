@@ -117,8 +117,13 @@ TArray<FIntPointPair> USFTileVariantDefinitionData::RotateConnectedSides(TArray<
 
 }
 
-//This populates the VariantPaths and SidesToChechRotate on the data objects if not set up right, should only have to
-//be run once. If the counts for each are not 4 then we gotta remake them. Each direction is represented.
+/// <summary>
+/// This populates the VariantPaths and SidesToChechRotate on the data objects if not set up right, should only have to
+/// be run once. If the counts for each are not 4 then we gotta remake them. Each direction is represented.
+/// 
+/// This sets up the paths to check to see if the corresponding variant can be placed. When placing a variant, we want to ensure
+/// all possible rotations of the variant can be placed.
+/// </summary>
 void USFTileVariantDefinitionData::SetVariantPaths()
 {
 	//if not empty and size is 4 or greater, start over
@@ -127,7 +132,6 @@ void USFTileVariantDefinitionData::SetVariantPaths()
 		VariantPaths.Empty();
 	}
 
-	
 	if(VariantPaths.IsEmpty()) {
 		//UE_LOG(LogTemp, Error, TEXT("Array isn't empty? why this run more than once on this guy?"));
 		VariantPaths.Add(FVariantOffsetTransforms_Rotates(TileVariantOffsets, 0)); //offsets is empty at constructors

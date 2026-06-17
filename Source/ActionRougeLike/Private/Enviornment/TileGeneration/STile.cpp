@@ -179,13 +179,13 @@ void ASTile::SyncDoors()
 
 void ASTile::ShadeNull()
 {
-	DrawDebugSphere(GetWorld(), this->GetActorLocation(), 200.0f, 20, FColor::Red, false, 100);
+	DrawDebugSphere(GetWorld(), this->GetActorLocation(), 200.0f, 15, FColor::Red, false, 100);
 	TileStatus = ETileStatus::ETile_NULLROOM;
 }
 
 void ASTile::ShadePath()
 {
-	DrawDebugSphere(GetWorld(), this->GetActorLocation(), 200.0f, 20, FColor::Blue, false, 100);
+	DrawDebugSphere(GetWorld(), this->GetActorLocation(), 200.0f, 15, FColor::Blue, false, 100);
 
 	TileStatus = ETileStatus::ETile_PATH;
 }
@@ -204,13 +204,13 @@ void ASTile::ShadeBossRoom()
 
 void ASTile::ShadeStartingRoom()
 {
-	DrawDebugSphere(GetWorld(), this->GetActorLocation(), 200.0f, 20, FColor::Green, false, 100);
+	DrawDebugSphere(GetWorld(), this->GetActorLocation(), 200.0f, 40, FColor::Green, false, 200);
 	TileStatus = ETileStatus::ETile_STARTINGROOM;
 }
 
 void ASTile::ShadeSecretRoom()
 {
-	DrawDebugSphere(GetWorld(), this->GetActorLocation(), 200.0f, 20, FColor::Purple, false, 100);
+	DrawDebugSphere(GetWorld(), this->GetActorLocation(), 300.0f, 40, FColor::Purple, false, 300);
 	TileStatus = ETileStatus::ETile_SECRETROOM;
 }
 
@@ -222,7 +222,7 @@ void ASTile::ShadeTestRoom()
 
 void ASTile::ShadeEndRoom()
 {
-	DrawDebugSphere(GetWorld(), this->GetActorLocation(), 200.0f, 20, FColor::Black, false, 100);
+	DrawDebugSphere(GetWorld(), this->GetActorLocation(), 300.0f, 40, FColor::Black, false, 200);
 #if WITH_EDITOR
 	this->SetActorLabel("Tile_FinalRoom");
 #endif

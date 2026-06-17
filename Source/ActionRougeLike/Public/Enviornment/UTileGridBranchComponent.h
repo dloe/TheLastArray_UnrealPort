@@ -78,10 +78,10 @@ protected:
 	// ---------------------------------
 
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
-	void RandomRoomsAndBranchesAdditions();
+	void BranchAdditionsSetup();
 
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
-	void AddSingleRooms();
+	void RandomSingleRoomSetup();
 
 	UFUNCTION(BlueprintCallable, Category = "Abnormal Tile Placements")
 	void GridScanForCustomTileSizedVariants();
@@ -112,9 +112,6 @@ protected:
 
 	UFUNCTION(BlueprintCallable, Category = "Wall Setup")
 	void MergeWallsForVariantTiles();
-
-	UFUNCTION(BlueprintCallable, Category = "Wall Setup")
-	UStaticMeshComponent* MergeWall(TArray<UStaticMeshComponent*> StaticMeshArrayToMerge);
 
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
 	void CheckBranchTile(ASTile* TileToAdd, TArray<ASTile*>& CurrentPath, int Length, int prevDirection);

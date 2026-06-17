@@ -24,7 +24,7 @@ UTileGridBranchComponent::UTileGridBranchComponent()
 /// Calls modules to handle random rooms, random branches, single rooms, secret rooms, 
 /// final doors setup and deactivating inactive rooms
 /// 
-/// Call event to reate branches in map
+/// Call event to create branches in map
 /// </summary>
 void UTileGridBranchComponent::GameMapAdditionalSetup()
 {
@@ -37,18 +37,18 @@ void UTileGridBranchComponent::GameMapAdditionalSetup()
 	//update after GameMapAdditionalSetup finishes
 	LevelPathRef = TileManagerRef->GetLevelPath();
 	AvailableTilesRef = TileManagerRef->MakeAvailableTiles();
-	TileVariantCompRef->SetVariables();
+	TileVariantCompRef->SetTierDataVariables();
 
 	UE_LOG(LogTemp, Log, TEXT("-----------------------------------------------------------"));
 	UE_LOG(LogTemp, Log, TEXT("========== Grid Additions and Final Setup ================="));
 	UE_LOG(LogTemp, Log, TEXT("-----------------------------------------------------------"));
 
-	RandomRoomsAndBranchesAdditions();
+	BranchAdditionsSetup();
+
+	RandomSingleRoomSetup();
 
 	if (DebugPrintsRef)
-		UE_LOG(LogTemp, Log, TEXT("=================== Finished Random Rooms - Adding Spawn Room =============================="));
-
-	AddSingleRooms();
+		UE_LOG(LogTemp, Log, TEXT("=================== Finished Branching / Random Rooms - Adding Spawn Room =============================="));
 
 	if (LocalLevelRef->CurrentLevelTier >= ELevelTier::ELevel_2) {
 		if (DebugPrintsRef)
@@ -62,6 +62,7 @@ void UTileGridBranchComponent::GameMapAdditionalSetup()
 			UE_LOG(LogTemp, Log, TEXT("=================== Finished Spawn Room - Adding Variant setup =============================="));
 	}
 
+	//variant tiles (non-1x1 size)
 	GridScanForCustomTileSizedVariants();
 
 	if (DebugPrintsRef)
@@ -88,7 +89,6 @@ void UTileGridBranchComponent::GameMapAdditionalSetup()
 
 	MergeWallsForVariantTiles();
 
-
 	TileManagerRef->SetLevelPath(LevelPathRef);
 	TileManagerRef->SetAvailableTiles(AvailableTilesRef);
 
@@ -98,11 +98,9 @@ void UTileGridBranchComponent::GameMapAdditionalSetup()
 
 
 /// <summary>
-/// Dylan Loe
-/// 
-/// - Adding Single random and branches to grid
+/// Adding branches to grid
 /// </summary>
-void UTileGridBranchComponent::RandomRoomsAndBranchesAdditions()
+void UTileGridBranchComponent::BranchAdditionsSetup()
 {
 	int levelWidthRef = TileManagerRef->GetLevelWidth();
 	int levelHeightRef = TileManagerRef->GetLevelHeight();
@@ -112,6 +110,7 @@ void UTileGridBranchComponent::RandomRoomsAndBranchesAdditions()
 
 	TileManagerRef->AllActiveTiles.Append(LevelPathRef);
 
+	//prep available tiles to choose from
 	AvailableTilesRef = TileManagerRef->MakeAvailableTiles();
 	
 
@@ -119,15 +118,17 @@ void UTileGridBranchComponent::RandomRoomsAndBranchesAdditions()
 	//Ideas/Research: 
 	// - Adaptive Branch grown: iteratively grow branches based on available space, after/during each branch, check if we can still make more to a certain amount
 	// - Controlled Density approach: define the number of branches based on total maze size and expected complexity
-	//Controlled Density approach
-	int TotalBranchesMax1 = FMath::RoundToInt(levelWidthRef * levelHeightRef * TileManagerRef->BranchDensityFactor_DynamicMainPathLength());
-	//Dependency On maze size approach
-	int TotalBranchesMax2 = FMath::RoundToInt(levelWidthRef * levelHeightRef * TileManagerRef->BranchDensityFactor_DependencyOnMazeSize());
+	
+	// Controlled Density approach - USING THIS FOR NOW
+	int TotalBranchesMax_ControlledDensity = FMath::RoundToInt(levelWidthRef * levelHeightRef * TileManagerRef->BranchDensityFactor_DynamicMainPathLength());
+	// Dependency On maze size approach
+	int TotalBranchesMax_MazeSizeDensity = FMath::RoundToInt(levelWidthRef * levelHeightRef * TileManagerRef->BranchDensityFactor_DependencyOnMazeSize());
 	// - Directional Bias Control: weighted probability function, where branch creation probability decreases as the main path progresses
-
+	
+	// old Unity way
 	int oldWay = (levelWidthRef - LevelPathRef.Num() / levelWidthRef) + 1;
-	//for some randomness
-	int TotalBranchesMax = GameStreamRef.RandRange(1, TotalBranchesMax1);
+	//for some added randomness
+	int TotalBranchesMax = GameStreamRef.RandRange(1, TotalBranchesMax_ControlledDensity);
 
 	if (DebugPrintsRef)
 		UE_LOG(LogTemp, Log, TEXT("Total amount of branches to create: %d"), TotalBranchesMax);
@@ -157,9 +158,10 @@ void UTileGridBranchComponent::RandomRoomsAndBranchesAdditions()
 		//UE_LOG(LogTemp, Log, TEXT("Check start branch %d: %d,%d on side %d"), CurrentBranch, StartingBranchTile->XIndex, StartingBranchTile->ZIndex, branchDoorConnectorSideCheck);
 		//TODO: print out which tile and which side we went with
 
+		//recursively build out branch while meeting requirements
 		CheckBranchTile(StartingBranchTile, BranchArray, BranchLength, branchDoorConnectorSideCheck);
 
-		//run through branch
+		//run through branch we just made, set up tiles
 		for (int BranchIndex = 0; BranchIndex < BranchArray.Num(); BranchIndex++)
 		{
 			BranchArray[BranchIndex]->TileDescription += "Branch_" + FString::FromInt(CurrentBranch) + "";
@@ -190,7 +192,7 @@ void UTileGridBranchComponent::RandomRoomsAndBranchesAdditions()
 			//draw lines through path
 			for (int Index = 0; Index < BranchArray.Num() - 1; Index++)
 			{
-				DrawDebugLine(GetWorld(), BranchArray[Index]->GetActorLocation(), BranchArray[Index + 1]->GetActorLocation(), FColor::Emerald, SDPG_World, 20.0f, 150);
+				DrawDebugLine(GetWorld(), BranchArray[Index]->GetActorLocation(), BranchArray[Index + 1]->GetActorLocation(), FColor::Emerald, SDPG_World, 30.0f, 150);
 			}
 		}
 	}
@@ -198,11 +200,10 @@ void UTileGridBranchComponent::RandomRoomsAndBranchesAdditions()
 }
 
 /// <summary>
-/// Dylan Loe
-/// 
-/// - Implementing single chosen rooms to available tiles
+/// Implementing single chosen rooms to available tiles
+/// Random Room placement post branch setup
 /// </summary>
-void UTileGridBranchComponent::AddSingleRooms()
+void UTileGridBranchComponent::RandomSingleRoomSetup()
 {
 	int levelWidthRef = TileManagerRef->GetLevelWidth();
 	int levelHeightRef = TileManagerRef->GetLevelHeight();
@@ -255,6 +256,8 @@ void UTileGridBranchComponent::AddSingleRooms()
 
 /// <summary>
 /// Variant Candidate Analysis (if we can place variant and place procedure)
+/// 
+/// Run through all types of variants and fill in remaining spots with singles (so big to small variants)
 /// </summary>
 /// <param name="CurrentTile"></param>
 /// <param name="CurrentVariant"></param>
@@ -274,6 +277,7 @@ void UTileGridBranchComponent::GridScanForCustomTileSizedVariants()
 	//each tier of variant types (sizes are grouped into tiers)
 	for (int tileVariantTier = 0; tileVariantTier < TileVariantCompRef->TileVariantTiersLocal.Num(); tileVariantTier++)
 	{
+		//tiers contain different types of variants
 		FTileVariantDefinitionRow tier = TileVariantCompRef->TileVariantTiersLocal[tileVariantTier];
 
 		if (DebugPrintsRef)
@@ -294,8 +298,8 @@ void UTileGridBranchComponent::GridScanForCustomTileSizedVariants()
 			//each variant type has a max we can place as well
 			int LocalVariantTotalAmount;
 			if(currentVariant->bIsSingleVariant)	{
-				LocalVariantTotalAmount = 40;//single tiles fill out everything else on map
-				//save this variant to be used later
+				LocalVariantTotalAmount = 40; //single tiles fill out everything else on map
+				//save this variant to be used later, currently don't need to do analysis on the single tiles because we simply just place the single tile 1 to 1
 				//SingleVariantData = currentVariant;
 				}
 			else {
@@ -306,17 +310,15 @@ void UTileGridBranchComponent::GridScanForCustomTileSizedVariants()
 			//shuffle AllActiveTiles
 			ActiveUnusedTiles = ReshuffleTiles(ActiveUnusedTiles);
 
-			//TODO: This doesn't properly rotate each variant, the prefabs are set up incorrect perspective. AM FIXING
-			currentVariant->SetVariantPaths(); //setup the variant paths from OG offset array for each variant as we need
+			currentVariant->SetVariantPaths(); //setup the variant paths from OG offset array for each variant as we need. How can this variant be placed
 			UE_LOG(LogTemp, Log, TEXT("Current Variant Size: %d by %d"), currentVariant->Size.X, currentVariant->Size.Y);
 
 			//scan in random order
-			//for each randomly choosen candidate (a tile on the grid): 
-			//int arrayCount = ActiveUnusedTiles.Num();
-			//TODO: when we place a variant, all connecting tiles should be removed (ActiveUnusedTiles?). When there are no longer any tiles to place (single or any), this can exit
+			//for each randomly choosen candidate (first tile accessible in ActiveUnusedTiles): 
+			//When we place a variant, all connecting tiles should be removed (ActiveUnusedTiles?). When there are no longer any tiles to place (single or any), this can exit
 			for (int tileCount = 0; (tileCount < ActiveUnusedTiles.Num() && VariantsPlaced < VariantTierTotalAmountToPlace && localVariantsPlaced < LocalVariantTotalAmount); )
 			{
-				ASTile* currentTile = ActiveUnusedTiles[tileCount]; //should we remove this tile from the active unused tiles when we place?
+				ASTile* currentTile = ActiveUnusedTiles[tileCount];
 				//candidates analysis, pass in current variant, etc
 				if (VariantCandidateAnalysis(currentTile, currentVariant))
 				{
@@ -446,8 +448,6 @@ bool UTileGridBranchComponent::VariantCandidateAnalysis(ASTile* CurrentTile, USF
 			}
 			UE_LOG(LogTemp, Log, TEXT("Size Variant to place: %d:%d rotated %f degrees (aka selection %d). Place point: %d:%d"), CurrentVariant->Size.X, CurrentVariant->Size.Y, rotationModifier, directionPlacement, CurrentTile->XIndex,CurrentTile->ZIndex);
 
-
-
 			//physically spawn USFTileVariantDefinitionData->TilePrefab with transform, variant choosen at the 
 			//transform of the spawn point in the variant class
 			FActorSpawnParameters SpawnParams;
@@ -465,7 +465,6 @@ bool UTileGridBranchComponent::VariantCandidateAnalysis(ASTile* CurrentTile, USF
 
 #endif
 			SpawnedVariant->TileVariDefinition = CurrentVariant;
-			//SpawnedVariant->MarkFloorsToStatic(); //so nav mesh can read them 
 
 			//an array should be passed up of all the relevant tiles, add them to the VariantEncompassingTiles
 			//EncompassingTilesBuild
@@ -519,12 +518,10 @@ bool UTileGridBranchComponent::VariantCandidateAnalysis(ASTile* CurrentTile, USF
 				{
 					SpawnedVariant->RightWalls.Add(CurrentTile->RightWall);
 				}
-
 			}
 			
 			//add spawned variant to list of variants
 			SpawnedVariants.Add(SpawnedVariant);
-
 
 			//if we can, great!
 			placedStatus = true;
@@ -545,7 +542,7 @@ bool UTileGridBranchComponent::VariantCandidateAnalysis(ASTile* CurrentTile, USF
 /// <returns></returns>
 bool UTileGridBranchComponent::PlugTile(FVariantOffsetTransforms_Rotates transformRotated, USFTileVariantDefinitionData* currentVariant, ASTile* CurrentTile, TArray <ASTile*>& EncompassingTilesBuild, FTileVariantSetup_PlugTileSaveInfo& transVariantPlugInfo)
 {
-//this is defaulted to true when it should be false?
+	//TODO: Smells, this is defaulted to true when it should be false?
 	bool CantPlaceVariant = true;
 	//UE_LOG(LogTemp, Log, TEXT("Start of plug tile for tile %d,%d"), CurrentTile->XIndex, CurrentTile->ZIndex);
 	//check given orientations the variant can be placed at
@@ -583,11 +580,8 @@ bool UTileGridBranchComponent::PlugTile(FVariantOffsetTransforms_Rotates transfo
 			OffsetTileToCheck->TileStatus == ETileStatus::ETile_NULLROOM || OffsetTileToCheck->TileStatus == ETileStatus::ETile_SECRETROOM || OffsetTileToCheck->TileStatus == ETileStatus::ETile_STARTINGROOM)
 		{
 			CantPlaceVariant = false;
-			//currentVariant->RotationCheckCounter++;
 			break;
 		}
-		//if (OffsetTileToCheck != NULL)
-		//	UE_LOG(LogTemp, Log, TEXT("Retrieved tile: %d,%d"), OffsetTileToCheck->XIndex, OffsetTileToCheck->ZIndex);
 		transVariantPlugInfo.TileArray.Add(OffsetTileToCheck);
 	}
 
@@ -616,7 +610,6 @@ bool UTileGridBranchComponent::PlugTile(FVariantOffsetTransforms_Rotates transfo
 
 /// <summary>
 /// Once we know this variant can be placed, go through each of the doors
-/// TODO: Don't need current tile i think for params
 /// </summary>
 /// <param name="Current"></param>
 /// <param name="PrevTile"></param>
@@ -695,17 +688,12 @@ bool UTileGridBranchComponent::AddDoorsAndWalls(ASTile* CurrentTile, TArray<ASTi
 }
 
 /// <summary>
-/// Dylan Log
+/// Compose list of all null neighbors of all active tiles (excluding start and boss rooms)
 /// 
-/// - Compose list of all null neighbors of all active tiles (excluding start and boss rooms)
-/// - 
 /// </summary>
 void UTileGridBranchComponent::CreateSecretRoom()
 {
-
-	//TODO: use local levels secret data
 	TArray<FTileInfoStruct> OutskirtTilesRef = TileManagerRef->GetOutskirtTiles();
-	
 
 	TArray<ASTile*> outskirtsCheck;
 	for (int tileCount = 0; tileCount < TileManagerRef->AllActiveTiles.Num(); tileCount++)
@@ -768,7 +756,6 @@ void UTileGridBranchComponent::CreateSecretRoom()
 		}
 	}
 
-	
 	//now randomly pick a tile to put our secret room at (this tiles neighbor will be the secret room)
 	int tileNum = GameStreamRef.RandRange(0, OutskirtTilesRef.Num() - 1);
 
@@ -790,16 +777,12 @@ void UTileGridBranchComponent::CreateSecretRoom()
 	//UE_LOG(LogTemp, Log, TEXT("Picked - %d - side of [%d,%d]"), selected.neighborArray[loc], selected.tile->XIndex, selected.tile->ZIndex);
 	//UE_LOG(LogTemp, Log, TEXT("Selected:  x= %d, y = %d], z = %d"), test->GetActorLocation().X, test->GetActorLocation().Y, test->GetActorLocation().Z);
 
-#if WITH_EDITOR
-	FString name = test->GetActorLabel();
-#endif
-	//UE_LOG(LogTemp, Log, TEXT("Tile: %s"), *name);
-	//FVector Origin;
-	//FVector Extents;
-	FString TileDoorName;
-
+//#if WITH_EDITOR
+//	FString name = test->GetActorLabel();
+//	UE_LOG(LogTemp, Log, TEXT("Tile: %s"), *name);
+//#endif
+	
 	int selectedRotation = 0;
-
 	int floatingWallBuffer = TileManagerRef->ChoosenWallAssetClass->GetDefaultObject<ASTileWall>()->WallsBuffer;
 	int distanceToNextTile = floatingWallBuffer * 2;
 
@@ -906,10 +889,6 @@ void UTileGridBranchComponent::CreateSecretRoom()
 		break;
 	}
 	
-
-	// TO DO: this will need to be updated to a specific Secrete Room BP set in LocalLevel
-
-	
 #if WITH_EDITOR
 	SecretRoom->SetActorLabel("SecretRoom");
 	SecretRoom->SetFolderPath(TileManagerRef->TileSubFolderName);
@@ -925,12 +904,9 @@ void UTileGridBranchComponent::CreateSecretRoom()
 
 	TSubclassOf<ASTileVariantEnviornment> ChoosenSecretRoomVariant;
 
-	//TODO: Match format for spawning tiles as other2 aresas. so we can assign the variantdef data more efficiently
+	//TODO: Match format for spawning tiles as other 2 areas. so we can assign the variantdef data more efficiently
 	TArray<TSubclassOf<ASTileVariantEnviornment>> SecretRoomOptions = LocalLevelRef->GetSecretRoomEnvVariants_local();
-
-	//TODO: This secret room environment data needs to be updated for the secret room variants
 	int variantIndex = GameStreamRef.RandRange(0, SecretRoomOptions.Num() - 1);
-
 	ChoosenSecretRoomVariant = SecretRoomOptions[variantIndex];
 
 	//rotation is dependent on prev tile
@@ -964,18 +940,13 @@ void UTileGridBranchComponent::CreateSecretRoom()
 	}
 
 	SecretRoomVariant = GetWorld()->SpawnActor<ASTileVariantEnviornment>(ChoosenSecretRoomVariant, SecretRoom->GetActorLocation(), SpawnRotPrefab, SpawnParamsPrefab);
-
-	//SecretRoomVariant->SetActorRotation(SpawnRotPrefab);
 	FString VariantTileName = "Secret_VariantTileMap_" + FString::FromInt(SecretRoom->XIndex) + "_" + FString::FromInt(SecretRoom->ZIndex);
 	
 #if WITH_EDITOR
 	SecretRoomVariant->SetActorLabel(VariantTileName);
 	SecretRoomVariant->SetFolderPath(TileManagerRef->VariantTileMapSubFolderName);
-	DrawDebugSphere(GetWorld(), SecretRoomVariant->GetActorLocation(), 225.0f, 20, FColor::Orange, false, 100);
+	//DrawDebugSphere(GetWorld(), SecretRoomVariant->GetActorLocation(), 225.0f, 20, FColor::Orange, false, 100);
 #endif
-	//SecretRoomVariant->MarkFloorsToStatic();
-
-	//TODO: Make this format copy the other variants
 	FTileVariantDefinitionRow tier = TileVariantCompRef->TileVariantTiersLocal[4];
 	SecretRoomVariant->TileVariDefinition = tier.Columns[0];
 
@@ -997,7 +968,7 @@ void UTileGridBranchComponent::SpawnEndRoom()
 	//if not level 4 choose a random single tile
 	if (LocalLevelRef->CurrentLevelTier == ELevelTier::ELevel_4)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Hit level 4, need to make and assign boss rooms"));
+		UE_LOG(LogTemp, Error, TEXT("Hit level 4, need to make and assign boss rooms")); //TODO: Boss setup goes here eventually
 		FTileVariantDefinitionRow tier = TileVariantCompRef->TileVariantTiersLocal[4];
 		singleVariantData = tier.Columns[0];
 	}
@@ -1016,6 +987,7 @@ void UTileGridBranchComponent::SpawnEndRoom()
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
 	TSubclassOf<ASTileVariantEnviornment> ChoosenEndRoomVariant;
+	//TODO: smells, ensure end room variants are rotation dependent to avoid weird blockage of entranceway
 	int rotationToSpawn = GameStreamRef.RandRange(0, 3);
 	if (LocalLevelRef->CurrentLevelTier != ELevelTier::ELevel_4) //if not boss fight
 	{
@@ -1058,8 +1030,6 @@ void UTileGridBranchComponent::SpawnEndRoom()
 	}
 
 	ASTileVariantEnviornment* EndRoomVariant = GetWorld()->SpawnActor<ASTileVariantEnviornment>(ChoosenEndRoomVariant, EndTileRef->GetActorLocation(), SpawnRot, SpawnParams);
-
-	//EndRoomVariant->SetActorRotation(SpawnRot);
 	FString VariantTileName = "EndRoom_VariantTileMap_" + FString::FromInt(EndTileRef->XIndex) + "_" + FString::FromInt(EndTileRef->ZIndex);
 	
 #if WITH_EDITOR
@@ -1080,10 +1050,7 @@ void UTileGridBranchComponent::SpawnEndRoom()
 }
 
 /// <summary>
-/// Dylan Loe
-/// 
-/// - Remove all inactive doors
-/// - TODO: should this be back in TileManager?
+/// Remove all inactive doors
 /// </summary>
 void UTileGridBranchComponent::FinalDoorSetupDoors()
 {
@@ -1108,9 +1075,7 @@ void UTileGridBranchComponent::FinalDoorSetupDoors()
 }
 
 /// <summary>
-/// Dylan Loe
-/// 
-/// - Will run through once Secret room and Door configuration is implemented to remove NULL rooms from Tile Map
+///  Will run through once Secret room and Door configuration is implemented to remove NULL rooms from Tile Map
 /// </summary>
 void UTileGridBranchComponent::DeactiveInactiveRooms()
 {
@@ -1128,20 +1093,18 @@ void UTileGridBranchComponent::DeactiveInactiveRooms()
 			}
 			//TODO: turn on walls at borders of path handled in LevelAssetSpawn
 		}
-
 	}
-	//TODO: reassign grid array
 }
 
 /// <summary>
 /// For all active variant tiles (not starting and end rooms), each side of walls should be merged for texture purposes
+/// TODO: This way is currently stable, could come back to this to see how we can optimize in the future
 /// </summary>
 void UTileGridBranchComponent::MergeWallsForVariantTiles()
 {
-	
+	//check all variants spawned
 	for (ASTileVariantEnviornment* SpawnedVariant : SpawnedVariants)
 	{
-		
 		//UpWall
 		TArray <UStaticMeshComponent*> UpWallStaticMeshesArray;
 		//each side, go through walls and add them to array
@@ -1187,18 +1150,12 @@ void UTileGridBranchComponent::MergeWallsForVariantTiles()
 		//SpawnedVariant->RightWallWhole = MergeWall(RightWallStaticMeshesArray);
 
 	}
-
-}
-
-UStaticMeshComponent* UTileGridBranchComponent::MergeWall(TArray<UStaticMeshComponent*> StaticMeshArrayToMerge)
-{
-	return NULL;
-
-
-
 }
 
 /// <summary>
+/// Recursive function
+/// 
+/// Base case: no more neighbors to check, connect doors from last tile and then return
 /// 
 /// </summary>
 /// <param name="TileToAdd"></param>
@@ -1207,7 +1164,6 @@ UStaticMeshComponent* UTileGridBranchComponent::MergeWall(TArray<UStaticMeshComp
 /// <param name="prevDirection"></param>
 void UTileGridBranchComponent::CheckBranchTile(ASTile* TileToAdd, TArray<ASTile*>& CurrentPath, int Length, int prevDirection)
 {
-	//2,3 last one is 3,3
 	//UE_LOG(LogTemp, Log, TEXT("Current Tile: %d,%d"), TileToAdd->XIndex, TileToAdd->ZIndex);
 	if (Length > 0)
 	{

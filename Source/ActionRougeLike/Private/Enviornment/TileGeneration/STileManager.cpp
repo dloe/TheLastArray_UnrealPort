@@ -34,10 +34,8 @@ ASTileManager::ASTileManager()
 }
 
 /// <summary>
-/// Dylan Loe
+/// On begin play, 2d array is populated and established
 /// 
-/// - on begin play, 2d array is populated and established. For now we will use hard coded sizes. 
-/// TO DO: Switch to Scriptable objects to determine difficulty and sizing
 /// </summary>
 void ASTileManager::BeginPlay()
 {
@@ -70,8 +68,9 @@ void ASTileManager::BeginLevelSetupProcedure()
 	bDebugPrintsRef = MyLocalLevel->bDebugPrints;
 	LevelSetupStartTime = FPlatformTime::Seconds();
 
-	//TO DO: Make a set var function?
+	//comp for tile variants
 	TileVariantComponent = FindComponentByClass<UTileVariantComponent>();
+	//comp for asset population
 	LevelAssetSetupComponent = FindComponentByClass<ULevelAssetSetupComponent>();
 
 	if (bDebugPrintsRef) {
@@ -97,7 +96,7 @@ void ASTileManager::BeginLevelSetupProcedure()
 /// </summary>
 void ASTileManager::OnBranchFillGeneration()
 {
-	RemoveUnusedOuters();
+	RemoveUnusedOuterWalls();
 
 	TileGenerationEndTime = FPlatformTime::Seconds();
 	TileSetupDuration = TileGenerationEndTime - LevelSetupStartTime;
@@ -107,7 +106,6 @@ void ASTileManager::OnBranchFillGeneration()
 	}
 
 	//Level asset spawn can now begin
-	//LevelAssetSetupComponent->SpawnTileRef = PlayerStartingTile_SpawnTile;
 	LevelAssetSetupComponent->PopulateGridAssets();
 
 	//timestamp for debugging
@@ -125,7 +123,6 @@ void ASTileManager::OnBranchFillGeneration()
 /// </summary>
 void ASTileManager::Create2DTileArray()
 {
-
 	if (bDebugPrintsRef)
 		UE_LOG(LogTemp, Log, TEXT("=================== Creating 2D array! =============================="));
 
@@ -473,7 +470,7 @@ int ASTileManager::CheckPathSide(ASTile* TileToCheck)
 /// </summary>
 TArray<ASTile*> ASTileManager::MakeAvailableTiles()
 {
-
+	//all tiles that exist in level
 	for (int TileC = 0; TileC < AllActiveTiles.Num() - 1; TileC++)
 	{
 		ASTile* CurrentTile = AllActiveTiles[TileC];
@@ -481,6 +478,7 @@ TArray<ASTile*> ASTileManager::MakeAvailableTiles()
 		//check each neighbor
 		if (!CurrentTile->IsBossTile())
 		{
+			//only add if valid and not already added
 			if (CurrentTile->HasValidUpNeighbor() && !AvailableTiles.Contains(CurrentTile->UpNeighbor))
 			{
 				AvailableTiles.Add(CurrentTile->UpNeighbor);
@@ -719,7 +717,7 @@ void ASTileManager::SpawnDoor(ASTile* tile, ETileSide SideToSpawnDoor, FString N
 /// <summary>
 /// Run through all walls, and remove their outers if marked
 /// </summary>
-void ASTileManager::RemoveUnusedOuters()
+void ASTileManager::RemoveUnusedOuterWalls()
 {
 	for (ASTileWall* SpawnedWall : AllSpawnedWalls)
 	{

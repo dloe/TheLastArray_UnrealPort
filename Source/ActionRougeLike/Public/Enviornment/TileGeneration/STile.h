@@ -39,8 +39,6 @@ class ACTIONROUGELIKE_API ASTile : public AActor
 {
 	/// <summary>
 	/// Tile
-	/// Dylan Loe
-	/// 
 	/// Notes:
 	/// - Core building block of tile map
 	/// - will contain references to doors connecting each other

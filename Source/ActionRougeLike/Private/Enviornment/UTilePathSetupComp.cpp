@@ -11,9 +11,6 @@
 // Sets default values
 UTilePathSetupComp::UTilePathSetupComp()
 {
- 	
-	
-
 }
 
 /// <summary>
@@ -618,12 +615,12 @@ void UTilePathSetupComp::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& Current
 		}
 	}
 	else {
-		UE_LOG(LogTemp, Log, TEXT("NULL TILE DETECTED. PLEASE INVESTIGATE"));
+		UE_LOG(LogTemp, Error, TEXT("NULL TILE DETECTED. PLEASE INVESTIGATE"));
 	}
 
 	if (FailsafeCount == levelHeightRef * levelWidthRef * 2)
 	{
-		UE_LOG(LogTemp, Log, TEXT("NHitting dead ends. PLEASE INVESTIGATE"));
+		UE_LOG(LogTemp, Error, TEXT("NHitting dead ends. PLEASE INVESTIGATE"));
 	}
 	else {
 		FailsafeCount++;
@@ -845,6 +842,3 @@ TArray <ASTile*> UTilePathSetupComp::ReshuffleTiles(TArray <ASTile*> ar)
 	}
 	return ar;
 }
-
-
-
