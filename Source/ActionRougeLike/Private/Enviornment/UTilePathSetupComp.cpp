@@ -23,15 +23,7 @@ UTilePathSetupComp::UTilePathSetupComp()
 /// </summary>
 void UTilePathSetupComp::TilePathGeneration()
 {
-	//get ref to manager
-	ATileManagerRef = Cast<ASTileManager>(GetOwner());
-
-	bDebugPrintsRef = ATileManagerRef->GetDebugPrints();
-	GameStreamRef = ATileManagerRef->MyLocalLevel->GameStream;
-	LevelPathRef = ATileManagerRef->GetLevelPath();
-	Grid2DArrayRef = ATileManagerRef->GetGrid2DArray();
-	AllSpawnedWallsRef = ATileManagerRef->GetAllSpawnedWalls();
-
+	SetupVars();
 
 	UE_LOG(LogTemp, Log, TEXT("-----------------------------------------------------------"));
 	UE_LOG(LogTemp, Log, TEXT("================= PATH GENERATION ========================="));
@@ -48,7 +40,7 @@ void UTilePathSetupComp::TilePathGeneration()
 	ATileManagerRef->SetGrid2DArray(Grid2DArrayRef);
 	ATileManagerRef->SetAllSpawnedWalls(AllSpawnedWallsRef);
 
-	//notify next component to run
+	//notify next component to run, additional asset population, removal of unused walls, random rooms/branches
 	OnPathGeneratedEvent.Broadcast();
 }
 
@@ -56,16 +48,29 @@ void UTilePathSetupComp::TilePathGeneration()
 void UTilePathSetupComp::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 /// <summary>
-/// Dylan Loe
-/// 
+/// Setup up references and debugs for Path Generation sequence
+/// </summary>
+void UTilePathSetupComp::SetupVars()
+{
+	//get ref to manager
+	ATileManagerRef = Cast<ASTileManager>(GetOwner());
+
+	bDebugPrintsRef = ATileManagerRef->GetDebugPrints();
+	GameStreamRef = ATileManagerRef->MyLocalLevel->GameStream;
+	LevelPathRef = ATileManagerRef->GetLevelPath();
+	Grid2DArrayRef = ATileManagerRef->GetGrid2DArray();
+	AllSpawnedWallsRef = ATileManagerRef->GetAllSpawnedWalls();
+}
+
+/// <summary>
 /// Choosing the start and end room
 /// 
-/// TO DO: Do i really need to pick the end room?
-/// 
+/// - for choosing the end tile, we will pick the opposite 2 rows/columns
+/// - must be a distance of height/2 and/or column/2 to be added to a list to be randomly picked as end room
+/// - cant pick tiles that are on the same row or column (no straight shots)
 /// </summary>
 void UTilePathSetupComp::ChooseStartEndRooms()
 {
@@ -92,7 +97,6 @@ void UTilePathSetupComp::ChooseStartEndRooms()
 		//starting
 		startY = 0;
 		startX = GameStreamRef.RandRange(0, levelHeightRef - 1);
-		//UE_LOG(LogTemp, Log, TEXT("num Picked: %d"), startX);
 		//DOWN;
 
 		//ending possible 
@@ -142,7 +146,6 @@ void UTilePathSetupComp::ChooseStartEndRooms()
 			}
 		}
 
-
 		break;
 	case 1:
 		startY = GameStreamRef.RandRange(0, levelWidthRef - 1);
@@ -167,7 +170,6 @@ void UTilePathSetupComp::ChooseStartEndRooms()
 				TileToAdd->ShadeTestRoom();
 			}
 		}
-
 
 		//UE_LOG(LogTemp, Log, TEXT("Compare1 BEFORE: %d < %d"), startY, (LevelHeight - 1) / 2);
 		if (startY > (levelHeightRef - 1) / 2) { //more than half BEFORE startX
@@ -195,7 +197,6 @@ void UTilePathSetupComp::ChooseStartEndRooms()
 				}
 			}
 		}
-
 
 		break;
 	case 2:
@@ -333,7 +334,6 @@ void UTilePathSetupComp::ChooseStartEndRooms()
 				}
 			}
 		}
-
 		break;
 	}
 	if (bDebugPrintsRef)
@@ -349,19 +349,17 @@ void UTilePathSetupComp::ChooseStartEndRooms()
 	ASTile* ChoosenEndTile = availableTiles[choosenEndTileIndex];
 	ChoosenEndTile->ShadeEndRoom();
 	ATileManagerRef->SetEndTile(ChoosenEndTile);
-	//ATileManagerRef->SetPossibleStartingTiles(PossibleStartingTileRef); //why is this here?
 }
 
+/// <summary>
+/// Create main path to end and start 
+/// Connect paths via doors on tiles
+/// </summary>
 void UTilePathSetupComp::GeneratePath()
 {
 	if (bDebugPrintsRef)
 		UE_LOG(LogTemp, Log, TEXT("=================== Genearating Path =============================="));
 
-	//add starting room to be start of list
-	//AddTileToPath(StartingTile);
-
-	//refs from manager
-	
 	ASTile* ChoosenStartingTile = ATileManagerRef->GetStartingGridTile();
 	UE_LOG(LogTemp, Log, TEXT("check is designated as [%d,%d]"), ChoosenStartingTile->XIndex, ChoosenStartingTile->ZIndex);
 
@@ -385,9 +383,7 @@ void UTilePathSetupComp::GeneratePath()
 }
 
 /// <summary>
-/// Dylan Loe
-/// 
-/// - Add spawn room, connected to  the start room (this will be outside of the grid)
+/// Add spawn room, connected to  the start room (this will be outside of the grid)
 /// </summary>
 void UTilePathSetupComp::CreateSpawnRoom()
 {
@@ -414,9 +410,10 @@ void UTilePathSetupComp::CreateSpawnRoom()
 	ASStartingSpawnTile* ChoosenPlayerSpawnPresentTile;
 	FRotator SpawnRotPrefab = FRotator(0,0,0);
 
-	//There are going to be 2 tiles basically spawned, one is the base, the base structure of the tile
+	// There are going to be 2 tiles basically spawned, one is the base, the base structure of the tile
 	// The other tile (which i don't think needs to be a tile at all), is the environment to be populated on the tile
 	// Since the environment will be rotated, its neighbors will be changed theretofore for now it will be faster to have its own base that stays static)
+	//TODO: Should refactor now that logic is proper, repeated code should be in a function
 	switch (StartRoomSide)
 	{
 	case 0:
@@ -447,7 +444,6 @@ void UTilePathSetupComp::CreateSpawnRoom()
 			PlayerStartingTile_SpawnTile->RightDoor->SetFolderPath(ATileManagerRef->DoorSubFolderName);
 #endif
 			StartingGridTileRef->LeftDoor = PlayerStartingTile_SpawnTile->RightDoor;
-
 			StartingGridTileRef->ConnectLeftDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, AllSpawnedWallsRef);
 		}
 		
@@ -477,7 +473,6 @@ void UTilePathSetupComp::CreateSpawnRoom()
 			PlayerStartingTile_SpawnTile->DownDoor->SetFolderPath(ATileManagerRef->DoorSubFolderName);
 #endif
 			StartingGridTileRef->UpDoor = PlayerStartingTile_SpawnTile->DownDoor;
-
 			StartingGridTileRef->ConnectUpDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, AllSpawnedWallsRef);
 		}
 
@@ -510,7 +505,6 @@ void UTilePathSetupComp::CreateSpawnRoom()
 			PlayerStartingTile_SpawnTile->LeftDoor->SetFolderPath(ATileManagerRef->DoorSubFolderName);
 #endif
 			StartingGridTileRef->RightDoor = PlayerStartingTile_SpawnTile->LeftDoor;
-
 			StartingGridTileRef->ConnectRightDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, AllSpawnedWallsRef);
 		}
 		
@@ -535,7 +529,6 @@ void UTilePathSetupComp::CreateSpawnRoom()
 			const FTransform Spawm = FTransform(PlayerStartingTile_SpawnTile->UpDoorSpawnPoint.GetRotation(), UpDoorSpawnLocation);
 			PlayerStartingTile_SpawnTile->UpDoor = GetWorld()->SpawnActor<ASTileDoor>(ATileManagerRef->TileDoorClass, Spawm, SpawnParams);
 			DoorArrayRef.Add(PlayerStartingTile_SpawnTile->UpDoor);
-			
 			PlayerStartingTile_SpawnTile->UpDoor->SetOwner(StartingGridTileRef);
 
 #if WITH_EDITOR
@@ -543,8 +536,6 @@ void UTilePathSetupComp::CreateSpawnRoom()
 			PlayerStartingTile_SpawnTile->UpDoor->SetFolderPath(ATileManagerRef->DoorSubFolderName);
 #endif
 			StartingGridTileRef->DownDoor = PlayerStartingTile_SpawnTile->UpDoor;
-			//PlayerStartingTileBase->ActivateUpDoor();
-
 			StartingGridTileRef->ConnectDownDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, AllSpawnedWallsRef);
 		}
 		break;
@@ -555,7 +546,6 @@ void UTilePathSetupComp::CreateSpawnRoom()
 		PlayerStartingTile_SpawnTile = GetWorld()->SpawnActor<ASTile>(ATileManagerRef->TileBaseClass, SpawnPos, StartingGridTileRef->GetActorRotation(), SpawnParams);
 		SpawnRotPrefab = FRotator(StartingGridTileRef->GetActorRotation().Euler().X, -90.0f, StartingGridTileRef->GetActorRotation().Euler().Z);
 		ChoosenPlayerSpawnPresentTile = GetWorld()->SpawnActor<ASStartingSpawnTile>(StartingTileSubclass, SpawnPos, SpawnRotPrefab, SpawnParams); //rotate -90
-
 		StartingGridTileRef->LeftNeighbor = PlayerStartingTile_SpawnTile;
 		PlayerStartingTile_SpawnTile->RightNeighbor = StartingGridTileRef;
 		//ChoosenPlayerSpawnPresentTile->SetActorRotation(FRotator(ChoosenPlayerSpawnPresentTile->GetActorRotation().Euler().X, -90.0f, ChoosenPlayerSpawnPresentTile->GetActorRotation().Euler().Z));
@@ -570,7 +560,6 @@ void UTilePathSetupComp::CreateSpawnRoom()
 			const FTransform Spawm = FTransform(PlayerStartingTile_SpawnTile->RightDoorSpawnPoint.GetRotation(), LeftDoorSpawnLocation);
 			PlayerStartingTile_SpawnTile->RightDoor = GetWorld()->SpawnActor<ASTileDoor>(ATileManagerRef->TileDoorClass, Spawm, SpawnParams);
 			DoorArrayRef.Add(PlayerStartingTile_SpawnTile->RightDoor);
-			
 			PlayerStartingTile_SpawnTile->RightDoor->SetOwner(StartingGridTileRef);
 
 #if WITH_EDITOR
@@ -578,7 +567,6 @@ void UTilePathSetupComp::CreateSpawnRoom()
 			PlayerStartingTile_SpawnTile->RightDoor->SetFolderPath(ATileManagerRef->DoorSubFolderName);
 #endif
 			StartingGridTileRef->LeftDoor = PlayerStartingTile_SpawnTile->RightDoor;
-
 			StartingGridTileRef->ConnectLeftDoor(ChoosenDoorwayAssetRef, WallsSubFolderNameRef, AllSpawnedWallsRef);
 		}
 
@@ -596,8 +584,6 @@ void UTilePathSetupComp::CreateSpawnRoom()
 	//Set the Preset ref to the SpawnPresetTile obj
 	PlayerStartingTile_SpawnTile->PresetTile = ChoosenPlayerSpawnPresentTile;
 
-
-
 	//Spawn stats from StartingTile to PlayerStartingTileBase, then we will reassign the StartingTile
 	StartingGridTileRef->ShadePath();
 	LevelPathRef.Insert(PlayerStartingTile_SpawnTile, 0);
@@ -607,8 +593,6 @@ void UTilePathSetupComp::CreateSpawnRoom()
 	ATileManagerRef->SetDoorArray(DoorArrayRef);
 	ATileManagerRef->SetPlayerSpawnPresentTile(ChoosenPlayerSpawnPresentTile); //setting the env for ref not tile object
 }
-
-
 
 /// <summary>
 /// Backtracking reclusive algorithm for Main level path construction. Builds out LevelPath array.
@@ -721,7 +705,6 @@ void UTilePathSetupComp::CheckTile(ASTile* CurrentTile, TArray<ASTile*>& Current
 	else {
 		//now that we know theres valid neighbors and none of them are the boss room, lets check our neighbors
 
-		//UE_LOG(LogTemp, Log, TEXT("Path Checking: %d,%d"), CurrentTile->XIndex, CurrentTile->ZIndex);
 		//direction
 		TArray <int> DirectionsToCheck = { 1, 2, 3, 4 };
 
@@ -839,12 +822,12 @@ void UTilePathSetupComp::SetupMainPathConnectors()
 /// Knuth shuffle algorithm
 /// 
 /// - Reshuffling arrays
+/// TODO: Make this a template function and/or make it a assessable via singleton?
 /// </summary>
 /// <param name="ar"> Array input to be reshuffles</param>
 /// <returns></returns>
 TArray <int> UTilePathSetupComp::Reshuffle(TArray <int> ar)
 {
-	// Knuth shuffle algorithm :: courtesy of Wikipedia :)
 	for (int t = 0; t < ar.Num(); t++)
 	{
 		int r = GameStreamRef.RandRange(t, ar.Num() - 1);
@@ -853,10 +836,8 @@ TArray <int> UTilePathSetupComp::Reshuffle(TArray <int> ar)
 	return ar;
 }
 
-//tile
 TArray <ASTile*> UTilePathSetupComp::ReshuffleTiles(TArray <ASTile*> ar)
 {
-	// Knuth shuffle algorithm :: courtesy of Wikipedia :)
 	for (int t = 0; t < ar.Num(); t++)
 	{
 		int r = GameStreamRef.RandRange(t, ar.Num() - 1);

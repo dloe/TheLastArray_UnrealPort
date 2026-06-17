@@ -81,7 +81,6 @@ public:
 	// Contains a reference to the present used for overall Tile layout
 	UPROPERTY(EditAnywhere, Category = "Tile Stats")
 	AActor* PresetTile;
-	
 
 	UPROPERTY(EditAnywhere, Category = "Tile Stats")
 	ETileStatus TileStatus;
@@ -96,8 +95,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Tile Components - Path")
 	ASTile* PreviousTile;
 
+	//Is Tile on main path
 	UPROPERTY(EditAnywhere, Category = "Tile Components - Path")
-	bool CheckForPath = false;                                                   //Is Tile on main path
+	bool CheckForPath = false;                                                   
 
 	UPROPERTY(EditAnywhere, Category = "Tile Components - Path")
 	bool PartOfPath = false;

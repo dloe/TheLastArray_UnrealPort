@@ -23,6 +23,8 @@ UTileGridBranchComponent::UTileGridBranchComponent()
 /// 
 /// Calls modules to handle random rooms, random branches, single rooms, secret rooms, 
 /// final doors setup and deactivating inactive rooms
+/// 
+/// Call event to reate branches in map
 /// </summary>
 void UTileGridBranchComponent::GameMapAdditionalSetup()
 {

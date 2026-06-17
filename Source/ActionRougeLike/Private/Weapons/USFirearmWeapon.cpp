@@ -34,10 +34,10 @@ void USFirearmWeapon::PerformAttack(AActor* Instigator, USAction_WeaponAttack* O
 	CurrentMagazineSize--;
 
 	if(Instigator->HasAuthority()) {
-	FTimerHandle TimerHandle_AttackAnimDelay;
-	FTimerDelegate DelegateAnimationDelay;
-	DelegateAnimationDelay.BindUFunction(OwningAttackAction, "OnWeaponAttackFinished", Instigator);
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle_AttackAnimDelay, DelegateAnimationDelay, AttacAnimDelay, false);
+		FTimerHandle TimerHandle_AttackAnimDelay;
+		FTimerDelegate DelegateAnimationDelay;
+		DelegateAnimationDelay.BindUFunction(OwningAttackAction, "OnWeaponAttackFinished", Instigator);
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle_AttackAnimDelay, DelegateAnimationDelay, AttacAnimDelay, false);
 	}
 	else {
 		UE_LOG(LogTemp, Warning, TEXT("PerformAttack: Instigator doesnt have authority. Instigator issue... [Class: %s]"), *GetNameSafe(Instigator));

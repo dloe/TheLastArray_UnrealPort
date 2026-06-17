@@ -65,6 +65,9 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	UFUNCTION(Category = "Setup")
+	void SetupVars();
+
 	UFUNCTION(Category = "ArrayCreation")
 	void ChooseStartEndRooms();
 

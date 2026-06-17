@@ -15,6 +15,10 @@ void USAction::Initialize(USActionComponent* NewActionComp)
 
 }
 
+/// <summary>
+/// Big ideas here, add our tag, run action logic, get timestamp
+/// </summary>
+/// <param name="Instigator"></param>
 void USAction::StartAction_Implementation(AActor* Instigator)
 {
 	//UE_LOG(LogTemp, Log, TEXT("%s: Running: %s"), *GetNameSafe(Instigator), *GetNameSafe(this));
@@ -34,16 +38,17 @@ void USAction::StartAction_Implementation(AActor* Instigator)
 		TimeStarted = GetWorld()->TimeSeconds;
 	}
 	
-
+	//notify BPs of actions
 	GetOwningComponent()->OnActionStarted.Broadcast(GetOwningComponent(), this);
 }
 
+/// <summary>
+/// Action is complete, remove our corresponding tag and run additional stop action logic
+/// </summary>
+/// <param name="Instigator"></param>
 void USAction::StopAction_Implementation(AActor* Instigator)
 {
-	//UE_LOG(LogTemp, Log, TEXT("%s: Stopping: %s"), *GetNameSafe(Instigator), *GetNameSafe(this));
-	//LogOnScreen(this, FString::Printf(TEXT("Stopped: %s"), *ActionName.ToString()), FColor::White);
-
-	//check if boolean even on as santity
+	//check if boolean even on as sanity
 	//this will have issues when running on client and server so we will remove it 
 	//ensureAlways(bIsRunning);
 
@@ -55,9 +60,15 @@ void USAction::StopAction_Implementation(AActor* Instigator)
 	RepData.bIsRunning = false;
 	RepData.Instigator = Instigator;
 
+	//notify BPs of actions
 	GetOwningComponent()->OnActionStopped.Broadcast(GetOwningComponent(), this);
 }
 
+/// <summary>
+/// Check if any blocked tags are present, cant run aciton when other actions are already running
+/// </summary>
+/// <param name="Instigator"></param>
+/// <returns></returns>
 bool USAction::CanStart_Implementation(AActor* Instigator)
 {
 	//to avoid running this when we have already started action
@@ -78,9 +89,12 @@ bool USAction::CanStart_Implementation(AActor* Instigator)
 	
 }
 
+/// <summary>
+/// This outer is set when creating action via newobject<>
+/// </summary>
+/// <returns></returns>
 UWorld* USAction::GetWorld() const
 {
-	//this outer is set when creating action via newobject<>
 	AActor* Actor = Cast<AActor>(GetOuter());
 	if (Actor)
 	{
@@ -89,24 +103,22 @@ UWorld* USAction::GetWorld() const
 	return nullptr;
 }
 
-
+/// <summary>
+/// Action comp now handles logic, set up when action comp is initialized (external calling when created in BP)
+/// </summary>
+/// <returns></returns>
 USActionComponent* USAction::GetOwningComponent() const
 {
-	//not optimal way
-	//AActor* Actor = Cast<AActor>(GetOuter());
-	//we end up calling this alot and having to iteration though an entire list of components is inefficient,
-	//lets go with other way (making a new function Initialize)
-	//return Actor->GetComponentByClass(USActionComponent::StaticClass());
-
-
-	//gotta fix this to work with replciation
+	//gotta fix this to work with replication
 	//can fix in 2 ways
 	//return Cast<USActionComponent>(GetOuter());
 
 	return ActionComp;
 }
 
-
+/// <summary>
+/// Multiplayer related
+/// </summary>
 void USAction::OnRep_RepData()
 {
 	if (RepData.bIsRunning)
@@ -120,16 +132,25 @@ void USAction::OnRep_RepData()
 
 }
 
+/// <summary>
+/// using multiplayer replicated data to check
+/// </summary>
+/// <returns></returns>
 bool USAction::IsRunning() const
 {
 	return RepData.bIsRunning;
 }
 
-
+/// <summary>
+/// Which variables are we replicating
+/// 
+/// </summary>
+/// <param name="OutLifetimeProps"></param>
 void USAction::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
+	//Replicate these to owning comp SAction
 	DOREPLIFETIME(USAction, RepData);
 	DOREPLIFETIME(USAction, ActionComp);
 	DOREPLIFETIME(USAction, TimeStarted);

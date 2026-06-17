@@ -87,10 +87,6 @@ public:
 	// ------- Public Variables --------
 	// ---------------------------------
 
-	
-
-	
-
 #pragma region Tile Generation Public Vars
 
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
@@ -111,8 +107,6 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Tile Generation")
 	ALocalLevel* MyLocalLevel;
-
-	
 
 	//folder name for where tiles are placed when spawned
 	UPROPERTY(EditAnywhere, Category = "Level Setup")
@@ -161,9 +155,6 @@ public:
 	UFUNCTION()
 	void BeginLevelSetupProcedure();
 
-	/// <summary>
-	/// 
-	/// </summary>
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
 	float BranchDensityFactor_DynamicMainPathLength();
 	//float BranchDensityFactor = FMath::Clamp(0.1f + (LevelWidth * LevelHeight / 5000.0f), 0.05f, 0.3f);
@@ -462,10 +453,6 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "ArrayCreation")
 	void RemoveUnusedOuters();
 
-	
 #pragma endregion
-
-UFUNCTION()
-	void SetVariables();
 
 };

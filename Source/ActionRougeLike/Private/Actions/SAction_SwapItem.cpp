@@ -26,12 +26,10 @@ void USAction_SwapItem::StartAction_Implementation(AActor* Instigator)
 	InventoryComponent->bCanRunEquipBehavior = true; //dont want dub calls to anim notifies for equip
 
 	ItemEquipped = InventoryComponent->GetEquippedItem(); //item we currently have equipped
-	//TODO: use consts more lol
+	//TODO: use consts more
 	const int WeaponSlotIndex = InventoryComponent->CurrentHotbarSlot(); //which index are we currently on
 
 	TargetIndex = InventoryComponent->HotbarToSwapTo; //index we are swapping to
-
-	//UE_LOG(LogTemp, Log, TEXT("Swapping Current Slot Index %d"), WeaponSlotIndex);
 
 	//first check if we need to start the action at all
 	if(!InventoryComponent->HotbarInventory[TargetIndex])

@@ -20,12 +20,9 @@
 #include "NavMesh/RecastNavMesh.h"
 
 
-//Note: This component is purely for placement and choosing of level assets (IE Items and objectives?)
-// and enemies
-
-
-
 /// -------------   Main Idea for component:  -------------
+/// Placement and choosing of level assets (IE Items and objectives?) and Enemies
+/// 
 /// Will for now make the spawned items populate an array of pickups. Prototype via blockout tiles to be placed and run core logic,
 /// will have the preplaced 'markers'.
 /// 1. Make variant block-outs for example lvl. Include the preplacements of items and enemies
@@ -48,7 +45,11 @@ void ULevelAssetSetupComponent::BeginPlay()
 }
 
 /// <summary>
-/// Since we cant run much in BeginPlay due to TileManager setting everything up, that setup is now run here
+/// Setup Enemy/item data
+/// Perlin Noise Setup for procedural behaviors in asset placements in map
+/// 
+/// Since we cant run much in BeginPlay due to TileManager setting everything up, 
+/// that setup is now run here
 /// </summary>
 void ULevelAssetSetupComponent::SetupLevelAssetComponent()
 {
@@ -568,7 +569,6 @@ void ULevelAssetSetupComponent::ActivateEnemies()
 /// </summary>
 void ULevelAssetSetupComponent::SetupStartingTile()
 {
-
 	int currentAssetPlacedCount = 0;
 	TArray <UStaticMeshComponent*> PickupsToGoThrough = ReshuffleArray(SpawnTileEnvRef->PickupPlacements);
 	for (UStaticMeshComponent* PossiblePickup : PickupsToGoThrough)

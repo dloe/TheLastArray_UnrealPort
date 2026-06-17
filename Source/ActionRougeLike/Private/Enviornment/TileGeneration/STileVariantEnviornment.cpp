@@ -31,7 +31,9 @@ void ASTileVariantEnviornment::Tick(float DeltaTime)
 
 }
 
-//destroys all component markers (for level enemy/asset placement)
+/// <summary>
+/// Destroys all component markers (for level enemy/asset placement)
+/// </summary>
 void ASTileVariantEnviornment::HandleMarkerCleanup()
 {
 	//remove pickup markers

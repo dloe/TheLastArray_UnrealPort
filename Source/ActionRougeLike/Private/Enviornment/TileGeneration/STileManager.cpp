@@ -48,20 +48,7 @@ void ASTileManager::BeginPlay()
 	UE_LOG(LogTemp, Log, TEXT("==========================================================="));
 
 	BeginLevelSetupProcedure();
-	UE_LOG(LogTemp, Log, TEXT("begin play..."));
-}
-
-
-
-/// <summary>
-/// For now not in use since don't need to load variants from local level, this will be used when we get there
-/// 
-/// </summary>
-void ASTileManager::SetVariables()
-{
-
-	//TileVariantTiers = TileVariantComponent->TileVariantTiersLocal;
-
+	UE_LOG(LogTemp, Log, TEXT("STIleManager: Begin play Finished..."));
 }
 
 /// <summary>
@@ -72,10 +59,12 @@ void ASTileManager::SetVariables()
 void ASTileManager::OnTilePathGeneration()
 {
 	//finished the main path creation, now do branch, random rooms and secret room setup
-
 	GridBranchSetupComponent->GameMapAdditionalSetup();
 }
 
+/// <summary>
+/// Setup 2D Array, begin path generation procedure
+/// </summary>
 void ASTileManager::BeginLevelSetupProcedure()
 {
 	bDebugPrintsRef = MyLocalLevel->bDebugPrints;
@@ -94,15 +83,18 @@ void ASTileManager::BeginLevelSetupProcedure()
 
 	GameStreamRef = MyLocalLevel->GameStream;
 
-	SetVariables();
-
 	//create and link tiles into grid
 	//this includes establishment of doors if we need them
 	Create2DTileArray();
 
+	//move on to path generation and continued map setup sequences
 	TilePathComponent->TilePathGeneration();
 }
 
+/// <summary>
+/// Additional grid setup, populate assets, remove unused walls
+/// Triggered via event from TilePathGeneratio inside TilePathComponent
+/// </summary>
 void ASTileManager::OnBranchFillGeneration()
 {
 	RemoveUnusedOuters();
@@ -118,6 +110,7 @@ void ASTileManager::OnBranchFillGeneration()
 	//LevelAssetSetupComponent->SpawnTileRef = PlayerStartingTile_SpawnTile;
 	LevelAssetSetupComponent->PopulateGridAssets();
 
+	//timestamp for debugging
 	PopulateWithNoiseMapEndTime = FPlatformTime::Seconds();
 	PopulateWithNoiseMapDuration = PopulateWithNoiseMapEndTime - TileGenerationEndTime;
 
@@ -127,8 +120,6 @@ void ASTileManager::OnBranchFillGeneration()
 }
 
 /// <summary>
-/// Dylan Loe
-/// 
 /// Creation of 2d array for tiles
 /// Creates tiles
 /// </summary>
@@ -269,7 +260,6 @@ void ASTileManager::AddWallToPerimeter(ETileSide side, ASTile* ThisTile)
 }
 
 /// <summary>
-/// Dylan Log
 /// History is mostly for debug, removes previous backtrack history so we can reuse same variable
 /// </summary>
 void ASTileManager::ClearHistory()
@@ -281,8 +271,6 @@ void ASTileManager::ClearHistory()
 }
 
 /// <summary>
-/// Dylan Loe
-/// 
 /// - Runs through branch recursively to make random branches out of main path
 /// </summary>
 /// <param name="TileToAdd"> Current Tile being analyzed </param>
@@ -291,7 +279,6 @@ void ASTileManager::ClearHistory()
 void ASTileManager::CheckBranchTile(ASTile* TileToAdd, TArray<ASTile*>& CurrentPath, int Length, int prevDirection)
 {
 	//2,3 last one is 3,3
-	//UE_LOG(LogTemp, Log, TEXT("Current Tile: %d,%d"), TileToAdd->XIndex, TileToAdd->ZIndex);
 	if (Length > 0)
 	{
 		CurrentPath.Add(TileToAdd);
@@ -392,7 +379,11 @@ void ASTileManager::ConnectDoorBranch(ASTile* TileToAdd, int prevDirection)
 	}
 }
 
-//pass in tile, check which side connects to path
+/// <summary>
+/// Pass in tile, check which side connects to path
+/// </summary>
+/// <param name="TileToCheck"> Tile to check </param>
+/// <returns> Which side do we check? </returns>
 int ASTileManager::CheckPathSide(ASTile* TileToCheck)
 {
 	//needs to be random
@@ -478,7 +469,7 @@ int ASTileManager::CheckPathSide(ASTile* TileToCheck)
 
 /// <summary>
 /// Remakes our possible available tiles for path generation purposes (looks at all active tiles meaning all tiles
-/// currently used. From this, we populate the available tiles
+/// currently used.) From this, we populate the available tiles
 /// </summary>
 TArray<ASTile*> ASTileManager::MakeAvailableTiles()
 {
@@ -520,7 +511,7 @@ TArray<ASTile*> ASTileManager::MakeAvailableTiles()
 /// <returns></returns>
 TArray <int> ASTileManager::Reshuffle2(TArray <int> ar)
 {
-	// Knuth shuffle algorithm :: courtesy of Wikipedia :)
+	// Knuth shuffle algorithm, courtesy of Wikipedia :)
 	for (int t = 0; t < ar.Num(); t++)
 	{
 		int r = GameStreamRef.RandRange(t, ar.Num() - 1);
@@ -540,14 +531,12 @@ float ASTileManager::GetCurrentGridDensity()
 }
 
 /// <summary>
-/// Dylan Loe
-/// 
 /// ASSIGNING THE NEIGHBORS AND LINKING DOORS PER TILE
-/// connect this tile with the tiles to the left and below
-/// must have a HeightIndex less than us and greater than or = to 0
-/// must have a WidthIndex less than us and greater than or = to 0
-/// This is setting the top and left for each tile (if everyone does it, everything thing gets linked 
-/// (instead of making each one have 4 and do an extra pass to prune them))
+/// - connect this tile with the tiles to the left and below
+/// - must have a HeightIndex less than us and greater than or = to 0
+/// - must have a WidthIndex less than us and greater than or = to 0
+/// This is setting the top and left for each tile (if everyone does it, everything thing gets linked, 
+/// instead of making each one have 4 and do an extra pass to prune them )
 /// </summary>
 /// <param name="ThisTile"> Current Tile being Linked</param>
 /// <param name="Col"></param>
@@ -668,6 +657,7 @@ void ASTileManager::LinkTile(ASTile* ThisTile, FMultiTileStruct Col)
 	{
 		AddWallToPerimeter(ETileSide::ETile_Down, ThisTile);
 	}
+
 	if (ThisTile->XIndex == 0) //no right nor left neighbor
 	{
 		AddWallToPerimeter(ETileSide::ETile_Left, ThisTile);
@@ -685,7 +675,12 @@ void ASTileManager::Tick(float DeltaTime)
 
 }
 
-//For Spawning doors to attach to tiles
+/// <summary>
+/// For Spawning doors to attach to tiles
+/// </summary>
+/// <param name="tile"></param>
+/// <param name="SideToSpawnDoor"></param>
+/// <param name="NameOfTileToConnect"></param>
 void ASTileManager::SpawnDoor(ASTile* tile, ETileSide SideToSpawnDoor, FString NameOfTileToConnect)
 {
 	FActorSpawnParameters SpawnParams;
@@ -714,13 +709,10 @@ void ASTileManager::SpawnDoor(ASTile* tile, ETileSide SideToSpawnDoor, FString N
 	//this could be problematic line, the secret room's center is offset from normal tiles
 	//before this was this objects transform not the tiles location
 	const FVector doorSpawnLocation = doorSpawnPoint.GetLocation() + tile->GetActorLocation();
-	//UE_LOG(LogTemp, Log, TEXT("THIS -> Actor Location: X=%f, Y=%f, Z=%f"), this->GetActorLocation().X, this->GetActorLocation().Y, this->GetActorLocation().Z);
 	const FTransform Spawm = FTransform(doorSpawnPoint.GetRotation(), doorSpawnLocation);
-
 
 	ASTileDoor* door = GetWorld()->SpawnActor<ASTileDoor>(TileDoorClass, Spawm, SpawnParams);
 
-	
 	GridBranchSetupComponent->SetupDoor(tile, SideToSpawnDoor, NameOfTileToConnect, door);
 }
 
@@ -747,6 +739,7 @@ void ASTileManager::RemoveUnusedOuters()
 /// <summary>
 /// scales the density factor based on total area. TODO: Maybe this can scale with Difficulty?
 /// 
+/// Stats:
 /// Sparse Maze: 0.05f;
 /// Moderate Complexity: 0.15f;
 /// Highly Branched Maze: 0.25f or higher
@@ -782,7 +775,7 @@ ASTile* ASTileManager::GetGridTilePair(FIntPoint TileCords)
 {
 	if (TileCords.X < LevelWidth && TileCords.X >= 0 && TileCords.Y < LevelHeight && TileCords.Y >= 0)
 	{
-		return Grid2DArray[TileCords.X]->TileColumn[TileCords.Y]; //had these swapped?
+		return Grid2DArray[TileCords.X]->TileColumn[TileCords.Y];
 	}
 	else {
 		return NULL;
@@ -801,7 +794,6 @@ float ASTileManager::BranchDensityFactor_DynamicMainPathLength()
 
 	//Keep this for now, may be useful: how much density is left after path?
 	//float remainingGridDensity = 1.0f - ((float)LevelPath.Num() / ((float)LevelWidth * (float)LevelHeight));
-	//UE_LOG(LogTemp, Log, TEXT("Choice 1.5: %f"), remainingGridDensity);
 	float branchDensityFactor = FMath::Clamp((LevelPath.Num() / (float)LevelWidth), 0.05f, 0.2f);
 
 	return branchDensityFactor;
