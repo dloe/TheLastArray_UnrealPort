@@ -15,6 +15,7 @@
 #include "Perception/AISense_Hearing.h"
 #include "TimerManager.h"
 #include "GameFramework/Pawn.h"
+#include "Chaos/Vector.h"
 
 ASAIController::ASAIController()
 {
@@ -30,7 +31,7 @@ void ASAIController::BeginPlay()
         RunBehaviorTree(BehaviorTree);
     }
 
-
+    
     //APawn* MyPawn = UGameplayStatics::GetPlayerPawn(this, 0);
     //if (MyPawn)
     //{
@@ -130,10 +131,14 @@ void ASAIController::ReportDamage(AActor* InstigatorActor, float Delta, FVector 
         //if within line of sight
         if(CanSeePlayer())
             SetTargetActor(PawnThatHurtUS);
-        else
+        else {
             GetBlackboardComponent()->SetValueAsVector("LastKnownLocation", PawnThatHurtUS->GetActorLocation());
+            DrawDebugSphere(GetWorld(), GetBlackboardComponent()->GetValueAsVector("LastKnownLocation"), 200.f, 20, FColor::White, false, 100);;
+            DrawDebugString(GetWorld(), GetBlackboardComponent()->GetValueAsVector("LastKnownLocation"), "PlayerSpotted", nullptr, FColor::White, 6.0f, true);
+        }
+            
         //Debug code
-        //DrawDebugString(GetWorld(), GetActorLocation(), "PlayerSpotted", nullptr, FColor::White, 4.0f, true);
+        //
         //add a draw debug string at the location of the actor so that we have something that shows where the player was spotted
 
         //make this call from AICharacter
@@ -151,7 +156,14 @@ void ASAIController::SetTargetActor(AActor* NewTarget)
     GetWorld()->GetTimerManager().ClearTimer(ForgetTimerHandle);
 
     GetBlackboardComponent()->SetValueAsObject("TargetActor", NewTarget);
-    GetBlackboardComponent()->SetValueAsVector("LastKnownLocation", NewTarget->GetActorLocation());
+
+    FVector locationToUpdate = FVector::Zero();
+    if(NewTarget)
+        locationToUpdate = NewTarget->GetActorLocation();
+
+    GetBlackboardComponent()->SetValueAsVector("LastKnownLocation", locationToUpdate);
+
+    //SeenPawn = nullptr;
 }
 
 /// <summary>
@@ -201,7 +213,19 @@ void ASAIController::HandleSightSense(AActor* InstigatorActor, FAIStimulus Stimu
         // Ignore if target already set
         if (GetTargetActor() != SeenPawn)
         {
-            SetTargetActor(SeenPawn);
+
+            FTimerDelegate TargAcqDelegate;
+            TargAcqDelegate.BindUFunction(this, "SetTargetActor", SeenPawn);
+            //TODO: Make this more configured maybe off difficulty?
+            float RandTimeDelay = FMath::RandRange(0.25f, 1.f);
+
+            GetWorld()->GetTimerManager().SetTimer(
+                DelayEngagementTimerHandle,
+                TargAcqDelegate,
+                RandTimeDelay,
+                false
+            );
+            //SetTargetActor(SeenPawn);
 
             //Debug code
             //DrawDebugString(GetWorld(), GetActorLocation(), "PlayerSpotted", nullptr, FColor::White, 4.0f, true);

@@ -33,10 +33,12 @@ EBTNodeResult::Type UBTTask_LookAround::ExecuteTask(UBehaviorTreeComponent& Owne
 	if(!Pawn)
 		return EBTNodeResult::Failed;
 
+	//access our vars between ticks
 	FTaskMemory* Mem = (FTaskMemory*)NodeMemory;
 
 	Mem->StartRotation = Pawn->GetActorRotation();
 
+	//randomize how far we look around. TODO: Configurable?
 	float TargetAngle = FMath::FRandRange(50.f, 100.f);
 
 	//figure out the pattern we look in, could add more angles maybe
@@ -60,6 +62,8 @@ void UBTTask_LookAround::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* Node
 	FTaskMemory* Mem = (FTaskMemory*) NodeMemory;
 
 	float TargetYaw = Mem->StartRotation.Yaw + Mem->TargetAngles[Mem->CurrentIndex];
+	TargetYaw = FRotator::NormalizeAxis(TargetYaw);
+
 	FRotator Current = Pawn->GetActorRotation();
 	FRotator Target = FRotator(Current.Pitch, TargetYaw, Current.Roll);
 
@@ -68,7 +72,9 @@ void UBTTask_LookAround::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* Node
 	Pawn->SetActorRotation(NewRot);
 
 	//are we close enough to move on?
-	if (FMath::Abs(NewRot.Yaw - TargetYaw) < 1.0f)
+	float Delta = FMath::FindDeltaAngleDegrees(NewRot.Yaw, TargetYaw);
+
+	if (FMath::Abs(Delta) < 1.0f)
 	{
 		Mem->CurrentIndex++;
 

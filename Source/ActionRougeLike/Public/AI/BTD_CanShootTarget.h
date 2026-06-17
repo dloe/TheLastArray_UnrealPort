@@ -34,7 +34,7 @@ protected:
 	// ---------------------------------
 	virtual bool CalculateRawConditionValue(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) const override;
 
-	bool HasClearShot(AActor* Shooter, AActor* Target) const;
+	bool HasClearShot(AActor* Shooter, AActor* Target, AAIController* AICon) const;
 	bool IsFriendly(AActor* A, AActor* B) const;
 
 	// ---------------------------------

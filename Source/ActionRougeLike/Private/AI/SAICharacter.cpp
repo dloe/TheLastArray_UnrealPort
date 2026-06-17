@@ -64,6 +64,7 @@ void ASAICharacter::BeginPlay()
         AIC->GetBlackboardComponent()->SetValueAsFloat("MaxBulletSpread", MaxBulletSpread);
         AIC->GetBlackboardComponent()->SetValueAsFloat("AttackRange", AttackRange);
         AIC->GetBlackboardComponent()->SetValueAsFloat("ShootDelay", ShootDelay);
+        AIC->GetBlackboardComponent()->SetValueAsFloat("DistanceToPlayerQueryDistanceMin", ShootDelay);
     }
 }
 

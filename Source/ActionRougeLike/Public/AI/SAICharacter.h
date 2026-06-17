@@ -104,6 +104,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Weapon Stats")
 	float AttackRange = 2000.f;
 
+	UPROPERTY(EditAnywhere, Category = "AI Stats")
+	float DistanceToPlayerEngagement = 500.f;
+
 	// ---------------------------------
 	// -------- Helper Functions -------
 	// ---------------------------------

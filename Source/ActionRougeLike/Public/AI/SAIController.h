@@ -59,6 +59,9 @@ class ACTIONROUGELIKE_API ASAIController : public AAIController
 	UPROPERTY(EditAnywhere, Category = "Affiliation")
 	EFactionTeam AffiliateTeamAIC = EFactionTeam::EEnemyFaction;
 
+	UPROPERTY(EditAnywhere, Category = "Functional Testing")
+	bool TestDisableBrain = false;
+
 protected:
 
 	// ---------------------------------
@@ -69,6 +72,10 @@ protected:
 	UBehaviorTree* BehaviorTree;
 
 	FTimerHandle ForgetTimerHandle;
+	FTimerHandle DelayEngagementTimerHandle;
+
+	/*UPROPERTY()
+	APawn* SeenPawn;*/
 
 	// ---------------------------------
 	// -------- Helper Functions -------

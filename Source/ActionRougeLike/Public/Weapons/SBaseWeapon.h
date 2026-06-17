@@ -94,37 +94,12 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Weapon Stats")
 	float ShootDelay;
 
-	//UPROPERTY(EditAnywhere, Category = "Weapon Stats")
-	//int CurrentMagazineSize;
-
-	//UPROPERTY(VisibleAnywhere, Category = "Weapon Stats")
-	//int StandardMagazineSized;
-
 	//@TODO: maybe make enum in future?
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 	FName WeaponClassification;
 
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 	FName WeaponDescription;
-
-	//skeletal mesh / static mesh comp?
-
-	//audio
-	//UPROPERTY(EditAnywhere, Category = "Weapon Audio")
-	//USoundBase* ReloadSound;
-
-	//UPROPERTY(EditAnywhere, Category = "Weapon Properties")
-	//TSubclassOf<AActor> WeaponProjectile;
-
-		//may move into child class for the projectile based weapons
-	//UPROPERTY(EditAnywhere, Category = "Attack")
-	//TSubclassOf<AActor> ProjectileClass;
-
-	//UPROPERTY(EditAnywhere, Category = "Reload")
-	//TSubclassOf<AActor> MagazineActor;
-
-	//UPROPERTY(EditAnywhere, Category = "Firing")
-	//TSubclassOf<AAEjectedBulletCasing> EjectedCasingActor;
 
 	//delaying the start of firing projectile
 	UPROPERTY(EditAnywhere, Category = "Attack")

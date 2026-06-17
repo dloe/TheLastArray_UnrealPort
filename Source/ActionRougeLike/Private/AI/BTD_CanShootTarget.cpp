@@ -37,10 +37,10 @@ bool UBTD_CanShootTarget::CalculateRawConditionValue(UBehaviorTreeComponent& Own
 		return false;
 
 	//run raycast in helper
-	return HasClearShot(Pawn, TargetActor);
+	return HasClearShot(Pawn, TargetActor, AICon);
 }
 
-bool UBTD_CanShootTarget::HasClearShot(AActor* Shooter, AActor* Target) const
+bool UBTD_CanShootTarget::HasClearShot(AActor* Shooter, AActor* Target, AAIController* AICon) const
 {
 	FVector Start = Shooter->GetActorLocation();
 	FVector End = Target->GetActorLocation();
@@ -66,8 +66,10 @@ bool UBTD_CanShootTarget::HasClearShot(AActor* Shooter, AActor* Target) const
 		return true;
 	}
 
-	//check if our hit actor is friendly
-	if (IsFriendly(Shooter, HitActor))
+	bool bHasLOS = AICon->LineOfSightTo(Target);
+
+	//check if our hit actor is friendly or if we see the target at all
+	if (IsFriendly(Shooter, HitActor) || !bHasLOS)// && !bHasLOS)
 	{
 		//TODO: friendly fire could be something here?
 		return false;
