@@ -45,6 +45,44 @@ void ULevelAssetSetupComponent::BeginPlay()
 }
 
 /// <summary>
+/// Populate grid with assets, called from TileGeneration once it is done setting up
+/// 
+/// - Handles setup of for this component, setup for big tiles, level key, activating secret room, 
+/// objective, items, enemies
+/// 
+/// 
+/// All items have a corresponding weight for given lvl
+/// - Weight random distribution for which item we spawn
+/// - Perlin noise for figuring out which premarked locations on the map we end up using
+/// - each placed tile will have 'markers' for where it would best make sense to place items
+/// - using a Perlin noise we can look at see which we can use, IE hotspots
+/// - Tiles have caps of how many items we can place
+/// 
+/// - Each tile has preplaced actors for enemies and items. These guys have local transforms. 
+/// The Perlin noise generator looks at these in order to map the locations to places found in 
+/// the Perlin noise
+/// 
+/// </summary>
+void ULevelAssetSetupComponent::PopulateGridAssets()
+{
+	SetupLevelAssetComponent();
+
+	//do items first then focus on choosing and creating objectives
+	ActivateObjectives();
+
+	ActivateItems();
+
+	ActivateEnemies();
+
+	SetupStartingTile();
+
+	CleanupAllItemPickups();
+
+	//Finished grid branch creation
+	UE_LOG(LogTemp, Log, TEXT("\n================= Finished ========================="));
+}
+
+/// <summary>
 /// Setup Enemy/item data
 /// Perlin Noise Setup for procedural behaviors in asset placements in map
 /// 
@@ -917,42 +955,3 @@ UTexture2D* ULevelAssetSetupComponent::DebugCreatePerlinNoiseTexture(int32 size,
 
 	return Texture;
 }
-
-/// <summary>
-/// Populate grid with assets, called from TileGeneration once it is done setting up
-/// 
-/// - Handles setup of for this component, setup for big tiles, level key, activating secret room, 
-/// objective, items, enemies
-/// 
-/// 
-/// All items have a corresponding weight for given lvl
-/// - Weight random distribution for which item we spawn
-/// - Perlin noise for figuring out which premarked locations on the map we end up using
-/// - each placed tile will have 'markers' for where it would best make sense to place items
-/// - using a Perlin noise we can look at see which we can use, IE hotspots
-/// - Tiles have caps of how many items we can place
-/// 
-/// - Each tile has preplaced actors for enemies and items. These guys have local transforms. 
-/// The Perlin noise generator looks at these in order to map the locations to places found in 
-/// the Perlin noise
-/// 
-/// </summary>
-void ULevelAssetSetupComponent::PopulateGridAssets()
-{
-	SetupLevelAssetComponent();
-	
-	//do items first then focus on choosing and creating objectives
-	ActivateObjectives();
-
-	ActivateItems();
-
-	ActivateEnemies();
-
-	SetupStartingTile();
-
-	CleanupAllItemPickups();
-
-	//Finished grid branch creation
-	UE_LOG(LogTemp, Log, TEXT("\n================= Finished ========================="));
-}
-

@@ -41,6 +41,8 @@ EBTNodeResult::Type UBTTask_LookAround::ExecuteTask(UBehaviorTreeComponent& Owne
 	//randomize how far we look around. TODO: Configurable?
 	float TargetAngle = FMath::FRandRange(50.f, 100.f);
 
+	LookState = ELookState::ERotatingToTarget;
+
 	//figure out the pattern we look in, could add more angles maybe
 	Mem->TargetAngles = {-TargetAngle, TargetAngle};
 	Mem->CurrentIndex = 0;
@@ -61,28 +63,47 @@ void UBTTask_LookAround::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* Node
 
 	FTaskMemory* Mem = (FTaskMemory*) NodeMemory;
 
-	float TargetYaw = Mem->StartRotation.Yaw + Mem->TargetAngles[Mem->CurrentIndex];
-	TargetYaw = FRotator::NormalizeAxis(TargetYaw);
+	if (LookState == ELookState::ERotatingToTarget) {
+		float TargetYaw = Mem->StartRotation.Yaw + Mem->TargetAngles[Mem->CurrentIndex];
+		TargetYaw = FRotator::NormalizeAxis(TargetYaw);
 
-	FRotator Current = Pawn->GetActorRotation();
-	FRotator Target = FRotator(Current.Pitch, TargetYaw, Current.Roll);
+		FRotator Current = Pawn->GetActorRotation();
+		FRotator Target = FRotator(Current.Pitch, TargetYaw, Current.Roll);
 
-	//smooth it more
-	FRotator NewRot = FMath::RInterpConstantTo(Current, Target, DeltaSeconds, RotationSpeed);
-	Pawn->SetActorRotation(NewRot);
+		//smooth it more
+		FRotator NewRot = FMath::RInterpConstantTo(Current, Target, DeltaSeconds, RotationSpeed);
+		Pawn->SetActorRotation(NewRot);
 
-	//are we close enough to move on?
-	float Delta = FMath::FindDeltaAngleDegrees(NewRot.Yaw, TargetYaw);
+		//are we close enough to move on?
+		float Delta = FMath::FindDeltaAngleDegrees(NewRot.Yaw, TargetYaw);
 
-	if (FMath::Abs(Delta) < 1.0f)
-	{
-		Mem->CurrentIndex++;
-
-		if (Mem->CurrentIndex >= Mem->TargetAngles.Num())
+		if (FMath::Abs(Delta) < 1.0f)
 		{
-			//DONE!
-			FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
-			return;
+			Mem->CurrentIndex++;
+
+			if (Mem->CurrentIndex >= Mem->TargetAngles.Num())
+			{
+				//DONE!
+				FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+				LookState = ELookState::EFinished;
+				return;
+			}
+			else {
+				DelayBetweenLooks = FMath::FRandRange(0.f, MaxWaitBetweenLooks);
+				ElapsedTime = 0.f;
+				LookState = ELookState::EWaitingBeforeFlip;
+
+			}
+		}
+		else {
+			ElapsedTime += DeltaSeconds;
+
+			if (ElapsedTime >= DelayBetweenLooks)
+			{
+				LookState = ELookState::ERotatingToTarget;
+				//ElapsedTime = 0.f;
+			}
 		}
 	}
+	
 }

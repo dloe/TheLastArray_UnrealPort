@@ -46,7 +46,6 @@ void ASTileManager::BeginPlay()
 	UE_LOG(LogTemp, Log, TEXT("==========================================================="));
 
 	BeginLevelSetupProcedure();
-	UE_LOG(LogTemp, Log, TEXT("STIleManager: Begin play Finished..."));
 }
 
 /// <summary>
@@ -77,7 +76,6 @@ void ASTileManager::BeginLevelSetupProcedure()
 		UE_LOG(LogTemp, Log, TEXT("==========================================================="));
 		UE_LOG(LogTemp, Log, TEXT("================= TILE GENERATION ========================="));
 		UE_LOG(LogTemp, Log, TEXT("==========================================================="));
-
 	}
 
 	GameStreamRef = MyLocalLevel->GameStream;

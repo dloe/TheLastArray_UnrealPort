@@ -403,7 +403,6 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Debug")
 	double TileSetupDuration;
 
-
 	UPROPERTY(EditAnywhere, Category = "Debug")
 	double PopulateWithNoiseMapEndTime;
 	UPROPERTY(EditAnywhere, Category = "Debug")
@@ -419,8 +418,6 @@ protected:
 
 	UFUNCTION()
 	void OnTilePathGeneration();
-
-	
 
 	UFUNCTION()
 	void OnBranchFillGeneration();

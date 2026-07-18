@@ -73,8 +73,11 @@ void USActionComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 	//}
 }
 
-
-
+/// <summary>
+/// Init and add action to actions array and run start action logic
+/// </summary>
+/// <param name="Instigator"></param>
+/// <param name="ActionClass"></param>
 void USActionComponent::AddAction(AActor* Instigator, TSubclassOf<USAction> ActionClass)
 {
 	if (!ensure(ActionClass))
@@ -104,10 +107,16 @@ void USActionComponent::AddAction(AActor* Instigator, TSubclassOf<USAction> Acti
 	}
 }
 
+/// <summary>
+///  Replicated start action, stays consistent on server
+/// </summary>
+/// <param name="Instigator"></param>
+/// <param name="ActionName"></param>
+/// <returns></returns>
 bool USActionComponent::StartActionByName(AActor* Instigator, FName ActionName)
 {
+	// measuring cpu on StartActionByName function
 	SCOPE_CYCLE_COUNTER(STAT_StartActionByName);
-
 
 	for (USAction* Action : Actions)
 	{
@@ -124,12 +133,12 @@ bool USActionComponent::StartActionByName(AActor* Instigator, FName ActionName)
 
 			//blackholes cost rage
 
-			//to avoid an infi loop
+			//to avoid an infi loop, server runs it directly instead of client actor
 			if (!GetOwner()->HasAuthority()) {
 				ServerStartAction(Instigator, ActionName);
 			}
 			
-
+			//unreal insights, marking we start action
 			TRACE_BOOKMARK(TEXT("StartAction::%s"), *GetNameSafe(Action));
 
 			Action->StartAction(Instigator);

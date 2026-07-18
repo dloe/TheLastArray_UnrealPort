@@ -61,6 +61,9 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Affiliation")
 	EFactionTeam AffiliateTeam = EFactionTeam::EEnemyFaction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Patrol")
+	AActor* PatrolPath_BP;
 	
 protected:
 	

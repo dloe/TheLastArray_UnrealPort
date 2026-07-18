@@ -9,6 +9,14 @@
 #include "BehaviorTree/BehaviorTreeTypes.h"
 #include "BTTask_LookAround.generated.h"
 
+UENUM(BlueprintType)
+enum class ELookState : uint8
+{
+	ERotatingToTarget UMETA(DisplayName = "Rotating To Target"),
+	EWaitingBeforeFlip UMETA(DisplayName = "Waiting Before Next Turn"),
+	EFinished UMETA(DisplayName = "Finished")
+};
+
 /**
  * 
  */
@@ -32,6 +40,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Blackbaord Input")
 	FBlackboardKeySelector LookAroundSpeedKey;
 
+	UPROPERTY(EditAnywhere, Category = "Blackbaord Input")
+	float MaxWaitBetweenLooks = 3.5f;
+
 protected:
 
 	// ---------------------------------
@@ -46,6 +57,9 @@ protected:
 	// -- Internal state / variables --
 	// ---------------------------------
 
+	UPROPERTY()
+	ELookState LookState = ELookState::ERotatingToTarget;
+
 	/*UPROPERTY()
 	FRotator StartRotation;
 	UPROPERTY()
@@ -54,6 +68,12 @@ protected:
 	int32 CurrentIndex = 0;*/
 	UPROPERTY()
 	float RotationSpeed;
+
+	UPROPERTY()
+	float DelayBetweenLooks = -1.f;
+
+	UPROPERTY()
+	float ElapsedTime;
 
 	//local mem
 	struct FTaskMemory
