@@ -16,6 +16,8 @@ public class ActionRougeLike : ModuleRules
 			"AIModule", 
 			"NavigationSystem", 
 			"GameplayTasks", 
+			"StateTreeModule",
+			"GameplayStateTreeModule",
 			"UMG", 
 			"GameplayTags" 
 		});
