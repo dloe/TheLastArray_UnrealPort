@@ -4,7 +4,7 @@
 // This code is provided as-is for development and experimentation.
 // Unauthorized use, distribution, or modification is not permitted.
 
-#include "AI/SBTTask_RangedAttack.h"
+#include "AI/BehaviorTree_old/SBTTask_RangedAttack.h"
 #include "AIController.h"
 #include "GameFramework/Character.h"
 #include "BehaviorTree/BlackboardComponent.h"

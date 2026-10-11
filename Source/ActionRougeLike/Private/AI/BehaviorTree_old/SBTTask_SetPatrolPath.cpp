@@ -3,7 +3,7 @@
 // Unauthorized use, distribution, or modification is not permitted.
 
 
-#include "AI/SBTTask_SetPatrolPath.h"
+#include "AI/BehaviorTree_old/SBTTask_SetPatrolPath.h"
 #include "EnvironmentQuery/EnvQueryManager.h"
 #include "GameFramework/Pawn.h"
 #include "BehaviorTree/BlackboardComponent.h"

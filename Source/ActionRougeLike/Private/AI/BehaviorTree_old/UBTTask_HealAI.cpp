@@ -4,7 +4,7 @@
 // This code is provided as-is for development and experimentation.
 // Unauthorized use, distribution, or modification is not permitted.
 
-#include "AI/UBTTask_HealAI.h"
+#include "AI/BehaviorTree_old/UBTTask_HealAI.h"
 #include "AIController.h"
 #include "GameFramework/Character.h"
 #include "BehaviorTree/BlackboardComponent.h"

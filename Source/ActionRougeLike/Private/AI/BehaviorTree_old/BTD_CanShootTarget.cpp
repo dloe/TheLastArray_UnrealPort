@@ -3,7 +3,7 @@
 // Unauthorized use, distribution, or modification is not permitted.
 
 
-#include "AI/BTD_CanShootTarget.h"
+#include "AI/BehaviorTree_old/BTD_CanShootTarget.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "GameFramework/Pawn.h"
 #include "AIController.h"

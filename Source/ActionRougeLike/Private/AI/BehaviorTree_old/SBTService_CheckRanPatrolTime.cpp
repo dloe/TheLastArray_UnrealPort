@@ -1,6 +1,6 @@
 // Copyright (c) 2026 Dylan. Personal Game Project. \nThis code is provided as-is for development and experimentation.\nUnauthorized use, distribution, or modification is not permitted.
 
-#include "AI/SBTService_CheckRanPatrolTime.h"
+#include "AI/BehaviorTree_old/SBTService_CheckRanPatrolTime.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "AIController.h"
 

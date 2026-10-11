@@ -4,7 +4,7 @@
 // This code is provided as-is for development and experimentation.
 // Unauthorized use, distribution, or modification is not permitted.
 
-#include "AI/USBTService_CheckHealth.h"
+#include "AI/BehaviorTree_old/USBTService_CheckHealth.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "AIController.h"
 #include <ActionRougeLike/Public/Attributes/SAttributeComponent.h>
