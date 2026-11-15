@@ -51,6 +51,18 @@ FGenericTeamId ASAICharacter::GetGenericTeamId() const
 void ASAICharacter::BeginPlay()
 {
     Super::BeginPlay();
+
+    // Immediately check for any mis-assignments when beginplay (would be harder to check in the state tree)
+    TArray<FString> Errors;
+    if (!EnemyStatInfo.Validate(Errors))
+    {
+        for (const FString& Error : Errors)
+        {
+            UE_LOG(LogTemp, Warning, TEXT("[%s] %s"), *GetName(), *Error); //*GetNameSafe(this)
+        }
+    }
+
+
     ASAIController* AIC = Cast<ASAIController>(GetController());
     if (AIC) {
         //don't even need to null check this since we know for a fact this is valid. Cannot be null
@@ -65,6 +77,7 @@ void ASAICharacter::BeginPlay()
         AIC->GetBlackboardComponent()->SetValueAsFloat("AttackRange", AttackRange);
         AIC->GetBlackboardComponent()->SetValueAsFloat("ShootDelay", ShootDelay);
         AIC->GetBlackboardComponent()->SetValueAsFloat("DistanceToPlayerQueryDistanceMin", ShootDelay);
+
     }
 }
 
@@ -78,6 +91,33 @@ void ASAICharacter::PostInitializeComponents()
 
     
 }
+
+#if WITH_EDITOR
+/// <summary>
+/// 
+/// </summary>
+void ASAICharacter::CheckForErrors()
+{
+    Super::CheckForErrors();
+
+    TArray<FString> Errors;
+
+    if (!EnemyStatInfo.Validate(Errors))
+    {
+        for (const FString& Error : Errors)
+        {
+            //Using warnings like this to try.
+            //advantage is that you could see them sooner? Will need to check. Might change
+            FMessageLog("MapCheck").Warning()->AddToken(
+                FTextToken::Create(
+                    FText::FromString(
+                        FString::Printf(TEXT("[%s] %s"),
+                        *GetName(),//*GetNameSafe(this),
+                        *Error))));
+        }
+    }
+}
+#endif
 
 /// <summary>
 /// Should it live here or in AIController

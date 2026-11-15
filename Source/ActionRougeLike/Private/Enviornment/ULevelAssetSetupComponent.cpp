@@ -133,12 +133,12 @@ void ULevelAssetSetupComponent::SetupLevelAssetComponent()
 		break;
 	}
 
-	TArray<FEnemySpawnInfo*> EnemySpawnItems;
+	TArray<FEnemyInfo*> EnemySpawnItems;
 	//the string being pass in is for debugging purposes in case it breaks or fails to cast
 	EnemyData->MonsterTable->GetAllRows("", EnemySpawnItems);
 
 	//pull Ids from monster table to construct which choices are available for spawning
-	for (FEnemySpawnInfo* DataRowEnemy : EnemySpawnItems)
+	for (FEnemyInfo* DataRowEnemy : EnemySpawnItems)
 	{
 		//if IDs match, add to our list
 		if (DataRowEnemy && LocalEnemyInfoData.EnemyPoolID.Contains(DataRowEnemy->MonsterId))
@@ -490,7 +490,7 @@ void ULevelAssetSetupComponent::PlaceEnemy(UStaticMeshComponent* PickupMarker, A
 {
 	FVector spawnLocation = PickupMarker->GetComponentLocation();
 	//spawn enemy
-	FEnemySpawnInfo* EnemyToSpawnInfo = GetWeightedRandomEnemy();
+	FEnemyInfo* EnemyToSpawnInfo = GetWeightedRandomEnemy();
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
@@ -575,7 +575,7 @@ void ULevelAssetSetupComponent::ActivateEnemies()
 		TArray <UStaticMeshComponent*> EnemiesToGoThrough = ReshuffleArray(TilePlaced->EnemyPlacements);
 		for (UStaticMeshComponent* PossibleEnemySpawn : EnemiesToGoThrough)
 		{
-			FEnemySpawnInfo* CurrentEnemy = GetWeightedRandomEnemy();
+			FEnemyInfo* CurrentEnemy = GetWeightedRandomEnemy();
 			if (remainingTileSpawnBudget <= 0)
 			{
 				break;
@@ -672,13 +672,13 @@ void ULevelAssetSetupComponent::SetupStartingTile()
 /// TODO: give option for building out mini patrol
 /// </summary>
 /// <returns></returns>
-FEnemySpawnInfo* ULevelAssetSetupComponent::GetWeightedRandomEnemy()
+FEnemyInfo* ULevelAssetSetupComponent::GetWeightedRandomEnemy()
 {
-	FEnemySpawnInfo* possibleEnemy = nullptr;
+	FEnemyInfo* possibleEnemy = nullptr;
 	//calculate total weight
 	float totalWeight = 0.0f;
 	//go through entire pool and add them all up
-	for (FEnemySpawnInfo* Enemy : CurrentLevelEnemyList)
+	for (FEnemyInfo* Enemy : CurrentLevelEnemyList)
 	{
 		totalWeight += Enemy->Weight;
 	}
@@ -690,7 +690,7 @@ FEnemySpawnInfo* ULevelAssetSetupComponent::GetWeightedRandomEnemy()
 
 	//TODO: should i shuffle the enemy list here?
 
-	for (FEnemySpawnInfo* Enemy : CurrentLevelEnemyList)
+	for (FEnemyInfo* Enemy : CurrentLevelEnemyList)
 	{
 		accumulated += Enemy->Weight;
 		if (randomVal <= accumulated)
@@ -761,7 +761,7 @@ float ULevelAssetSetupComponent::GetNoiseVec(FVector2D inputCords, float MinNois
 /// </summary>
 /// <param name="EnemySpawnInfo">Input enemy info</param>
 /// <param name="SpawnLocation"> Location to spawn enemy that we loaded</param>
-void ULevelAssetSetupComponent::OnEnemyLoaded(FEnemySpawnInfo* EnemySpawnInfo, FVector SpawnLocation, int enemyNum)
+void ULevelAssetSetupComponent::OnEnemyLoaded(FEnemyInfo* EnemySpawnInfo, FVector SpawnLocation, int enemyNum)
 {
 	//LogOnScreen(this, "Finished Loading Monster...", FColor::Green);
 	UAssetManager* Manager = UAssetManager::GetIfInitialized();
@@ -776,6 +776,7 @@ void ULevelAssetSetupComponent::OnEnemyLoaded(FEnemySpawnInfo* EnemySpawnInfo, F
 				SpawnedEnemiesInLevel.Add(NewBot);
 				FString EnemyName = EnemySpawnInfo->EnemyName + "_" + FString::FromInt(enemyNum);
 				
+				//TODO: Add EnemySpawnInfo to SAICharacter's EnemyStatInfo
 
 #if WITH_EDITOR
 				NewBot->SetActorLabel(EnemyName);

@@ -12,6 +12,7 @@
 #include "EnvironmentQuery/EnvQueryTypes.h"
 #include "GameFramework/PlayerState.h"
 #include "Engine/DataTable.h"
+#include "AI/SFEnemyDataDefinition.h"
 #include "SGameModeBase.generated.h"
 
 class UEnvQuery;
@@ -127,7 +128,7 @@ protected:
 	UFUNCTION()
 	void OnQueryBotSpawnCompleted(UEnvQueryInstanceBlueprintWrapper* QueryInstance, EEnvQueryStatus::Type QueryStatus);
 
-	void OnMonsterLoaded(FPrimaryAssetId LoadedId, FVector SpawnLocation);
+	void OnMonsterLoaded(FPrimaryAssetId LoadedId, FVector SpawnLocation, FEnemyInfo* EnemyInfo);
 
 	UFUNCTION()
 	void RespawnPlayerElasped(AController* Controller);

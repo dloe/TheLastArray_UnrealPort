@@ -16,6 +16,7 @@
 #include "Weapons/USFirearmWeapon.h"
 #include "EFactionTypes.h"
 #include "Weapons/SBaseWeapon.h"
+#include "SFEnemyDataDefinition.h"
 #include "SAICharacter.generated.h"
 
 class UUserWidget;
@@ -47,9 +48,16 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AI")
 	float RotationSpeed = 10.0f;
 
+	UPROPERTY(EditAnywhere, Category = "AI Behavior Stats")
+	FEnemyInfo EnemyStatInfo;
+
 	// ---------------------------------
 	// ------- Public Functions --------
 	// ---------------------------------
+	UFUNCTION(BlueprintCallable)
+	const FEnemyInfo& GetBehaviorData() const {
+		return EnemyStatInfo;
+	}
 
 	UFUNCTION()
 	USBaseInventoryComponent* GetInventoryComp() {return InventoryComponent; };
@@ -120,6 +128,12 @@ protected:
 
 	/*UFUNCTION(BlueprintCallable, Category = "AI")
 	void SetTargetActor(AActor* NewTarget);*/
+
+#if WITH_EDITOR
+	virtual void CheckForErrors() override;
+#endif
+
+	
 
 	UFUNCTION()
 	void OnHealthChanged(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewHealth, float Delta);

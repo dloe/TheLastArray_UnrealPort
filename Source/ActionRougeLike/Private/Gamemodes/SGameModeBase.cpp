@@ -213,12 +213,12 @@ void ASGameModeBase::OnQueryBotSpawnCompleted(UEnvQueryInstanceBlueprintWrapper*
 	{
 		if (MonsterTable)
 		{
-			TArray<FEnemySpawnInfo*> Rows;
+			TArray<FEnemyInfo*> Rows;
 			MonsterTable->GetAllRows("", Rows);
 
 			//get random enemy
 			int32 RandomIndex = FMath::RandRange(0, Rows.Num() - 1);
-			FEnemySpawnInfo* SelectedRow = Rows[RandomIndex];
+			FEnemyInfo* SelectedRow = Rows[RandomIndex];
 
 			//SelectedRow->SpawnCost
 
@@ -230,10 +230,12 @@ void ASGameModeBase::OnQueryBotSpawnCompleted(UEnvQueryInstanceBlueprintWrapper*
 				TArray<FName> Bundles;
 
 				//calls OnMonsterLoad when loaded, pass along AssetData and FVector to this OnMonsterLoaded function
-				FStreamableDelegate Delegate = FStreamableDelegate::CreateUObject(this, &ASGameModeBase::OnMonsterLoaded, SelectedRow->MonsterId, Locations[0]);
+				FStreamableDelegate Delegate = FStreamableDelegate::CreateUObject(this, &ASGameModeBase::OnMonsterLoaded, SelectedRow->MonsterId, Locations[0], SelectedRow);
 
 
 				Manager->LoadPrimaryAsset(SelectedRow->MonsterId, Bundles, Delegate);
+
+				
 			}
 		}
 
@@ -244,7 +246,7 @@ void ASGameModeBase::OnQueryBotSpawnCompleted(UEnvQueryInstanceBlueprintWrapper*
 	}
 }
 
-void ASGameModeBase::OnMonsterLoaded(FPrimaryAssetId LoadedId, FVector SpawnLocation)
+void ASGameModeBase::OnMonsterLoaded(FPrimaryAssetId LoadedId, FVector SpawnLocation, FEnemyInfo* EnemyInfo)
 {
 	LogOnScreen(this, "Finished Loading Monster...", FColor::Green);
 
@@ -266,6 +268,12 @@ void ASGameModeBase::OnMonsterLoaded(FPrimaryAssetId LoadedId, FVector SpawnLoca
 					{
 						ActionComp->AddAction(NewBot, ActionClass);
 					}
+				}
+
+				ASAICharacter* AICharacter = Cast<ASAICharacter>(NewBot);
+				if (AICharacter)
+				{
+					AICharacter->EnemyStatInfo = *EnemyInfo;
 				}
 			}
 		}

@@ -166,7 +166,7 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Level Asset Population", meta = (ToolTip = "Populated on play. Assigned objective spawn Data per level"))
 	FLevelTiersObjectiveInfo LocalObjectiveInfoData;
 
-	TArray <FEnemySpawnInfo*> CurrentLevelEnemyList;
+	TArray <FEnemyInfo*> CurrentLevelEnemyList;
 
 	TArray <FLocalLevelItemSpawnTiers> CurrentLevelItemTierList;
 
@@ -212,13 +212,13 @@ protected:
 	void SetupStartingTile();
 
 	//UFUNCTION(BlueprintCallable, Category = "Level Asset Population")
-	FEnemySpawnInfo* GetWeightedRandomEnemy();
+	FEnemyInfo* GetWeightedRandomEnemy();
 
 	UFUNCTION(BlueprintCallable)
 	float GetNoiseVec(FVector2D inputCords, float MinNoise, float MaxNoise);
 	
 	//For loading enemies
-	void OnEnemyLoaded(FEnemySpawnInfo* EnemySpawnInfo, FVector SpawnLocation, int enemyNum);
+	void OnEnemyLoaded(FEnemyInfo* EnemySpawnInfo, FVector SpawnLocation, int enemyNum);
 
 	void OnPickupLoaded(FItemPickupAsset* ItemSpawnInfo, FVector SpawnLocation, FRotator spawnRotation, ASTileVariantEnviornment* AttachedTile, int itemNum);
 
