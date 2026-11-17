@@ -8,7 +8,7 @@ public class ActionRougeLikeEditorTarget : TargetRules
 	public ActionRougeLikeEditorTarget( TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Editor;
-		DefaultBuildSettings = BuildSettingsVersion.V6;
+		DefaultBuildSettings = BuildSettingsVersion.V7;
         IncludeOrderVersion = EngineIncludeOrderVersion.Latest;
         ExtraModuleNames.AddRange( new string[] { "ActionRougeLike" } );
 	}

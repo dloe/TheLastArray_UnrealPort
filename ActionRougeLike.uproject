@@ -1,6 +1,6 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "5.7",
+	"EngineAssociation": "5.8",
 	"Category": "",
 	"Description": "",
 	"Modules": [
@@ -58,6 +58,10 @@
 		},
 		{
 			"Name": "StateGraph",
+			"Enabled": true
+		},
+		{
+			"Name": "StateTree",
 			"Enabled": true
 		},
 		{

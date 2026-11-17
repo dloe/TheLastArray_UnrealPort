@@ -4,7 +4,7 @@
 #include "Animations/AnimNotify_PlayPostAnimMont.h"
 #include "Player/SCharacter.h"
 
-void UAnimNotify_PlayPostAnimMont::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
+void UAnimNotify_PlayPostAnimMont::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
 	if (GEngine)
 	{

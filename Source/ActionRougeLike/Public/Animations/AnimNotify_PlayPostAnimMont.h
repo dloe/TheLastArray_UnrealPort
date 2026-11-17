@@ -19,7 +19,7 @@ class ACTIONROUGELIKE_API UAnimNotify_PlayPostAnimMont : public UAnimNotify
 	GENERATED_BODY()
 	
 	public:
-		virtual void Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation) override;
+		virtual void Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference) override;
 
 	UPROPERTY(EditAnywhere,  Category = "Montage")
 	UAnimMontage* PlayNewMonteage;
