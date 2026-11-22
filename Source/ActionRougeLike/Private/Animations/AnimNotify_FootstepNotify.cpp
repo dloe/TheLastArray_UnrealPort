@@ -5,7 +5,7 @@
 #include "GameFramework/Actor.h"
 #include "Player/SCharacter.h"
 
-void UAnimNotify_FootstepNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
+void UAnimNotify_FootstepNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
 	//check owner
 	/*if (APawn* OwningPawn = Cast<APawn>(MeshComp->GetOwner()))

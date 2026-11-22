@@ -11,7 +11,7 @@
 /// </summary>
 /// <param name="MeshComp"></param>
 /// <param name="Animation"></param>
-void UAnimNotify_DeEquipItem::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
+void UAnimNotify_DeEquipItem::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, const FAnimNotifyEventReference& EventReference)
 {
 	AActor* Instigator = MeshComp->GetOwner();
 	if (Instigator)

@@ -1,73 +1,81 @@
 {
-	"FileVersion": 3,
-	"EngineAssociation": "5.7",
-	"Category": "",
-	"Description": "",
-	"Modules": [
-		{
-			"Name": "ActionRougeLike",
-			"Type": "Runtime",
-			"LoadingPhase": "Default",
-			"AdditionalDependencies": [
-				"Engine",
-				"AIModule",
-				"MetaxisAITools"
-			]
-		}
-	],
-	"Plugins": [
-		{
-			"Name": "ModelingToolsEditorMode",
-			"Enabled": true
-		},
-		{
-			"Name": "AnalyticsBlueprintLibrary",
-			"Enabled": true
-		},
-		{
-			"Name": "AnimationWarping",
-			"Enabled": true
-		},
-		{
-			"Name": "FunctionalTestingEditor",
-			"Enabled": true
-		},
-		{
-			"Name": "CQTest",
-			"Enabled": true
-		},
-		{
-			"Name": "EditorTests",
-			"Enabled": true
-		},
-		{
-			"Name": "TestFramework",
-			"Enabled": true
-		},
-		{
-			"Name": "TestSamples",
-			"Enabled": true
-		},
-		{
-			"Name": "RuntimeTests",
-			"Enabled": true
-		},
-		{
-			"Name": "GameplayStateTree",
-			"Enabled": true
-		},
-		{
-			"Name": "StateGraph",
-			"Enabled": true
-		},
-		{
-			"Name": "BlueprintStats",
-			"Enabled": true
-		},
-		{
-			"Name": "MetaxisAITools",
-			"Enabled": true,
-			"MarketplaceURL": "com.epicgames.launcher://ue/Fab/product/a3f7960c-b967-4313-a4b1-d22348b84e45"
-		}
-	]
+  "FileVersion": 3,
+  "EngineAssociation": "5.8",
+  "Category": "",
+  "Description": "",
+  "Modules": [
+    {
+      "Name": "ActionRougeLike",
+      "Type": "Runtime",
+      "LoadingPhase": "Default",
+      "AdditionalDependencies": [
+        "Engine",
+        "AIModule",
+        "MetaxisAITools"
+      ]
+    }
+  ],
+  "Plugins": [
+    {
+      "Name": "ModelingToolsEditorMode",
+      "Enabled": true
+    },
+    {
+      "Name": "AnalyticsBlueprintLibrary",
+      "Enabled": true
+    },
+    {
+      "Name": "AnimationWarping",
+      "Enabled": true
+    },
+    {
+      "Name": "FunctionalTestingEditor",
+      "Enabled": true
+    },
+    {
+      "Name": "CQTest",
+      "Enabled": true
+    },
+    {
+      "Name": "EditorTests",
+      "Enabled": true
+    },
+    {
+      "Name": "TestFramework",
+      "Enabled": true
+    },
+    {
+      "Name": "TestSamples",
+      "Enabled": true
+    },
+    {
+      "Name": "RuntimeTests",
+      "Enabled": true
+    },
+    {
+      "Name": "GameplayStateTree",
+      "Enabled": true
+    },
+    {
+      "Name": "StateGraph",
+      "Enabled": true
+    },
+    {
+      "Name": "StateTree",
+      "Enabled": true
+    },
+    {
+      "Name": "BlueprintStats",
+      "Enabled": true
+    },
+    {
+      "Name": "MetaxisAITools",
+      "Enabled": true,
+      "MarketplaceURL": "com.epicgames.launcher://ue/Fab/product/a3f7960c-b967-4313-a4b1-d22348b84e45"
+    }
+  ],
+  "TargetPlatforms": [],
+  "AdditionalRootDirectories": [],
+  "AdditionalPluginDirectories": [],
+  "EpicSampleNameHash": ""
 }

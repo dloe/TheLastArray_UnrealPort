@@ -18,6 +18,16 @@ struct FEnemyBehaviorData
 {
 	GENERATED_BODY()
 
+	public:
+		FEnemyBehaviorData() {
+			CombatPos_OuterRadius = 0.0f;
+			CombatPos_InnterRadius = 0.0f;
+			CombatPos_DistanceToPlayerMin = 0.0f;
+			InvestigationDuration = 0.0f;
+			CombatRelocationCooldown = 0.0f;
+			MinRelocationDistance = 0.0f;
+		}
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat Behavior")
 	float CombatPos_OuterRadius;
 
