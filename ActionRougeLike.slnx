@@ -29,8 +29,18 @@
     <Project Path="../../../../../Program Files/Epic Games/UE_5.8/Engine/Source/Programs/AutomationTool/AutomationTool.csproj">
       <BuildType Project="Development" />
     </Project>
+    <Project Path="../../../../../Program Files/Epic Games/UE_5.8/Engine/Source/Programs/AutomationToolLauncher/AutomationToolLauncher.csproj">
+      <BuildType Project="Development" />
+    </Project>
     <Project Path="../../../../../Program Files/Epic Games/UE_5.8/Engine/Source/Programs/UnrealBuildTool/UnrealBuildTool.csproj">
       <BuildType Project="Development" />
+    </Project>
+    <Project Path="Intermediate/ProjectFiles/DotNetPerforceLib.vcxproj" Id="857b4daf-38b1-3ce5-9e29-ee7b196d6fdf">
+      <BuildType Solution="DebugGame Editor|*" Project="DebugGame" />
+      <BuildType Solution="Development Editor|*" Project="Development" />
+      <Platform Solution="*|Win64" Project="x64" />
+      <Platform Solution="*|Win64-arm64" Project="arm64" />
+      <Platform Solution="*|Win64-arm64ec" Project="arm64ec" />
     </Project>
   </Folder>
   <Folder Name="/Programs/Automation/">
@@ -110,6 +120,52 @@
       <BuildType Project="Development" />
     </Project>
   </Folder>
+  <Folder Name="/Programs/LiveLink/">
+    <Project Path="Intermediate/ProjectFiles/LiveLinkHub.vcxproj" Id="244539ab-7f17-37a8-9c15-5fdc9e48d7ea">
+      <BuildType Solution="DebugGame Editor|*" Project="DebugGame_Editor" />
+      <BuildType Solution="DebugGame|*" Project="Invalid" />
+      <BuildType Solution="Development Editor|*" Project="Development_Editor" />
+      <BuildType Solution="Development|*" Project="Invalid" />
+      <BuildType Solution="Shipping|*" Project="Invalid" />
+      <Platform Solution="*|Win64" Project="x64" />
+      <Platform Solution="DebugGame Editor|Win64-arm64" Project="arm64" />
+      <Platform Solution="DebugGame Editor|Win64-arm64ec" Project="arm64ec" />
+      <Platform Solution="DebugGame|Win64-arm64" Project="x64" />
+      <Platform Solution="DebugGame|Win64-arm64ec" Project="x64" />
+      <Platform Solution="Development Editor|Win64-arm64" Project="arm64" />
+      <Platform Solution="Development Editor|Win64-arm64ec" Project="arm64ec" />
+      <Platform Solution="Development|Win64-arm64" Project="x64" />
+      <Platform Solution="Development|Win64-arm64ec" Project="x64" />
+      <Platform Solution="Shipping|Win64-arm64" Project="x64" />
+      <Platform Solution="Shipping|Win64-arm64ec" Project="x64" />
+      <Build Solution="DebugGame|*" Project="false" />
+      <Build Solution="Development|*" Project="false" />
+      <Build Solution="Shipping|*" Project="false" />
+    </Project>
+  </Folder>
+  <Folder Name="/Programs/LowLevelTests/">
+    <Project Path="Intermediate/ProjectFiles/ChaosTestHarness.vcxproj" Id="8c23fea9-8e4f-351a-b78c-15ae7abdecb6">
+      <BuildType Solution="DebugGame Editor|*" Project="DebugGame" />
+      <BuildType Solution="Development Editor|*" Project="Development" />
+      <Platform Solution="*|Win64" Project="x64" />
+      <Platform Solution="*|Win64-arm64" Project="arm64" />
+      <Platform Solution="*|Win64-arm64ec" Project="arm64ec" />
+    </Project>
+    <Project Path="Intermediate/ProjectFiles/EventLoopUnitTests.vcxproj" Id="351e51bc-5723-3712-9a40-6b10aa1ff9ea">
+      <BuildType Solution="DebugGame Editor|*" Project="DebugGame" />
+      <BuildType Solution="Development Editor|*" Project="Development" />
+      <Platform Solution="*|Win64" Project="x64" />
+      <Platform Solution="*|Win64-arm64" Project="arm64" />
+      <Platform Solution="*|Win64-arm64ec" Project="arm64ec" />
+    </Project>
+    <Project Path="Intermediate/ProjectFiles/IoStoreOnDemandTests.vcxproj" Id="8f57bc59-35f8-3650-be3a-6cfc08baa8f4">
+      <BuildType Solution="DebugGame Editor|*" Project="DebugGame" />
+      <BuildType Solution="Development Editor|*" Project="Development" />
+      <Platform Solution="*|Win64" Project="x64" />
+      <Platform Solution="*|Win64-arm64" Project="arm64" />
+      <Platform Solution="*|Win64-arm64ec" Project="arm64ec" />
+    </Project>
+  </Folder>
   <Folder Name="/Programs/Shared/">
     <Project Path="../../../../../Program Files/Epic Games/UE_5.8/Engine/Source/Programs/Shared/EpicGames.Analytics.Generators/EpicGames.Analytics.Generators.csproj">
       <BuildType Project="Development" />
@@ -126,19 +182,37 @@
     <Project Path="../../../../../Program Files/Epic Games/UE_5.8/Engine/Source/Programs/Shared/EpicGames.Benchmarks/EpicGames.Benchmarks.csproj">
       <BuildType Project="Development" />
     </Project>
+    <Project Path="../../../../../Program Files/Epic Games/UE_5.8/Engine/Source/Programs/Shared/EpicGames.Build.Tests/EpicGames.Build.Tests.csproj">
+      <BuildType Project="Development" />
+    </Project>
     <Project Path="../../../../../Program Files/Epic Games/UE_5.8/Engine/Source/Programs/Shared/EpicGames.Build/EpicGames.Build.csproj">
+      <BuildType Project="Development" />
+    </Project>
+    <Project Path="../../../../../Program Files/Epic Games/UE_5.8/Engine/Source/Programs/Shared/EpicGames.BuildGraph.Tests/EpicGames.BuildGraph.Tests.csproj">
       <BuildType Project="Development" />
     </Project>
     <Project Path="../../../../../Program Files/Epic Games/UE_5.8/Engine/Source/Programs/Shared/EpicGames.BuildGraph/EpicGames.BuildGraph.csproj">
       <BuildType Project="Development" />
     </Project>
+    <Project Path="../../../../../Program Files/Epic Games/UE_5.8/Engine/Source/Programs/Shared/EpicGames.Core.Tests/EpicGames.Core.Tests.csproj">
+      <BuildType Project="Development" />
+    </Project>
     <Project Path="../../../../../Program Files/Epic Games/UE_5.8/Engine/Source/Programs/Shared/EpicGames.Core/EpicGames.Core.csproj">
+      <BuildType Project="Development" />
+    </Project>
+    <Project Path="../../../../../Program Files/Epic Games/UE_5.8/Engine/Source/Programs/Shared/EpicGames.Horde.Tests/EpicGames.Horde.Tests.csproj">
       <BuildType Project="Development" />
     </Project>
     <Project Path="../../../../../Program Files/Epic Games/UE_5.8/Engine/Source/Programs/Shared/EpicGames.Horde/EpicGames.Horde.csproj">
       <BuildType Project="Development" />
     </Project>
+    <Project Path="../../../../../Program Files/Epic Games/UE_5.8/Engine/Source/Programs/Shared/EpicGames.IoHash.Tests/EpicGames.IoHash.Tests.csproj">
+      <BuildType Project="Development" />
+    </Project>
     <Project Path="../../../../../Program Files/Epic Games/UE_5.8/Engine/Source/Programs/Shared/EpicGames.IoHash/EpicGames.IoHash.csproj">
+      <BuildType Project="Development" />
+    </Project>
+    <Project Path="../../../../../Program Files/Epic Games/UE_5.8/Engine/Source/Programs/Shared/EpicGames.LogMatchers.Tests/EpicGames.LogMatchers.Tests.csproj">
       <BuildType Project="Development" />
     </Project>
     <Project Path="../../../../../Program Files/Epic Games/UE_5.8/Engine/Source/Programs/Shared/EpicGames.LogMatchers/EpicGames.LogMatchers.csproj">
@@ -159,7 +233,13 @@
     <Project Path="../../../../../Program Files/Epic Games/UE_5.8/Engine/Source/Programs/Shared/EpicGames.Perforce.Fixture/EpicGames.Perforce.Fixture.csproj">
       <BuildType Project="Development" />
     </Project>
+    <Project Path="../../../../../Program Files/Epic Games/UE_5.8/Engine/Source/Programs/Shared/EpicGames.Perforce.Managed.Tests/EpicGames.Perforce.Managed.Tests.csproj">
+      <BuildType Project="Development" />
+    </Project>
     <Project Path="../../../../../Program Files/Epic Games/UE_5.8/Engine/Source/Programs/Shared/EpicGames.Perforce.Managed/EpicGames.Perforce.Managed.csproj">
+      <BuildType Project="Development" />
+    </Project>
+    <Project Path="../../../../../Program Files/Epic Games/UE_5.8/Engine/Source/Programs/Shared/EpicGames.Perforce.Tests/EpicGames.Perforce.Tests.csproj">
       <BuildType Project="Development" />
     </Project>
     <Project Path="../../../../../Program Files/Epic Games/UE_5.8/Engine/Source/Programs/Shared/EpicGames.Perforce/EpicGames.Perforce.csproj">
@@ -168,16 +248,25 @@
     <Project Path="../../../../../Program Files/Epic Games/UE_5.8/Engine/Source/Programs/Shared/EpicGames.ProjectStore/EpicGames.ProjectStore.csproj">
       <BuildType Project="Development" />
     </Project>
+    <Project Path="../../../../../Program Files/Epic Games/UE_5.8/Engine/Source/Programs/Shared/EpicGames.Redis.Tests/EpicGames.Redis.Tests.csproj">
+      <BuildType Project="Development" />
+    </Project>
     <Project Path="../../../../../Program Files/Epic Games/UE_5.8/Engine/Source/Programs/Shared/EpicGames.Redis/EpicGames.Redis.csproj">
       <BuildType Project="Development" />
     </Project>
     <Project Path="../../../../../Program Files/Epic Games/UE_5.8/Engine/Source/Programs/Shared/EpicGames.ScriptBuild/EpicGames.ScriptBuild.csproj">
       <BuildType Project="Development" />
     </Project>
+    <Project Path="../../../../../Program Files/Epic Games/UE_5.8/Engine/Source/Programs/Shared/EpicGames.Serialization.Tests/EpicGames.Serialization.Tests.csproj">
+      <BuildType Project="Development" />
+    </Project>
     <Project Path="../../../../../Program Files/Epic Games/UE_5.8/Engine/Source/Programs/Shared/EpicGames.Serialization/EpicGames.Serialization.csproj">
       <BuildType Project="Development" />
     </Project>
     <Project Path="../../../../../Program Files/Epic Games/UE_5.8/Engine/Source/Programs/Shared/EpicGames.Slack/EpicGames.Slack.csproj">
+      <BuildType Project="Development" />
+    </Project>
+    <Project Path="../../../../../Program Files/Epic Games/UE_5.8/Engine/Source/Programs/Shared/EpicGames.Tracing.Tests/EpicGames.Tracing.Tests.csproj">
       <BuildType Project="Development" />
     </Project>
     <Project Path="../../../../../Program Files/Epic Games/UE_5.8/Engine/Source/Programs/Shared/EpicGames.Tracing/EpicGames.Tracing.csproj">
